@@ -19,6 +19,8 @@
 - Copy (of a book)
 - Reader
 
+![alt text](https://github.com/SzaroBury/SimpleLibraryAPI/blob/master/erd.png?raw=true)
+
 ### Technials:
 - .NET Core 6.0
 - Entity Framework
