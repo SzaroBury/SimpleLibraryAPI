@@ -1,0 +1,91 @@
+Library API
+
+Model:
+Book
+	Id
+	Title
+	Description
+	ReleaseDate
+	Language
+	Tags
+	FK:
+		Author
+		Category
+Author
+	Id
+	FirstName
+	LastName
+	Description
+	DateOfBirth
+	Tags
+Category
+	Id
+	Name
+	Description
+	Tags
+	FK:
+		ParentCategory (optional)
+Copy
+	Id
+	FK:
+		Book
+Reader
+	Id
+	FirstName
+	LastName
+	Password (safe storage)
+	UserType(enum)
+Borrowing
+	Id
+	StartedDate
+	ExpectedReturnDate
+	ActualReturnDate
+	FK
+		Copy
+		Reader
+
+Solution
+	src
+		ApiServer
+		Entities
+		EFRepository
+	tests
+		ApiServer.Tests
+	
+
+
+TO DO:
+	Enum to string conversion							DONE	https://jasonwatmore.com/post/2021/10/12/net-return-enum-as-string-from-api		
+	CRUD										DONE
+		Authors									done
+		Books									done
+		Category								done
+		Copy									done
+		Reader									done
+		Borrowings								done
+	Search books by 								DONE
+		Author, Category, Tags 							done
+		Availbility								done
+	Api Authentication								DONE
+		One key									done
+		Two keys - admin, librarian						done
+		Third key - read-only							done
+	Tests
+		TestBookControler								
+	
+	better searching of books							done	
+	Check if copy of book is available						>
+	Check how many copies of the book are available
+	Readers can have borrowed only specific number of books in the time	
+	End Borrowing
+	...
+	Logging	
+
+	Everything works
+	ERD diagrma
+	class diagram
+
+
+To do or not to do???	
+	Services	
+		
