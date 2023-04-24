@@ -1,6 +1,17 @@
-Simple API for library staff
+# Simple API for library staff
 
-Entities in the system:
+### Features:
+- CRUD operations for all entities with diffrent accesability (diffrent endpoints available for three diffrent API keys)
+- Searching books by: word, availbility, relaese date, author and category.
+- Logging information in the console
+
+### Projects in the solution:
+- ApiServer - controllers and business logic
+- Entities - model, interfaces, enumerations
+- RepositoryEF - connection to the database
+- ApiServer.Tests - unit tests
+
+### Entities in the system:
 - Author
 - Book
 - Borrowing
@@ -8,18 +19,8 @@ Entities in the system:
 - Copy (of a book)
 - Reader
 
-Features:
-- CRUD operations for all entities with diffrent accesability (diffrent functions available for three diffrent API keys)
-- Searching books by: word, availbility, relaese date, author and category.
-- Logging
-
-Technial:
-- .NET Core
+### Technials:
+- .NET Core 6.0
 - Entity Framework
-- MS SQL Database
-- Unit tests
-- Moq
-
-
-
-
+- MS SQL Server
+- Unit tests with Moq
