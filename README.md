@@ -5,6 +5,12 @@
 - Searching books by: word, availbility, relaese date, author and category.
 - Logging information in the console
 
+### Still to do:
+- Check if copy of book is available						>
+-	Check how many copies of the book are available
+-	Readers can have borrowed only specific number of books in the time	
+- End Borrowing
+
 ### Projects in the solution:
 - ApiServer - controllers and business logic
 - Entities - model, interfaces, enumerations
