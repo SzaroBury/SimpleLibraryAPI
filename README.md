@@ -29,6 +29,6 @@
 
 ### Technials:
 - .NET Core 6.0
-- Entity Framework
+- Entity Framework Core
 - MS SQL Server
 - Unit tests with Moq
