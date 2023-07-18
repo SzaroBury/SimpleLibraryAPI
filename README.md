@@ -6,7 +6,7 @@
 - Logging information in the console
 
 ### Still to do:
-- Check if copy of book is available						>
+- Check if copy of book is available
 -	Check how many copies of the book are available
 -	Readers can have borrowed only specific number of books in the time	
 - End Borrowing
