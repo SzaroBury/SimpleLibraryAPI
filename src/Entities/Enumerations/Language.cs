@@ -6,6 +6,7 @@
         Polish,
         German,
         French,
-        Spanish
+        Spanish,
+        Other
     }
 }
