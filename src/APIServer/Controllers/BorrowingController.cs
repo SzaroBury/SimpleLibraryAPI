@@ -1,9 +1,7 @@
 ﻿using ApiServer.Attributes;
-using Entities.Interfaces;
+using Core.Repositories;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ApiServer.Controllers
 {
@@ -27,7 +25,7 @@ namespace ApiServer.Controllers
             try
             {
                 logger.LogInformation("GetAll request received.");
-                return new JsonResult(borrowingRepository.GetBorrowings());
+                return new JsonResult(borrowingRepository.GetAllBorrowings());
             }
             catch (Exception e)
             {

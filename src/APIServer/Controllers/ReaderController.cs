@@ -1,5 +1,5 @@
 ﻿using ApiServer.Attributes;
-using Entities.Interfaces;
+using Core.Repositories;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
 
