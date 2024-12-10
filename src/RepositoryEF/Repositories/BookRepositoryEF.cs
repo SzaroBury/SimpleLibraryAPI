@@ -1,4 +1,4 @@
-using Core.Repositories;
+﻿using Core.Repositories;
 using Entities.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,26 +24,17 @@ namespace RepositoryEF.Repositories
 
         public Book GetBook(int id)
         {
-            var book = context.Books.Include(b => b.Author).Include(b => b.Category).AsNoTracking().FirstOrDefault(b => b.Id == id);
-            if (book == null)
-            {
-                throw new KeyNotFoundException();
-            }
-            return book;
+            return context.Books.Include(b => b.Author).Include(b => b.Category).AsNoTracking().FirstOrDefault(b => b.Id == id);
         }
 
         public void CreateBook(Book book)
         {
-            if (context.Books.Any(b => b.Id == book.Id))
-            {
-                throw new ArgumentException();
-            }
             context.Books.Add(book);
             context.SaveChanges();
         }
 
         public void UpdateBook(Book book)
-            {
+        {
             context.Update(book);
             context.SaveChanges();
         }
