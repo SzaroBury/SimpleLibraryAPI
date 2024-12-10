@@ -1,4 +1,4 @@
-﻿using Entities.Interfaces;
+﻿using Core.Repositories;
 using Entities.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,9 +12,14 @@ namespace RepositoryEF.Repositories
             context = libraryEFContext;
         }
 
-        public List<Borrowing> GetBorrowings()
+        public List<Borrowing> GetAllBorrowings()
         {
             return context.Borrowings.Include(b => b.Copy).AsNoTracking().ToList();
+        }
+
+        public IQueryable<Borrowing> GetBorrowings()
+        {
+            return context.Borrowings.AsQueryable();
         }
 
         public Borrowing GetBorrowing(int id)

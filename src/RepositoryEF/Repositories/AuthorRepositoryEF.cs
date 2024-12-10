@@ -1,5 +1,5 @@
-﻿using Entities.Interfaces;
-using Entities.Models;
+﻿using Entities.Models;
+using Core.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace RepositoryEF.Repositories
@@ -12,9 +12,14 @@ namespace RepositoryEF.Repositories
             context = libraryEFContext;
         }
 
-        public List<Author> GetAuthors()
+        public List<Author> GetAllAuthors()
         {
             return context.Authors.AsNoTracking().ToList();
+        }
+
+        public IQueryable<Author> GetAuthors()
+        {
+            return context.Authors.AsQueryable();
         }
 
         public Author GetAuthor(int id)

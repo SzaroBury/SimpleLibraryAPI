@@ -1,5 +1,5 @@
-﻿using Entities.Interfaces;
-using Entities.Models;
+﻿using Entities.Models;
+using Core.Repositories;
 using System.Xml.Linq;
 
 namespace RepositoryEF.Repositories
@@ -12,11 +12,16 @@ namespace RepositoryEF.Repositories
             context = libraryEFContext;
         }
 
-        public List<Category> GetCategories()
+        public List<Category> GetAllCategories()
         {
             return context.Categories.ToList();
         }
 
+        public IQueryable<Category> GetCategories()
+        {
+            return context.Categories.AsQueryable();
+        }
+        
         public Category GetCategory(int id)
         {
             var category = context.Categories.FirstOrDefault(c => c.Id == id);

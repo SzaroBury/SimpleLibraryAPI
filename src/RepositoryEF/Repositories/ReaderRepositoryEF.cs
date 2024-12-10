@@ -1,5 +1,5 @@
-﻿using Entities.Interfaces;
-using Entities.Models;
+﻿using Entities.Models;
+using Core.Repositories;
 
 namespace RepositoryEF.Repositories
 {
@@ -11,9 +11,14 @@ namespace RepositoryEF.Repositories
             context = libraryEFContext;
         }
 
-        public List<Reader> GetReaders()
+        public List<Reader> GetAllReaders()
         {
             return context.Readers.ToList();
+        }
+
+        public IQueryable<Reader> GetReaders()
+        {
+            return context.Readers.AsQueryable();
         }
 
         public Reader GetReader(int id)
