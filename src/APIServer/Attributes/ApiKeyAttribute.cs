@@ -26,7 +26,7 @@ namespace ApiServer.Attributes
             List<string> apiKeyValues = new();
             foreach(string apiKeyName in apiKeys)
             {
-                var temp = config.GetValue<string>($"ApiKeys:{apiKeyName}");
+                var temp = config.GetValue<string>($"ApiKeys:{apiKeyName}") ?? "";
                 apiKeyValues.Add(temp);
             } 
 
