@@ -1,6 +1,6 @@
 ﻿using SimpleLibrary.API.Attributes;
 using SimpleLibrary.Domain.Models;
-using SimpleLibrary.Application.Repositories;
+using SimpleLibrary.Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SimpleLibrary.API.Controllers;

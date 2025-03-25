@@ -1,7 +1,7 @@
 ﻿using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.Enumerations;
 using SimpleLibrary.Domain.DTO;
-using SimpleLibrary.Application.Repositories;
+using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services.Abstraction;
 
 namespace SimpleLibrary.Application.Services;

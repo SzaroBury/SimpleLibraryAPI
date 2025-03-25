@@ -1,4 +1,4 @@
-using SimpleLibrary.Application.Repositories;
+using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Application.Services;
 using SimpleLibrary.Infrastructure;
