@@ -1,10 +1,11 @@
 using SimpleLibrary.Domain.Models;
+using SimpleLibrary.Domain.Enumerations;
 using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Application.Repositories;
 using SimpleLibrary.Application.Services;
 using Moq;
 
-namespace SimpleLibrary.Tests;
+namespace SimpleLibrary.Application.Services.Tests;
 
 public class TestBookService
 {
@@ -25,29 +26,29 @@ public class TestBookService
 
         Reader r1 = new Reader { Id = 1, FirstName = "Jan", LastName = "Kowalski", Email = "jan.kowalski@mail.com", Phone = "+48 789 456 123" };
 
-        Book b1 = new Book { Id = 1, Title = "Some old book", Author = a1, AuthorId = 1, Category = c1, CategoryId = 1, Language = Entities.Enumerations.Language.English, ReleaseDate = new DateTime(1900, 1, 1) };
+        Book b1 = new Book { Id = 1, Title = "Some old book", Author = a1, AuthorId = 1, Category = c1, CategoryId = 1, Language = Language.English, ReleaseDate = new DateTime(1900, 1, 1) };
         Copy b1_c1 = new Copy { Id = 1, Book = b1, BookId = 1 };
         Borrowing bor1 = new Borrowing { Id = 1, Copy = b1_c1, CopyId = 1, Reader = r1, ReaderId = 1, StartedDate = DateTime.Now.AddDays(-5) };
         Copy b1_c2 = new Copy { Id = 2, Book = b1, BookId = 1 };
         Borrowing bor2 = new Borrowing { Id = 2, Copy = b1_c2, CopyId = 2, Reader = r1, ReaderId = 1, StartedDate = DateTime.Now.AddDays(-5) };
 
-        Book b2 = new Book { Id = 2, Title = "Some old German book", Author = a1, AuthorId = 1, Category = c1, CategoryId = 1, Language = Entities.Enumerations.Language.German, ReleaseDate = new DateTime(1800, 1, 1) };
+        Book b2 = new Book { Id = 2, Title = "Some old German book", Author = a1, AuthorId = 1, Category = c1, CategoryId = 1, Language = Language.German, ReleaseDate = new DateTime(1800, 1, 1) };
         Copy b2_c3 = new Copy { Id = 3, Book = b2, BookId = 2 };
         Borrowing bor3 = new Borrowing { Id = 3, Copy = b2_c3, CopyId = 3, Reader = r1, ReaderId = 1, StartedDate = DateTime.Now.AddDays(-5) };
         Copy b2_c4 = new Copy { Id = 4, Book = b2, BookId = 2 };
 
-        Book b3 = new Book { Id = 3, Title = "Some new French book", Author = a1, AuthorId = 1, Category = c2, CategoryId = 2, Language = Entities.Enumerations.Language.French, ReleaseDate = new DateTime(2010, 5, 7) };
+        Book b3 = new Book { Id = 3, Title = "Some new French book", Author = a1, AuthorId = 1, Category = c2, CategoryId = 2, Language = Language.French, ReleaseDate = new DateTime(2010, 5, 7) };
         Copy b3_c5 = new Copy { Id = 5, Book = b3, BookId = 3 };
         Borrowing bor4 = new Borrowing { Id = 4, Copy = b3_c5, CopyId = 5, Reader = r1, ReaderId = 1, StartedDate = DateTime.Now.AddDays(-5), ActualReturnDate = DateTime.Now.AddDays(-2) };
 
-        Book b4 = new Book { Id = 4, Title = "Dziady część II", Author = a2, AuthorId = 2, Category = c2, CategoryId = 2, Language = Entities.Enumerations.Language.Polish, ReleaseDate = new DateTime(1823, 1, 1) };
+        Book b4 = new Book { Id = 4, Title = "Dziady część II", Author = a2, AuthorId = 2, Category = c2, CategoryId = 2, Language = Language.Polish, ReleaseDate = new DateTime(1823, 1, 1) };
         Copy b4_c6 = new Copy { Id = 6, Book = b4, BookId = 4 };
         Borrowing bor5 = new Borrowing { Id = 5, Copy = b4_c6, CopyId = 6, Reader = r1, ReaderId = 1, StartedDate = DateTime.Now.AddDays(-15), ActualReturnDate = DateTime.Now.AddDays(-10) };
         Borrowing bor6 = new Borrowing { Id = 6, Copy = b4_c6, CopyId = 6, Reader = r1, ReaderId = 1, StartedDate = DateTime.Now.AddDays(-5) };
 
-        Book b5 = new Book { Id = 5, Title = "Dziady część III", Author = a2, AuthorId = 2, Category = c2, CategoryId = 2, Language = Entities.Enumerations.Language.Polish, ReleaseDate = new DateTime(1832, 1, 1) };
+        Book b5 = new Book { Id = 5, Title = "Dziady część III", Author = a2, AuthorId = 2, Category = c2, CategoryId = 2, Language = Language.Polish, ReleaseDate = new DateTime(1832, 1, 1) };
 
-        Book b6 = new Book { Id = 6, Title = "Another book", Author = a3, AuthorId = 3, Category = c1, CategoryId = 1, Language = Entities.Enumerations.Language.English, ReleaseDate = new DateTime(1985, 1, 9), Tags = "Some" };
+        Book b6 = new Book { Id = 6, Title = "Another book", Author = a3, AuthorId = 3, Category = c1, CategoryId = 1, Language = Language.English, ReleaseDate = new DateTime(1985, 1, 9), Tags = "Some" };
 
         //Arrange 
         mockBookRepository.Setup(repo => repo.GetAllBooks()).Returns(new List<Book>() 
