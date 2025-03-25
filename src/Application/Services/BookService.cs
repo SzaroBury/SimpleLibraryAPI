@@ -1,72 +1,253 @@
 ﻿using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.Enumerations;
 using SimpleLibrary.Domain.DTO;
-using SimpleLibrary.Application.Repositories;
+using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services.Abstraction;
 
 namespace SimpleLibrary.Application.Services;
 
 public class BookService: IBookService
 {
-    private readonly IBookRepository bookRepository;
-    private readonly ICopyRepository copyRepository;
-    private readonly IBorrowingRepository borrowingRepository;
-    private readonly IAuthorRepository authorRepository;
-    private readonly ICategoryRepository categoryRepository;
+    private readonly IRepository<Book> bookRepository;
+    private readonly IAuthorService authorService;
+    private readonly IRepository<Copy> copyRepository;
+    private readonly IRepository<Borrowing> borrowingRepository;
+    private readonly IRepository<Category> categoryRepository;
 
-    public BookService(IBookRepository bookRepository, 
-                        ICopyRepository copyRepository, 
-                        IBorrowingRepository borrowingRepository, 
-                        IAuthorRepository authorRepository, 
-                        ICategoryRepository categoryRepository)
+    public BookService(IRepository<Book> bookRepository, 
+                        IAuthorService authorService, 
+                        IRepository<Copy> copyRepository, 
+                        IRepository<Borrowing> borrowingRepository, 
+                        IRepository<Category> categoryRepository)
     {
         this.bookRepository = bookRepository;
+        this.authorService = authorService;
         this.copyRepository = copyRepository;
         this.borrowingRepository = borrowingRepository;
-        this.authorRepository = authorRepository;
         this.categoryRepository = categoryRepository;
     }
 
-    public List<Book> SearchBooks(string? searchTerm = null, 
-                                    bool? isAvailable = null, 
-                                    string? olderThan = null, 
-                                    string? newerThan = null, 
-                                    int? author = null, 
-                                    int? category = null,
-                                    int page = 1,
-                                    int pageSize = 25
+    public async Task<IEnumerable<Book>> GetAllBooksAsync()
+    {
+        return await bookRepository.GetAllAsync();
+    }
+    public Task<Book> GetBookByIdAsync(string id)
+    {
+        var bookGuid = ValidateGuid(id);
+        return GetBookByIdAsync(bookGuid);
+    }
+    public async Task<Book> GetBookByIdAsync(Guid id)
+    {
+        var result = await bookRepository.GetByIdAsync(id) 
+            ?? throw new KeyNotFoundException($"A book with the specified id ({id}) was not found in the system.");
+
+        return result;
+    }
+    public async Task<Book> CreateBookAsync(BookPostDTO book)
+    {
+        if(string.IsNullOrEmpty(book.Title))
+        {
+            throw new ArgumentException("Title cannot be empty.");
+        }
+        if(!DateTime.TryParse(book.ReleaseDate, out DateTime releaseDate))
+        {
+            throw new FormatException("Invalid date format. Please use the following format: YYYY-MM-DD");
+        }
+        if(!Enum.TryParse(book.Language, true, out Language language))
+        {
+            throw new FormatException("Invalid language format. Pick one of the following values: English, Polish, German, French, Spanish, Other.");
+        }
+
+        var categoryGuid = ValidateGuid(book.CategoryId, "category");
+        var category = await categoryRepository.GetByIdAsync(categoryGuid)
+            ?? throw new KeyNotFoundException("Category with the given id is not present in the system.");
+
+        var author = await authorService.GetAuthorByIdAsync(book.AuthorId);
+
+        if(book.Tags.Any(tag => tag.Contains(',')))
+        {
+            throw new FormatException("Invalid format of tags. Please do not use commas.");
+        }
+        var tagsInString = book.Tags.ToList().Count > 1 
+            ? string.Join(',', book.Tags.Select(t => t.ToLower())) 
+            : book.Tags.First() ?? "";
+
+        bool isThereSimilarBook = bookRepository.GetQueryable()
+            .Any(b => b.Title.ToLower() == book.Title.ToLower() 
+                && b.AuthorId == author.Id
+            );
+        if(isThereSimilarBook)
+        {
+            throw new InvalidOperationException("There is already a similar book in the system.");
+        }
+
+        Book newBook = new()
+        {
+            Title = book.Title,
+            Description = book.Description,
+            ReleaseDate = releaseDate,
+            Language = language,
+            Author = author,
+            AuthorId = author.Id,
+            Category = category,
+            CategoryId = categoryGuid,
+            Tags = tagsInString,
+        };
+
+        await bookRepository.AddAsync(newBook);
+        return newBook;
+    }
+    public async Task<Book> UpdateBookAsync(BookPutDTO book)
+    {
+        Book existingBook = await GetBookByIdAsync(book.Id);
+
+        if(book.Title is not null && existingBook.Title != book.Title)
+        {
+            if(string.IsNullOrEmpty(book.Title))
+            {
+                throw new ArgumentException("Title can not be empty.");
+            }
+            existingBook.Title = book.Title;
+        }
+
+        if(book.Description is not null && existingBook.Description != book.Description)
+        {
+            existingBook.Description = book.Description;
+        }
+
+        if(book.ReleaseDate is not null)
+        {
+            if(!DateTime.TryParse(book.ReleaseDate, out var releaseDate))
+            {
+                throw new FormatException("Invalid date format. Please use the following format: YYYY-MM-DD");
+            }
+            existingBook.ReleaseDate = releaseDate;
+        }
+
+        if(book.Language is not null)
+        {
+            if(!Enum.TryParse<Language>(book.Language, true, out var language))
+            {
+                throw new FormatException("Invalid language format. Pick one of the following values: English, Polish, German, French, Spanish, Other.");
+            }
+            existingBook.Language = language;
+        }
+
+        if(book.Tags is not null)
+        {
+            if(book.Tags.Any(tag => tag.Contains(',')))
+            {
+                throw new FormatException("Invalid tags format. Please do not use commas in tags.");
+            }
+            var tagsInString = book.Tags.ToList().Count > 1 
+                ? string.Join(',', book.Tags) 
+                : book.Tags.First() ?? "";
+            existingBook.Tags = tagsInString;
+        }
+
+        if(book.AuthorId is not null)
+        {
+            var author = await authorService.GetAuthorByIdAsync(book.AuthorId);
+                
+            existingBook.Author = author;
+            existingBook.AuthorId = author.Id;
+        }
+
+        if(book.CategoryId is not null)
+        {
+            var categoryGuid = ValidateGuid(book.CategoryId, "category");
+
+            var category = await categoryRepository.GetByIdAsync(categoryGuid)
+                ?? throw new ArgumentException("Category with the given id is not present in the system.");
+                
+            existingBook.Category = category;
+            existingBook.CategoryId = categoryGuid;
+        }
+
+        bool isThereSimilarBook = bookRepository.GetQueryable()
+            .Any(b => b.Id != existingBook.Id 
+                && b.Title.ToLower() == existingBook.Title.ToLower()
+                && b.AuthorId == existingBook.AuthorId
+            );
+
+        if(isThereSimilarBook)
+        {
+            throw new InvalidOperationException("There is already a similar book in the system.");
+        }
+
+        await bookRepository.UpdateAsync(existingBook);
+
+        return existingBook;
+    }
+    public async Task DeleteBookAsync(string id)
+    {     
+        Book book = await GetBookByIdAsync(id);
+
+        var copies = copyRepository.GetQueryable()
+            .Where(c => c.BookId == book.Id)
+            .Select(c => c.Id)
+            .ToList();
+
+        foreach(var c in copies)
+        {
+            bool areThereActiveBorrowings = borrowingRepository
+                .GetQueryable()
+                .Any(bor => bor.CopyId == c 
+                    && !bor.ActualReturnDate.HasValue
+                );
+            if(areThereActiveBorrowings)
+            {
+                throw new InvalidOperationException("The book can not be deleted. There are still active borrowings in the system.");
+            }
+            await copyRepository.DeleteAsync(c);
+        }
+
+        await bookRepository.DeleteAsync(book.Id);
+    }
+
+public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null, 
+                                bool? isAvailable = null, 
+                                string? olderThan = null, 
+                                string? newerThan = null, 
+                                string? authorId = null, 
+                                string? categoryId = null,
+                                int page = 1,
+                                int pageSize = 25
     )
     {
         if(page <= 0 || pageSize <= 0)
         {
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException("Page and size of a page must be a positive number.");
         }
 
-        var booksQuery = bookRepository.GetBooks();
+        var searchBooksQuery = bookRepository.GetQueryable();
+        // var searchBooksResult = searchBooksQuery.ToList();
+        
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            booksQuery = booksQuery.Where(b =>
-                b.Title.ToLower().Contains(searchTerm.ToLower())
-                || b.Description.ToLower().Contains(searchTerm.ToLower())
-                || b.Tags.ToLower().Contains(searchTerm.ToLower())
-                || b.Language.ToString()!.ToLower().Contains(searchTerm.ToLower())
-                || b.Author!.FirstName.ToString().ToLower().Contains(searchTerm.ToLower())
-                || b.Author.LastName.ToString().ToLower().Contains(searchTerm.ToLower())
-                || b.Author.Description.ToString().ToLower().Contains(searchTerm.ToLower())
-                || b.Author.Tags.ToString().ToLower().Contains(searchTerm.ToLower())
-                || b.Category!.Name.ToString().ToLower().Contains(searchTerm.ToLower())
-                || b.Category.Description.ToString().ToLower().Contains(searchTerm.ToLower())
-                || b.Category.Tags.ToString().ToLower().Contains(searchTerm.ToLower())
+            searchBooksQuery = searchBooksQuery.Where(b =>
+                b.Title.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Description.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Tags.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Language.ToString().ToLower().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Author.FirstName.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Author.LastName.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Author.Description.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Author.Tags.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Category!.Name.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Category.Description.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Category.Tags.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
             );
         }
 
+
         if (isAvailable.HasValue)
         {
-            var copies = copyRepository.GetAllCopies();
-            var borrowings = borrowingRepository.GetAllBorrowings();
+            var copies = copyRepository.GetAllAsync().GetAwaiter().GetResult().ToList(); //??
+            var borrowings = borrowingRepository.GetAllAsync().GetAwaiter().GetResult().ToList(); //??
             if (isAvailable.Value)
             {
-                booksQuery = booksQuery.Where(
+                searchBooksQuery = searchBooksQuery.Where(
                     b => copies.Exists(
                         c => c.BookId == b.Id && !borrowings.Exists(
                             br => br.CopyId == c.Id && br.ActualReturnDate == null
@@ -76,7 +257,7 @@ public class BookService: IBookService
             }
             else
             {
-                booksQuery = booksQuery.Where(
+                searchBooksQuery = searchBooksQuery.Where(
                     b => !copies.Exists(
                         c => b.Id == c.BookId && !borrowings.Exists(
                             br => c.Id == br.CopyId && br.ActualReturnDate == null
@@ -90,187 +271,55 @@ public class BookService: IBookService
         {
             if (!DateTime.TryParse(olderThan, out DateTime olderThanDate))
             {
-                throw new FormatException();
+                throw new FormatException("Invalid date format of olderThan parameter. Please use the following format: YYYY-MM-DD");
             }
-            booksQuery = booksQuery.Where(b => b.ReleaseDate <= olderThanDate);
+            searchBooksQuery = searchBooksQuery.Where(b => b.ReleaseDate <= olderThanDate);
         }
 
         if (!string.IsNullOrEmpty(newerThan))
         {
             if(!DateTime.TryParse(newerThan, out DateTime newerThanDate))
             {
-                throw new FormatException();
+                throw new FormatException("Invalid date format of newerThan parameter. Please use the following format: YYYY-MM-DD");
             }
-            booksQuery = booksQuery.Where(b => b.ReleaseDate >= newerThanDate);
+            searchBooksQuery = searchBooksQuery.Where(b => b.ReleaseDate >= newerThanDate);
         }
 
-        if (author.HasValue)
+        if (!string.IsNullOrEmpty(authorId))
         {
-            if(authorRepository.GetAuthor(author.Value) == null ) 
-            { 
-                throw new ArgumentOutOfRangeException(); 
-            }
-            booksQuery = booksQuery.Where(b => b.AuthorId == author);
+            var author = await authorService.GetAuthorByIdAsync(authorId);
+            searchBooksQuery = searchBooksQuery.Where(b => b.AuthorId == author.Id);
         }
 
-        if (category.HasValue)
+        if (!string.IsNullOrEmpty(categoryId))
         {
-            if (categoryRepository.GetCategory(category.Value) == null) 
-            { 
-                throw new ArgumentOutOfRangeException(); 
-            }
-            booksQuery = booksQuery.Where(b => b.CategoryId == category);
+            var categoryGuid = ValidateGuid(categoryId, "category");
+            
+            var category = await categoryRepository.GetByIdAsync(categoryGuid)
+                ?? throw new KeyNotFoundException($"A category with the specified id ({categoryId}) was not found in the system.");
+
+            searchBooksQuery = searchBooksQuery.Where(b => b.CategoryId == categoryGuid);
         }
 
-        var count = booksQuery.Count();
+        var count = searchBooksQuery.Count();
         if (count > 0 
             && page > Math.Ceiling( (decimal)count / pageSize ))
         {
             throw new InvalidOperationException();
         }
 
-        booksQuery = booksQuery.Skip((page - 1) * pageSize);
-        booksQuery = booksQuery.Count() > pageSize ? booksQuery.Take(pageSize) : booksQuery;
+        searchBooksQuery = searchBooksQuery.Skip((page - 1) * pageSize);
+        searchBooksQuery = count > pageSize ? searchBooksQuery.Take(pageSize) : searchBooksQuery;
 
-        return booksQuery.ToList();
+        return searchBooksQuery.ToList();
     }
 
-    public Book GetBookById(int id)
+    private static Guid ValidateGuid(string id, string entity = "book")
     {
-        if(id < 0)
+        if(!Guid.TryParse(id, out var guid))
         {
-            throw new ArgumentException("Book id cannot be lesser than 0.");
+            throw new FormatException($"Invalid {entity} ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
         }
-
-        Book? book = bookRepository.GetBook(id);
-
-        if (book == null)
-        {
-            throw new KeyNotFoundException();
-        }
-
-        return book;
+        return guid;
     }
-
-    public Book CreateBook(BookPostDTO book)
-    {
-        if(string.IsNullOrEmpty(book.title))
-        {
-            throw new ArgumentException("Title can not be empty.");
-        }
-        if(!DateTime.TryParse(book.releaseDate, out DateTime newReleaseDate))
-        {
-            throw new FormatException("Invalid date format");
-        }
-        if(!Enum.TryParse(book.language, true, out Language newLanguage))
-        {
-            throw new FormatException("Invalid language format. Pick one of the following values: English, Polish, German, French, Spanish, Other.");
-        }
-        if(authorRepository.GetAuthor(book.authorId) == null) 
-        {
-            throw new ArgumentException("Author with the given id is not present in the system.");
-        }
-        if(categoryRepository.GetCategory(book.categoryId) == null) 
-        {
-            throw new ArgumentException("Category with the given id is not present in the system.");
-        }
-
-        if(bookRepository.GetBooks().Any(b => b.Title == book.title && b.AuthorId == book.authorId))
-        {
-            throw new InvalidOperationException("There is a similar book in the system.");
-        }
-
-        Book newBook = new Book
-        {
-            Title = book.title,
-            Description = book.desc,
-            ReleaseDate = newReleaseDate,
-            Language = newLanguage,
-            Tags = book.tags,
-            AuthorId = book.authorId,
-            CategoryId = book.categoryId
-        };
-
-        bookRepository.CreateBook(newBook);
-        return newBook;
-    }
-
-    public Book UpdateBook(BookPutDTO book)
-    {
-        if(book.id <= 0)
-        {
-            throw new ArgumentException("Invalid id.");
-        }
-        
-        Book? existingBook = GetBookById(book.id);
-        
-        if(existingBook == null)
-        {
-            throw new KeyNotFoundException();
-        }
-        if(book.title == "")
-        {
-            throw new ArgumentException("Title can not be empty.");
-        }
-        if(book.releaseDate != null && !DateTime.TryParse(book.releaseDate, out var newReleaseDate))
-        {
-            throw new FormatException("Invalid date format.");
-        }
-        if(book.language != null && !Enum.TryParse<Language>(book.language, true, out var newLanguage))
-        {
-            throw new FormatException("Invalid language format. Pick one of the following values: English, Polish, German, French, Spanish, Other.");
-        }
-        if(book.authorId.HasValue && authorRepository.GetAuthor(book.authorId.Value) == null) 
-        {
-            throw new ArgumentException("Author with the given id is not present in the system.");
-        }
-        if(book.categoryId.HasValue && categoryRepository.GetCategory(book.categoryId.Value) == null) 
-        {
-            throw new ArgumentException("Category with the given id is not present in the system.");
-        }
- 
-        existingBook.Title = book.title ?? existingBook.Title;
-        existingBook.Description = book.desc ?? existingBook.Description;
-        if(book.releaseDate != null) existingBook.ReleaseDate = DateTime.Parse(book.releaseDate);
-        if(book.language != null) existingBook.Language = Enum.Parse<Language>(book.language);
-        existingBook.Tags = book.tags ?? existingBook.Tags;
-        existingBook.AuthorId = book.authorId ?? existingBook.AuthorId;
-        existingBook.CategoryId = book.categoryId ?? existingBook.CategoryId;
-
-        if(bookRepository.GetBooks().Any(b => b.Id != existingBook.Id && b.Title == existingBook.Title && b.AuthorId == existingBook.AuthorId))
-        {
-            throw new InvalidOperationException("There is a similar book in the system.");
-        }
-
-        bookRepository.UpdateBook(existingBook);
-
-        return existingBook;
-    }
-
-    public void DeleteBook(int id)
-    {
-        if(id <= 0)
-        {
-            throw new ArgumentException("Invalid id.");
-        }
-        
-        Book? book = GetBookById(id);
-        
-        if(book == null)
-        {
-            throw new KeyNotFoundException();
-        }
-
-        var copies = copyRepository.GetCopies().Where(c => c.BookId == id).Select(c => c.Id).ToList();
-        foreach(var c in copies)
-        {
-            if(borrowingRepository.GetBorrowings().Any(bor => bor.CopyId == c && !bor.ActualReturnDate.HasValue))
-            {
-                throw new InvalidOperationException("The book can not be deleted. There are still active borrowings in the system.");
-            }
-        }
-
-        bookRepository.DeleteBook(id);
-    }
-
 }

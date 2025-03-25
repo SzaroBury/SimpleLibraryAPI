@@ -1,12 +1,20 @@
+using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Domain.Models;
 
 namespace SimpleLibrary.Application.Services.Abstraction;
 
 public interface IAuthorService
 {
-    public List<Author> SearchAuthors(string? searchTerm = null, string? olderThan = null, string? youngerThan = null, int page = 1, int pageSize = 25);
-    public Author GetAuthorById(int id);
-    public Author CreateAuthor(Author author);
-    public Author UpdateAuthor(Author author);
-    public void DeleteAuthor(int id);
+    Task<IEnumerable<Author>> GetAllAuthorsAsync();
+    Task<Author> GetAuthorByIdAsync(string id);
+    Task<Author> GetAuthorByIdAsync(Guid id);
+    Task<Author> CreateAuthorAsync(AuthorPostDTO author);
+    Task<Author> UpdateAuthorAsync(AuthorPutDTO author);
+    Task DeleteAuthorAsync(string id);
+    Task<IEnumerable<Author>> SearchAuthorsAsync(
+        string? searchTerm = null, 
+        string? olderThan = null, 
+        string? youngerThan = null, 
+        int page = 1, 
+        int pageSize = 25);
 }

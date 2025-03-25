@@ -1,13 +1,13 @@
 ﻿using SimpleLibrary.Domain.Models;
 
-namespace SimpleLibrary.Application.Repositories;
+namespace SimpleLibrary.Domain.Repositories;
 
 public interface IReaderRepository
 {
     public List<Reader> GetAllReaders();
     public IQueryable<Reader> GetReaders();
-    public Reader GetReader(int id);
+    public Reader? GetReader(Guid id);
     public void CreateReader(Reader category);
     public void UpdateReader(Reader category);
-    public void DeleteReader(int id);
+    public void DeleteReader(Guid id);
 }

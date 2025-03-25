@@ -1,4 +1,4 @@
-using SimpleLibrary.Application.Repositories;
+using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Application.Services;
 using SimpleLibrary.Infrastructure;
@@ -18,13 +18,9 @@ builder.Services.AddDbContext<LibraryEFContext>(options =>
 //    options.User.RequireUniqueEmail = true;
 //}).AddEntityFrameworkStores<IdentityContext>();
 
-builder.Services.AddScoped<IAuthorRepository,   AuthorRepositoryEF>();
-builder.Services.AddScoped<IBookRepository,     BookRepositoryEF>();
-builder.Services.AddScoped<IBorrowingRepository,BorrowingRepositoryEF>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepositoryEF>();
-builder.Services.AddScoped<ICopyRepository,     CopyRepositoryEF>();
-builder.Services.AddScoped<IReaderRepository,   ReaderRepositoryEF>();
+builder.Services.AddScoped(typeof(IRepository<>),   typeof(Repository<>));
 builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IAuthorService, AuthorService>();
 
 builder.Services.AddControllers().AddJsonOptions(x =>
 {

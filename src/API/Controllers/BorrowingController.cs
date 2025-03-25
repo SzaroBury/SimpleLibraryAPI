@@ -1,5 +1,5 @@
 ﻿using SimpleLibrary.API.Attributes;
-using SimpleLibrary.Application.Repositories;
+using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,77 +9,103 @@ namespace SimpleLibrary.API.Controllers;
 [ApiController]
 public class BorrowingController : ControllerBase
 {
-    private readonly IBorrowingRepository borrowingRepository;
+    private readonly IRepository<Borrowing> borrowingRepository;
     private readonly ILogger<BorrowingController> logger;
-    public BorrowingController(IBorrowingRepository BorrowingRepository, ILogger<BorrowingController> logger)
+
+    public BorrowingController(IRepository<Borrowing> borrowingRepository, ILogger<BorrowingController> logger)
     {
-        this.borrowingRepository = BorrowingRepository;
+        this.borrowingRepository = borrowingRepository;
         this.logger = logger;
     }
 
     // GET: api/<BorrowingsController>
     [HttpGet("~/api/Borrowings")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
         try
         {
             logger.LogInformation("GetAll request received.");
-            return new JsonResult(borrowingRepository.GetAllBorrowings());
+            var result = await borrowingRepository.GetAllAsync();
+            return Ok(result);
         }
         catch (Exception e)
         {
-            return StatusCode(500, $"Error: {e.Message}");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking GetAll(): {e.Message}");
+            return StatusCode(500, $"Unexpected error.");
         }
     }
 
     // GET api/<BorrowingsController>/5
     [HttpGet("{id}")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public IActionResult Get(int id)
+    public async Task<IActionResult> Get(string id)
     {
         try
         {
             logger.LogInformation("Get request received.");
-            return new JsonResult(borrowingRepository.GetBorrowing(id));
+            if(!Guid.TryParse(id, out var borrowingGuid))
+            {
+                throw new FormatException("Invalid ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
+            }
+            var result = await borrowingRepository.GetByIdAsync(borrowingGuid)
+                ?? throw new KeyNotFoundException($"A borrowing record with the specified ID ({id}) could not be found in the system.");
+            return Ok(result);
+        }
+        catch(FormatException e)
+        {
+            logger.LogInformation($"FormatException catched during invoking Get(id: {id}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"KeyNotFoundException catched during invoking Get(id: {id}):");
+            logger.LogInformation($"    {e.Message}");
+            return NotFound(e.Message);
         }
         catch (Exception e)
         {
-            return StatusCode(500, $"Error: {e.Message}");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Get(id: {id}):");
+            logger.LogError($"    {e.Message}");
+            return StatusCode(500, $"Unexpected error.");
         }
     }
 
     // POST api/<BorrowingsController>
     [HttpPost]
     [ApiKey("Librarian", "Admin")]
-    public IActionResult Post(Borrowing Borrowing)
+    public async Task<IActionResult> Post(Borrowing Borrowing)
     {
         try
         {
             logger.LogInformation("Post request received.");
-            borrowingRepository.CreateBorrowing(Borrowing);
-            return StatusCode(200, "Object was sucesfully added to the datebase.");
+            await borrowingRepository.AddAsync(Borrowing);
+            return Ok("Object was sucesfully added to the datebase.");
         }
         catch (Exception e)
         {
-            return StatusCode(500, $"Error: {e.Message}");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Post(<Borrowing Object>):");
+            logger.LogError($"    {e.Message}");
+            return StatusCode(500, $"Unexpected error: {e.Message}");
         }
     }
 
     // PUT api/<BorrowingsController>/5
     [HttpPut("{id}")]
     [ApiKey("Librarian", "Admin")]
-    public IActionResult Put(int id, Borrowing borrowing)
+    public async Task<IActionResult> Put(string id, Borrowing borrowing)
     { 
         try
         {
             logger.LogInformation("Put request received.");
-            borrowing.Id = id;
-            borrowingRepository.UpdateBorrowing(borrowing);
-            return StatusCode(200, "Object was sucesfully updated in the datebase.");
+            await borrowingRepository.UpdateAsync(borrowing);
+            return Ok("Object was sucesfully updated in the datebase.");
         }
         catch (Exception e)
         {
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Put(id: {id}, <Borrowing Object>):");
+            logger.LogError($"    {e.Message}");
             return StatusCode(500, $"Error: {e.Message}");
         }
     }
@@ -87,16 +113,28 @@ public class BorrowingController : ControllerBase
     // DELETE api/<BorrowingsController>/5
     [HttpDelete("{id}")]
     [ApiKey("Admin")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(string id)
     {
         try
         {
             logger.LogInformation("Delete request received.");
-            borrowingRepository.DeleteBorrowing(id);
-            return StatusCode(200, "Object was sucesfully deleted from the datebase.");
+            if(!Guid.TryParse(id, out var borrowingGuid))
+            {
+                throw new FormatException("Invalid ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
+            }
+            await borrowingRepository.DeleteAsync(borrowingGuid);
+            return Ok("Object was sucesfully deleted from the datebase.");
+        }
+        catch(FormatException e)
+        {
+            logger.LogInformation($"FormatException catched during invoking Delete(id: {id}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Delete(id: {id}:");
+            logger.LogError($"    {e.Message}");
             return StatusCode(500, $"Error: {e.Message}");
         }
     }

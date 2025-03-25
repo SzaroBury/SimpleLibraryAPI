@@ -1,7 +1,8 @@
 ﻿using SimpleLibrary.API.Attributes;
 using SimpleLibrary.Domain.Models;
-using SimpleLibrary.Application.Repositories;
+using SimpleLibrary.Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using SimpleLibrary.Application.Services.Abstraction;
 
 namespace SimpleLibrary.API.Controllers;
 
@@ -10,10 +11,12 @@ namespace SimpleLibrary.API.Controllers;
 public class AuthorController : ControllerBase
 {
     private readonly IAuthorRepository authorRepository;
+    private readonly IAuthorService authorService;
     private readonly ILogger<AuthorController> logger;
-    public AuthorController(IAuthorRepository authorRepository, ILogger<AuthorController> logger)
+    public AuthorController(IAuthorRepository authorRepository, IAuthorService authorService, ILogger<AuthorController> logger)
     {
         this.authorRepository = authorRepository;
+        this.authorService = authorService;
         this.logger = logger;
     }
 
@@ -25,7 +28,8 @@ public class AuthorController : ControllerBase
         try
         {
             logger.LogInformation("GetAll request received.");
-            return new JsonResult(authorRepository.GetAuthors());
+            var result = authorRepository.GetAllAuthors();
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -36,12 +40,13 @@ public class AuthorController : ControllerBase
     // GET api/author/5
     [HttpGet("{id}")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public IActionResult Get(int id)
+    public IActionResult Get(string id)
     {
         try
         {
             logger.LogInformation("Get request received.");
-            return new JsonResult(authorRepository.GetAuthor(id));
+            var result = authorRepository.GetAuthor(Guid.Parse(id));
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -58,7 +63,7 @@ public class AuthorController : ControllerBase
         {
             logger.LogInformation("Post request received.");
             authorRepository.CreateAuthor(author);
-            return StatusCode(200, "Object was sucesfully added to the datebase.");
+            return Ok("Object was sucesfully added to the datebase.");
         }
         catch (Exception e)
         {
@@ -69,14 +74,14 @@ public class AuthorController : ControllerBase
     // PUT api/authors
     [HttpPut("{id}")]
     [ApiKey("Librarian", "Admin")]
-    public IActionResult Put(int id, Author author)
+    public IActionResult Put(string id, Author author)
     {
         try
         {
             logger.LogInformation("Put request received.");
-            author.Id = id;
+            author.Id = Guid.Parse(id);
             authorRepository.UpdateAuthor(author);
-            return StatusCode(200, "Object was sucesfully updated in the datebase.");
+            return Ok("Object was sucesfully updated in the datebase.");
         }
         catch (Exception e)
         {
@@ -87,12 +92,12 @@ public class AuthorController : ControllerBase
     // DELETE api/authors/5
     [HttpDelete("{id}")]
     [ApiKey("Admin")]
-    public IActionResult Delete(int id)
+    public IActionResult Delete(string id)
     {
         try
         {
             logger.LogInformation("Delete request received.");
-            authorRepository.DeleteAuthor(id);
+            authorRepository.DeleteAuthor(Guid.Parse(id));
             return StatusCode(200, "Object was sucesfully deleted from the datebase.");
         }
         catch (Exception e)

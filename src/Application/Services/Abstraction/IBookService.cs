@@ -5,9 +5,20 @@ namespace SimpleLibrary.Application.Services.Abstraction;
 
 public interface IBookService
 {
-    public List<Book> SearchBooks(string? searchTerm = null, bool? isAvailable = null, string? olderThan = null, string? newerThan = null, int? author = null, int? category = null, int page = 1, int pageSize = 25);
-    public Book GetBookById(int id);
-    public Book CreateBook(BookPostDTO book);
-    public Book UpdateBook(BookPutDTO book);
-    public void DeleteBook(int id);
+    public Task<IEnumerable<Book>> GetAllBooksAsync();
+    public Task<Book> GetBookByIdAsync(string id);
+    public Task<Book> GetBookByIdAsync(Guid id);
+    public Task<Book> CreateBookAsync(BookPostDTO book);
+    public Task<Book> UpdateBookAsync(BookPutDTO book);
+    public Task DeleteBookAsync(string id);
+    public Task<IEnumerable<Book>> SearchBooksAsync(
+        string? searchTerm = null, 
+        bool? isAvailable = null, 
+        string? olderThan = null, 
+        string? newerThan = null, 
+        string? authorId = null, 
+        string? categoryId = null, 
+        int page = 1, 
+        int pageSize = 25
+    );
 }
