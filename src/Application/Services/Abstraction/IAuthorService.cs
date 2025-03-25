@@ -4,9 +4,10 @@ namespace SimpleLibrary.Application.Services.Abstraction;
 
 public interface IAuthorService
 {
-    public List<Author> SearchAuthors(string? searchTerm = null, string? olderThan = null, string? youngerThan = null, int page = 1, int pageSize = 25);
-    public Author GetAuthorById(int id);
-    public Author CreateAuthor(Author author);
-    public Author UpdateAuthor(Author author);
-    public void DeleteAuthor(int id);
+    public Task<List<Author>> GetAllAuthors();
+    public Task<Author> GetAuthorById(int id);
+    public Task<Author> CreateAuthorAsync(Author author);
+    public Task<Author> UpdateAuthorAsync(Author author);
+    public Task DeleteAuthorAsync(int id);
+    public List<Author> SearchAuthorsAsync(string? searchTerm = null, string? olderThan = null, string? youngerThan = null, int page = 1, int pageSize = 25);
 }
