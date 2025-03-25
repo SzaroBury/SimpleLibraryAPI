@@ -1,5 +1,5 @@
 ﻿using SimpleLibrary.Domain.Models;
-using SimpleLibrary.Application.Repositories;
+using SimpleLibrary.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace SimpleLibrary.Infrastructure.Repositories;

@@ -1,6 +1,6 @@
 ﻿using SimpleLibrary.Domain.Models;
 
-namespace SimpleLibrary.Application.Repositories;
+namespace SimpleLibrary.Domain.Repositories;
 
 public interface IBookRepository
 {
