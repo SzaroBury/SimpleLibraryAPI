@@ -18,11 +18,11 @@
 - Unit tests with Xunit and Moq
 
 ### Projects in the solution:
-- ApiServer - controllers
-- Core - services, interfaces
-- Entities - model, DTOs, enumerations
-- RepositoryEF - connection to the database
-- Core.Tests - unit tests of the Core project
+- API - controllers
+- Application - services, interfaces
+- Domain - model, DTOs, enumerations
+- Infrastructure - connection to the database
+- Application.Tests - unit tests of the Core project
 
 ### Entities in the system:
 - Author
