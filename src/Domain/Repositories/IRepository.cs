@@ -1,4 +1,4 @@
-namespace SimpleLibrary.Domain.Abstraction;
+namespace SimpleLibrary.Domain.Repositories;
 
 public interface IRepository<T> where T : class
 {

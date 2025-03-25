@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using SimpleLibrary.Domain.Abstraction;
+using SimpleLibrary.Domain.Repositories;
 
 namespace SimpleLibrary.Infrastructure.Repositories;
 
