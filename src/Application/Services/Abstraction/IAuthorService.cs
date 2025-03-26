@@ -4,7 +4,7 @@ namespace SimpleLibrary.Application.Services.Abstraction;
 
 public interface IAuthorService
 {
-    public Task<List<Author>> GetAllAuthorsAsync();
+    public Task<IEnumerable<Author>> GetAllAuthorsAsync();
     public Task<Author> GetAuthorByIdAsync(int id);
     public Task<Author> CreateAuthorAsync(Author author);
     public Task<Author> UpdateAuthorAsync(Author author);

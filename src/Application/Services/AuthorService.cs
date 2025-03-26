@@ -13,7 +13,7 @@ public class AuthorService: IAuthorService
         this.authorRepository = authorRepository;
     }
 
-    public async Task<List<Author>> GetAllAuthorsAsync()
+    public async Task<IEnumerable<Author>> GetAllAuthorsAsync()
     {
         return await authorRepository.GetAllAsync();
     }
