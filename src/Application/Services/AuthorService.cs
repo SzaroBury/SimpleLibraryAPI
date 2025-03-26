@@ -1,6 +1,7 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services.Abstraction;
+using SimpleLibrary.Domain.DTO;
 
 namespace SimpleLibrary.Application.Services;
 
@@ -29,7 +30,7 @@ public class AuthorService: IAuthorService
         return result;
     }
 
-    public Task<Author> CreateAuthorAsync(Author author)
+    public async Task<Author> CreateAuthorAsync(AuthorPostDTO authorDTO)
     {
         throw new NotImplementedException();
     }
