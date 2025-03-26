@@ -8,13 +8,13 @@ public class Repository<T> : IRepository<T> where T : class
     private readonly DbContext context;
     private readonly DbSet<T> dbSet;
 
-    Repository(DbContext context)
+    public Repository(DbContext context)
     {
         this.context = context;
         dbSet = context.Set<T>();
     }
 
-    public async Task<List<T>> GetAllAsync()
+    public async Task<IEnumerable<T>> GetAllAsync()
     {
         return await dbSet.AsNoTracking().ToListAsync();
     }
