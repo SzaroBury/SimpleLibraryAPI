@@ -1,6 +1,5 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.Repositories;
-using SimpleLibrary.Application.Services;
 using Moq;
 
 namespace SimpleLibrary.Application.Services.Tests;
@@ -13,10 +12,10 @@ public class TestAuthorService
     {
         mockAuthorRepository
         .Setup(repo => repo.GetAllAsync())
-        .Returns(Task.FromResult(new List<Author>()
-        {
+        .Returns(Task.FromResult<IEnumerable<Author>>(
+        [
             new() { Id = 0, FirstName = "Firstname", LastName = "Lastname" }
-        }));
+        ]));
     }
 
     [Fact]
