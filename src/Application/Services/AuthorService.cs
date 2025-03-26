@@ -43,7 +43,7 @@ public class AuthorService: IAuthorService
         throw new NotImplementedException();
     }
 
-    public List<Author> SearchAuthorsAsync(
+    public Task<IEnumerable<Author>> SearchAuthorsAsync(
         string? searchTerm = null, 
         string? olderThan = null, 
         string? youngerThan = null, 
