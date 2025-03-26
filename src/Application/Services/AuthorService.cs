@@ -8,17 +8,17 @@ public class AuthorService: IAuthorService
 {
     private readonly IRepository<Author> authorRepository;
 
-    AuthorService(IRepository<Author> authorRepository)
+    public AuthorService(IRepository<Author> authorRepository)
     {
         this.authorRepository = authorRepository;
     }
 
-    public async Task<List<Author>> GetAllAuthors()
+    public async Task<List<Author>> GetAllAuthorsAsync()
     {
         return await authorRepository.GetAllAsync();
     }
 
-    public async Task<Author> GetAuthorById(int id)
+    public async Task<Author> GetAuthorByIdAsync(int id)
     {
         var result = await authorRepository.GetByIdAsync(id);
         if(result is null)
