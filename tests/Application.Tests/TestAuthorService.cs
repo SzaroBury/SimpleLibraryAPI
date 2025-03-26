@@ -1,7 +1,7 @@
 using SimpleLibrary.Domain.Models;
+using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Domain.Repositories;
 using Moq;
-using System.Reflection;
 
 namespace SimpleLibrary.Application.Services.Tests;
 
@@ -110,15 +110,14 @@ public class TestAuthorService
     [Fact]
     public async Task CreateAuthorAsync_AddsAuthor_ReturnsCreatedAuthor()
     {
-        Author newAuthor = new()
-        { 
-            Id = 2, 
-            FirstName = "Jane", 
-            LastName = "Doe", 
-            Description = "Jane Doe was cool", 
-            BornDate = new DateTime(1951, 12, 31),
-            Tags = "sci-fi, brutal"
-        };
+        var newAuthor = new AuthorPostDTO
+        (
+            "Jane", 
+            "Doe", 
+            "Jane Doe was cool", 
+            "1951-12-31",
+            ["sci-fi", "brutal"]
+        );
 
         var createdAuthor = await authorService.CreateAuthorAsync(newAuthor);
 
@@ -129,6 +128,82 @@ public class TestAuthorService
         Assert.Equal("Jane Doe was cool", createdAuthor.Description);
         Assert.Equal(new DateTime(1951, 12, 31), createdAuthor.BornDate);
         Assert.Equal("sci-fi, brutal", createdAuthor.Tags);
+    }
+
+    [Fact]
+    public async Task CreateAuthorAsync_EmptyFirstName_ThrowsArgumentException()
+    {
+        var newAuthor = new AuthorPostDTO
+        (
+            "", 
+            "Doe", 
+            "Jane Doe was cool", 
+            "1951-12-31",
+            ["sci-fi", "brutal"]
+        );
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => 
+            authorService.CreateAuthorAsync(newAuthor)
+        );
+
+        Assert.Equal("The author's first name and last name cannot be left empty.", exception.Message);
+    }
+
+    [Fact]
+    public async Task CreateAuthorAsync_EmptyLastName_ThrowsArgumentException()
+    {
+        var newAuthor = new AuthorPostDTO
+        (
+            "Jane", 
+            "", 
+            "Jane Doe was cool", 
+            "1951-12-31",
+            ["sci-fi", "brutal"]
+        );
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => 
+            authorService.CreateAuthorAsync(newAuthor)
+        );
+
+        Assert.Equal("The author's first name and last name cannot be left empty.", exception.Message);
+    }
+
+    [Fact]
+    public async Task CreateAuthorAsync_InvalidBornDateFormat_ThrowsFormatException()
+    {
+        var newAuthor = new AuthorPostDTO
+        (
+            "Jane", 
+            "Doe", 
+            "Jane Doe was cool", 
+            "testing",
+            ["sci-fi", "brutal"]
+        );
+
+        var exception = await Assert.ThrowsAsync<FormatException>(() => 
+            authorService.CreateAuthorAsync(newAuthor)
+        );
+
+        Assert.Equal("Invalid date format. Please use the following format: YYYY-MM-DD", exception.Message);
+    }
+
+    [Fact]
+    public async Task CreateAuthorAsync_CommaInTag_ThrowsFormatException()
+    {
+        var newAuthor = new AuthorPostDTO
+        (
+            "Jane", 
+            "Doe", 
+            "Jane Doe was cool", 
+            "1951-12-31",
+            ["sci-fi, novels", "brutal"]
+        );
+
+        var exception = await Assert.ThrowsAsync<FormatException>(() => 
+            authorService.CreateAuthorAsync(newAuthor)
+        );
+
+        Assert.Equal("Invalid tags format. Please do not use commas in tags.", exception.Message);
     }
 
     [Fact]
@@ -168,7 +243,9 @@ public class TestAuthorService
     {
         var updatedAuthor = new Author { Id = 99, FirstName = "Ghost", LastName = "Writer" };
 
-        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => 
+            authorService.UpdateAuthorAsync(updatedAuthor)
+        );
 
         Assert.Equal("Author with ID 99 not found.", exception.Message);
     }
@@ -184,7 +261,9 @@ public class TestAuthorService
     [Fact]
     public async Task DeleteAuthorAsync_NonExistingId_ThrowsKeyNotFoundException()
     {
-        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => authorService.DeleteAuthorAsync(99));
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => 
+            authorService.DeleteAuthorAsync(99)
+        );
 
         Assert.Equal("Author with ID 99 not found.", exception.Message);
     }

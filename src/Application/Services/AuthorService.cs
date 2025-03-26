@@ -32,7 +32,39 @@ public class AuthorService: IAuthorService
 
     public async Task<Author> CreateAuthorAsync(AuthorPostDTO authorDTO)
     {
-        throw new NotImplementedException();
+        if(string.IsNullOrEmpty(authorDTO.FirstName) || string.IsNullOrEmpty(authorDTO.LastName))
+        {
+            throw new ArgumentException("The author's first name and last name cannot be left empty.");
+        }
+        DateTime? authorsBornDate = null;
+        if(string.IsNullOrEmpty(authorDTO.BornDate))
+        {
+            if(!DateTime.TryParse(authorDTO.BornDate, out DateTime notNullAuthorsBornDate))
+            {
+                throw new FormatException("Invalid date format. Please use the following format: YYYY-MM-DD");
+            }
+            authorsBornDate = notNullAuthorsBornDate;
+        }
+        if(authorDTO.Tags.Any(tag => tag.Contains(',')))
+        {
+            throw new FormatException("Invalid tags format. Please do not use commas in tags.");
+        }
+
+        var tagsInString = authorDTO.Tags.ToList().Count > 1 
+            ? string.Join(',', authorDTO.Tags) 
+            : authorDTO.Tags.First() ?? "";
+
+        Author newAuthor = new() 
+        {
+            FirstName = authorDTO.FirstName,
+            LastName = authorDTO.LastName,
+            Description = authorDTO.Description,
+            BornDate = authorsBornDate,
+            Tags = tagsInString
+        };
+        await authorRepository.AddAsync(newAuthor);
+
+        return newAuthor;
     }
 
     public Task<Author> UpdateAuthorAsync(Author author)
