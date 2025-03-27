@@ -20,21 +20,21 @@ public class BookController : ControllerBase
 
     [HttpGet("~/api/Books")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public IActionResult GetAll(
+    public async Task<IActionResult> GetAll(
         [FromQuery] string search = "",
         [FromQuery] bool? isAvailable = null,
         [FromQuery] string olderThan = "",
         [FromQuery] string newerThan = "",
-        [FromQuery] int author = -1,
-        [FromQuery] int category = -1,
+        [FromQuery] string author = "",
+        [FromQuery] string category = "",
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 25)
     {
         try
         {
-            logger.LogInformation("GetAll request received. ({String})", Request.QueryString);
+            logger.LogInformation($"GetAll ({Request.QueryString})");
 
-            var result = bookService.SearchBooks(search, isAvailable, olderThan, newerThan, author, category, page, pageSize);
+            var result = await bookService.SearchBooksAsync(search, isAvailable, olderThan, newerThan, author, category, page, pageSize);
 
             return Ok(result);
         }
@@ -47,13 +47,15 @@ public class BookController : ControllerBase
 
     [HttpGet("{id}")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public IActionResult Get(int id)
+    public async Task<IActionResult> Get(string id)
     {
         try
         {
             logger.LogInformation("Get request received.");
+
+            var result = await bookService.GetBookByIdAsync(id);
             
-            return Ok(bookService.GetBookById(id));
+            return Ok(result);
         }
         catch(KeyNotFoundException)
         {
@@ -68,12 +70,12 @@ public class BookController : ControllerBase
 
     [HttpPost]
     [ApiKey("Librarian", "Admin")]
-    public IActionResult Post(BookPostDTO book)
+    public async Task<IActionResult> Post(BookPostDTO book)
     {
         try
         {
             logger.LogInformation("Post request received.");
-            bookService.CreateBook(book);
+            await bookService.CreateBookAsync(book);
             return StatusCode(200, "Object was sucesfully added to the datebase.");
         }
         catch (Exception e)
@@ -85,12 +87,12 @@ public class BookController : ControllerBase
 
     [HttpPut]
     [ApiKey("Librarian", "Admin")]
-    public IActionResult Update(BookPutDTO book)
+    public async Task<IActionResult> Update(BookPutDTO book)
     {
         try
         {
             logger.LogInformation("Update request received.");
-            var result = bookService.UpdateBook(book);
+            var result = await bookService.UpdateBookAsync(book);
             return Ok(result);
         }
         catch(KeyNotFoundException)
@@ -105,12 +107,12 @@ public class BookController : ControllerBase
 
     [HttpDelete("{id}")]
     [ApiKey("Admin")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(string id)
     {
         try
         {
             logger.LogInformation("Delete request received.");
-            bookService.DeleteBook(id);
+            await bookService.DeleteBookAsync(id);
             return Ok();
         }
         catch(KeyNotFoundException)

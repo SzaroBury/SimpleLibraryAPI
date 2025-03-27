@@ -25,7 +25,8 @@ public class BorrowingController : ControllerBase
         try
         {
             logger.LogInformation("GetAll request received.");
-            return new JsonResult(borrowingRepository.GetAllBorrowings());
+            var result = borrowingRepository.GetAllBorrowings();
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -36,12 +37,13 @@ public class BorrowingController : ControllerBase
     // GET api/<BorrowingsController>/5
     [HttpGet("{id}")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public IActionResult Get(int id)
+    public IActionResult Get(string id)
     {
         try
         {
             logger.LogInformation("Get request received.");
-            return new JsonResult(borrowingRepository.GetBorrowing(id));
+            var result = borrowingRepository.GetBorrowing(Guid.Parse(id));
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -58,7 +60,7 @@ public class BorrowingController : ControllerBase
         {
             logger.LogInformation("Post request received.");
             borrowingRepository.CreateBorrowing(Borrowing);
-            return StatusCode(200, "Object was sucesfully added to the datebase.");
+            return Ok("Object was sucesfully added to the datebase.");
         }
         catch (Exception e)
         {
@@ -69,14 +71,14 @@ public class BorrowingController : ControllerBase
     // PUT api/<BorrowingsController>/5
     [HttpPut("{id}")]
     [ApiKey("Librarian", "Admin")]
-    public IActionResult Put(int id, Borrowing borrowing)
+    public IActionResult Put(string id, Borrowing borrowing)
     { 
         try
         {
             logger.LogInformation("Put request received.");
-            borrowing.Id = id;
+            borrowing.Id = Guid.Parse(id);
             borrowingRepository.UpdateBorrowing(borrowing);
-            return StatusCode(200, "Object was sucesfully updated in the datebase.");
+            return Ok("Object was sucesfully updated in the datebase.");
         }
         catch (Exception e)
         {
@@ -87,13 +89,13 @@ public class BorrowingController : ControllerBase
     // DELETE api/<BorrowingsController>/5
     [HttpDelete("{id}")]
     [ApiKey("Admin")]
-    public IActionResult Delete(int id)
+    public IActionResult Delete(string id)
     {
         try
         {
             logger.LogInformation("Delete request received.");
-            borrowingRepository.DeleteBorrowing(id);
-            return StatusCode(200, "Object was sucesfully deleted from the datebase.");
+            borrowingRepository.DeleteBorrowing(Guid.Parse(id));
+            return Ok("Object was sucesfully deleted from the datebase.");
         }
         catch (Exception e)
         {

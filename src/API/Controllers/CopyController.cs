@@ -25,7 +25,8 @@ public class CopyController : ControllerBase
         try
         {
             logger.LogInformation("GetAll request received.");
-            return new JsonResult(copyRepository.GetAllCopies());
+            var result = copyRepository.GetAllCopies();
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -36,12 +37,13 @@ public class CopyController : ControllerBase
     // GET api/<CopiesController>/5
     [HttpGet("{id}")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public IActionResult Get(int id)
+    public IActionResult Get(string id)
     {
         try
         {
             logger.LogInformation("Get request received.");
-            return new JsonResult(copyRepository.GetCopy(id));
+            var result = copyRepository.GetCopy(Guid.Parse(id));
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -58,7 +60,7 @@ public class CopyController : ControllerBase
         {
             logger.LogInformation("Post request received.");
             copyRepository.CreateCopy(copy);
-            return StatusCode(200, "Object was sucesfully added to the datebase.");
+            return Ok("Object was sucesfully added to the datebase.");
         }
         catch (Exception e)
         {
@@ -69,14 +71,14 @@ public class CopyController : ControllerBase
     // PUT api/<CopiesController>/5
     [HttpPut("{id}")]
     [ApiKey("Librarian", "Admin")]
-    public IActionResult Put(int id, Copy copy)
+    public IActionResult Put(string id, Copy copy)
     {
         try
         {
             logger.LogInformation("Put request received.");
-            copy.Id = id;
+            copy.Id = Guid.Parse(id);
             copyRepository.UpdateCopy(copy);
-            return StatusCode(200, "Object was sucesfully updated in the datebase.");
+            return Ok("Object was sucesfully updated in the datebase.");
         }
         catch (Exception e)
         {
@@ -87,13 +89,13 @@ public class CopyController : ControllerBase
     // DELETE api/<CopiesController>/5
     [HttpDelete("{id}")]
     [ApiKey("Admin")]
-    public IActionResult Delete(int id)
+    public IActionResult Delete(string id)
     {
         try
         {
             logger.LogInformation("Delete request received.");
-            copyRepository.DeleteCopy(id);
-            return StatusCode(200, "Object was sucesfully deleted from the datebase.");
+            copyRepository.DeleteCopy(Guid.Parse(id));
+            return Ok("Object was sucesfully deleted from the datebase.");
         }
         catch (Exception e)
         {

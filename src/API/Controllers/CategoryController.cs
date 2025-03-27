@@ -25,7 +25,8 @@ public class CategoryController : ControllerBase
         try
         {
             logger.LogInformation("GetAll request received.");
-            return new JsonResult(categoryRepository.GetAllCategories());
+            var result = categoryRepository.GetAllCategories();
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -36,11 +37,13 @@ public class CategoryController : ControllerBase
     // GET api/<CategoryController>/5
     [HttpGet("{id}")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public IActionResult Get(int id)
+    public IActionResult Get(string id)
     {   
         try
         {
-            return new JsonResult(categoryRepository.GetCategory(id));
+            logger.LogInformation("Get request received.");
+            var result = categoryRepository.GetCategory(Guid.Parse(id));
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -55,8 +58,9 @@ public class CategoryController : ControllerBase
     {
         try
         {
+            logger.LogInformation("Post request received.");
             categoryRepository.CreateCategory(category);
-            return StatusCode(200, "Object was sucesfully added to the datebase.");
+            return Ok("Object was sucesfully added to the datebase.");
         }
         catch (Exception e)
         {
@@ -67,13 +71,14 @@ public class CategoryController : ControllerBase
     // PUT api/<CategoryController>/5
     [HttpPut("{id}")]
     [ApiKey( "Librarian", "Admin")]
-    public IActionResult Put(int id, Category category)
+    public IActionResult Put(string id, Category category)
     {
         try
         {
-            category.Id = id;
+            logger.LogInformation("Put request received.");
+            category.Id = Guid.Parse(id);
             categoryRepository.UpdateCategory(category);
-            return StatusCode(200, "Object was sucesfully updated in the datebase.");
+            return Ok("Object was sucesfully updated in the datebase.");
         }
         catch (Exception e)
         {
@@ -84,12 +89,13 @@ public class CategoryController : ControllerBase
     // DELETE api/<CategoryController>/5
     [HttpDelete("{id}")]
     [ApiKey("Admin")]
-    public IActionResult Delete(int id)
+    public IActionResult Delete(string id)
     {
         try
         {
-            categoryRepository.DeleteCategory(id);
-            return StatusCode(200, "Object was sucesfully deleted from the datebase.");
+            logger.LogInformation("Delete request received.");
+            categoryRepository.DeleteCategory(Guid.Parse(id));
+            return Ok("Object was sucesfully deleted from the datebase.");
         }
         catch (Exception e)
         {

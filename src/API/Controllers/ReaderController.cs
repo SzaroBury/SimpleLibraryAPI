@@ -24,7 +24,8 @@ public class ReaderController : ControllerBase
         try
         {
             logger.LogInformation("GetAll request received.");
-            return new JsonResult(readerRepository.GetReaders());
+            var result = readerRepository.GetReaders();
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -35,12 +36,13 @@ public class ReaderController : ControllerBase
     // GET api/Reader/5
     [HttpGet("{id}")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public IActionResult Get(int id)
+    public IActionResult Get(string id)
     {
         try
         {
             logger.LogInformation("Get request received.");
-            return new JsonResult(readerRepository.GetReader(id));
+            var result = readerRepository.GetReader(Guid.Parse(id));
+            return Ok(result);
         }
         catch (Exception e)
         {
@@ -57,7 +59,7 @@ public class ReaderController : ControllerBase
         {
             logger.LogInformation("Post request received.");
             readerRepository.CreateReader(reader);
-            return StatusCode(200, "Object was sucesfully added to the datebase.");
+            return Ok("Object was sucesfully added to the datebase.");
         }
         catch (Exception e)
         {
@@ -68,14 +70,14 @@ public class ReaderController : ControllerBase
     // PUT api/Reader/5
     [HttpPut("{id}")]
     [ApiKey("Librarian", "Admin")]
-    public IActionResult Put(int id, Reader reader)
+    public IActionResult Put(string id, Reader reader)
     {            
         try
         {
             logger.LogInformation("Put request received.");
-            reader.Id = id;
+            reader.Id = Guid.Parse(id);
             readerRepository.UpdateReader(reader);
-            return StatusCode(200, "Object was sucesfully updated in the datebase.");
+            return Ok("Object was sucesfully updated in the datebase.");
         }
         catch (Exception e)
         {
@@ -86,13 +88,13 @@ public class ReaderController : ControllerBase
     // DELETE api/Reader/5
     [HttpDelete("{id}")]
     [ApiKey("Admin")]
-    public IActionResult Delete(int id)
+    public IActionResult Delete(string id)
     {
         try
         {
             logger.LogInformation("Delete request received.");
-            readerRepository.DeleteReader(id);
-            return StatusCode(200, "Object was sucesfully deleted from the datebase.");
+            readerRepository.DeleteReader(Guid.Parse(id));
+            return Ok("Object was sucesfully deleted from the datebase.");
         }
         catch (Exception e)
         {
