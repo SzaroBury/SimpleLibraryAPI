@@ -21,7 +21,7 @@ public class CopyRepositoryEF : ICopyRepository
         return context.Copies.AsQueryable();
     }
 
-    public Copy GetCopy(int id)
+    public Copy GetCopy(Guid id)
     {
         var copy = context.Copies.FirstOrDefault(c => c.Id == id);
         if (copy == null)
@@ -48,11 +48,11 @@ public class CopyRepositoryEF : ICopyRepository
         {
             throw new KeyNotFoundException();
         }
-        copy.BookId = temp.BookId == 0 ? copy.BookId : temp.BookId;
+        copy.BookId = temp.BookId;
         context.SaveChanges();
     }
 
-    public void DeleteCopy(int id)
+    public void DeleteCopy(Guid id)
     {
         context.Copies.Remove(GetCopy(id));
         context.SaveChanges();

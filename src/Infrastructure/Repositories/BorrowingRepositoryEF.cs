@@ -22,7 +22,7 @@ public class BorrowingRepositoryEF : IBorrowingRepository
         return context.Borrowings.AsQueryable();
     }
 
-    public Borrowing GetBorrowing(int id)
+    public Borrowing GetBorrowing(Guid id)
     {
         var borrowing = context.Borrowings.FirstOrDefault(c => c.Id == id);
         if (borrowing == null)
@@ -52,13 +52,13 @@ public class BorrowingRepositoryEF : IBorrowingRepository
         
         borrowing.StartedDate = temp.StartedDate.Equals(DateTime.MinValue) ? borrowing.StartedDate : temp.StartedDate;
         borrowing.ActualReturnDate = temp.ActualReturnDate.Equals(DateTime.MinValue) ? borrowing.ActualReturnDate : temp.ActualReturnDate;
-        borrowing.CopyId = temp.CopyId == 0 ? borrowing.CopyId : temp.CopyId;
-        borrowing.ReaderId = temp.ReaderId == 0 ? borrowing.ReaderId : temp.ReaderId;
+        borrowing.CopyId = temp.CopyId;
+        borrowing.ReaderId = temp.ReaderId;
 
         context.SaveChanges();
     }
 
-    public void DeleteBorrowing(int id)
+    public void DeleteBorrowing(Guid id)
     {
         context.Borrowings.Remove(GetBorrowing(id));
         context.SaveChanges();
