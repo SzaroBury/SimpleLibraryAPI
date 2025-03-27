@@ -1,3 +1,12 @@
 namespace SimpleLibrary.Domain.DTO;
 
-public record BookPostDTO(string title, string desc, string releaseDate, string language, string tags, int authorId, int categoryId);
+public record BookPostDTO
+(
+    string Title, 
+    string Description, 
+    string ReleaseDate, 
+    string Language, 
+    IEnumerable<string> Tags, 
+    string AuthorId, 
+    string CategoryId
+);

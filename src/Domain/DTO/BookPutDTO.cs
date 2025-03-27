@@ -1,3 +1,13 @@
 namespace SimpleLibrary.Domain.DTO;
 
-public record BookPutDTO(int id, string? title = null, string? desc = null, string? releaseDate = null, string? language = null, string? tags = null, int? authorId = null, int? categoryId = null);
+public record BookPutDTO
+(
+    string Id,
+    string? Title = null, 
+    string? Description = null,
+    string? ReleaseDate = null,
+    string? Language = null,
+    IEnumerable<string>? Tags = null,
+    string? AuthorId = null,
+    string? CategoryId = null
+);
