@@ -19,15 +19,19 @@ public class AuthorService: IAuthorService
         return await authorRepository.GetAllAsync();
     }
 
-    public async Task<Author> GetAuthorByIdAsync(int id)
+    public async Task<Author> GetAuthorByIdAsync(string id)
     {
-        var result = await authorRepository.GetByIdAsync(id);
-        if(result is null)
+        if(!Guid.TryParse(id, out var authorGuid))
         {
-            throw new KeyNotFoundException($"Author with the given id ({id}) is not found in database.");
+            throw new FormatException("Invalid author's id format.");
         }
+        return await GetAuthorByIdAsync(authorGuid);
+    }
 
-        return result;
+    public async Task<Author> GetAuthorByIdAsync(Guid id)
+    {
+        return await authorRepository.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException($"An author with the specified id ({id}) was not found in the system");
     }
 
     public async Task<Author> CreateAuthorAsync(AuthorPostDTO authorDTO)
@@ -71,7 +75,7 @@ public class AuthorService: IAuthorService
     {
         throw new NotImplementedException();
     }
-    public Task DeleteAuthorAsync(int id)
+    public Task DeleteAuthorAsync(string id)
     {
         throw new NotImplementedException();
     }
