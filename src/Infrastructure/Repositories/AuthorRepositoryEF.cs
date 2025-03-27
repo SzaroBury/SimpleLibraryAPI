@@ -22,14 +22,11 @@ public class AuthorRepositoryEF : IAuthorRepository
         return context.Authors.AsQueryable();
     }
 
-    public Author GetAuthor(int id)
+    public Author? GetAuthor(Guid id)
     {
-        Author? author = context.Authors.AsNoTracking().FirstOrDefault(a => a.Id == id);
-
-        if (author is null)
-        {
-            throw new KeyNotFoundException();
-        }
+        Author? author = context.Authors
+            .AsNoTracking()
+            .FirstOrDefault(a => a.Id == id);
 
         return author;
     }
@@ -60,9 +57,13 @@ public class AuthorRepositoryEF : IAuthorRepository
         context.SaveChanges();
     }
 
-    public void DeleteAuthor(int id)
+    public void DeleteAuthor(Guid id)
     {
-        context.Authors.Remove(GetAuthor(id));
-        context.SaveChanges();
+        var author = GetAuthor(id);
+        if(author is not null)
+        {
+            context.Authors.Remove(author);
+            context.SaveChanges();
+        }
     }
 }

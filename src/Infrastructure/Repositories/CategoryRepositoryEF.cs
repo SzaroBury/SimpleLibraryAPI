@@ -21,7 +21,7 @@ public class CategoryRepositoryEF : ICategoryRepository
         return context.Categories.AsQueryable();
     }
     
-    public Category GetCategory(int id)
+    public Category GetCategory(Guid id)
     {
         var category = context.Categories.FirstOrDefault(c => c.Id == id);
         if (category == null)
@@ -51,7 +51,7 @@ public class CategoryRepositoryEF : ICategoryRepository
         context.SaveChanges();
     }
 
-    public void DeleteCategory(int id)
+    public void DeleteCategory(Guid id)
     {
         context.Categories.Remove(GetCategory(id));
         context.SaveChanges();

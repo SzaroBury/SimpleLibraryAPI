@@ -22,9 +22,15 @@ public class BookRepositoryEF : IBookRepository
         return context.Books.AsQueryable();
     }
 
-    public Book GetBook(int id)
+    public Book? GetBook(Guid id)
     {
-        return context.Books.Include(b => b.Author).Include(b => b.Category).AsNoTracking().FirstOrDefault(b => b.Id == id);
+        var result = context.Books
+            .Include(b => b.Author)
+            .Include(b => b.Category)
+            .AsNoTracking()
+            .FirstOrDefault(b => b.Id == id);
+            
+        return result;
     }
 
     public void CreateBook(Book book)
@@ -39,7 +45,7 @@ public class BookRepositoryEF : IBookRepository
         context.SaveChanges();
     }
 
-    public void DeleteBook(int id)
+    public void DeleteBook(Guid id)
     {
         context.Books.Remove(GetBook(id));
         context.SaveChanges();

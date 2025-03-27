@@ -21,7 +21,7 @@ public class ReaderRepositoryEF : IReaderRepository
         return context.Readers.AsQueryable();
     }
 
-    public Reader GetReader(int id)
+    public Reader GetReader(Guid id)
     {
         var reader = context.Readers.FirstOrDefault(c => c.Id == id);
         if (reader == null)
@@ -56,7 +56,7 @@ public class ReaderRepositoryEF : IReaderRepository
         context.SaveChanges();
     }
 
-    public void DeleteReader(int id)
+    public void DeleteReader(Guid id)
     {
         context.Readers.Remove(GetReader(id));
         context.SaveChanges();
