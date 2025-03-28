@@ -1,71 +1,19 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Domain.Repositories;
-using Moq;
+using SimpleLibrary.Application.Services;
 
-namespace SimpleLibrary.Application.Services.Tests;
+namespace SimpleLibrary.Tests.Application.Services;
 
 public class TestAuthorService
 {
+    private readonly Dictionary<string, Guid> guids = DataInitializer.InitializeGuids();
     private readonly Mock<IRepository<Author>> mockAuthorRepository = new();
     private readonly AuthorService authorService;
-    private readonly List<Author> sampleAuthors;
 
     public TestAuthorService()
     {
-        Author sampleAuthor = new() 
-        {  
-            FirstName = "Firstname", 
-            LastName = "Lastname", 
-            Description = "Description", 
-            BornDate = new DateTime(2000, 01, 01),
-            Tags = "Tag1, Tag2"
-        };
-        sampleAuthors =
-        [
-            sampleAuthor,
-            new() { 
-                FirstName = "John", 
-                LastName = "Doe",
-                Description = "Some description of an author",
-                BornDate = new DateTime(1950, 01, 01),
-                Tags = "fantasy, novels"
-            }
-        ];
-
-        mockAuthorRepository
-            .Setup(repo => repo.GetAllAsync())
-            .ReturnsAsync(sampleAuthors);
-
-        mockAuthorRepository
-            .Setup(repo => repo.GetQueryable())
-            .Returns(sampleAuthors.AsQueryable());
-
-        mockAuthorRepository
-            .Setup(repo => repo.GetByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync((Guid id) => sampleAuthor);
-
-        mockAuthorRepository
-            .Setup(repo => repo.UpdateAsync(It.IsAny<Author>()))
-            .Returns((Author author) =>
-            {
-                return Task.CompletedTask;
-            });
-
-        mockAuthorRepository
-            .Setup(repo => repo.DeleteAsync(It.IsAny<Guid>()))
-            .Returns((Guid id) =>
-            {
-                var author = sampleAuthors.Find(a => a.Id == id);
-                if (author == null) 
-                {
-                    return Task.FromException(new KeyNotFoundException($"Author with ID {id} not found."));
-                }
-                
-                sampleAuthors.Remove(author);
-                return Task.CompletedTask;
-            });
-        
+        mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);        
         authorService = new AuthorService(mockAuthorRepository.Object);
     }
 

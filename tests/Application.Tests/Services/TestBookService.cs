@@ -3,29 +3,28 @@ using SimpleLibrary.Domain.Enumerations;
 using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services.Abstraction;
-using Moq;
+using SimpleLibrary.Application.Services;
 
-namespace SimpleLibrary.Application.Services.Tests;
+namespace SimpleLibrary.Tests.Application.Services;
 
 public class TestBookService
 {
-    private readonly Mock<IBookRepository> mockBookRepository = new();
-    private readonly Mock<ICopyRepository> mockCopyRepository = new();
-    private readonly Mock<IBorrowingRepository> mockBorrowingRepository = new();
-    private readonly Mock<IAuthorService> mockAuthorService = new();
-    private readonly Mock<ICategoryRepository> mockCategoryRepository = new();
-    private readonly Mock<IReaderRepository> mockReaderRepository = new();
-    private readonly Dictionary<string, Guid> guids = [];
+    private readonly Dictionary<string, Guid> guids = DataInitializer.InitializeGuids();
+    private readonly Mock<IAuthorService> mockAuthorService;
+    private readonly Mock<ICategoryRepository> mockCategoryRepository;
+    private readonly Mock<IBookRepository> mockBookRepository;
+    private readonly Mock<ICopyRepository> mockCopyRepository;
+    private readonly Mock<IReaderRepository> mockReaderRepository;
+    private readonly Mock<IBorrowingRepository> mockBorrowingRepository;
 
     public TestBookService()
     {   
-        InitializeGuids();
-        InitializeAuthors();
-        InitializeCategories();
-        InitializeBooks().GetAwaiter().GetResult();
-        InitializeCopies();
-        InitializeReaders();
-        InitializeBorrowings();
+        mockAuthorService = DataInitializer.InitializeAuthorService(guids);
+        mockCategoryRepository = DataInitializer.InitializeCategories(guids);
+        mockBookRepository = DataInitializer.InitializeBookRepository(guids, mockAuthorService, mockCategoryRepository).GetAwaiter().GetResult();
+        mockCopyRepository = DataInitializer.InitializeCopies(guids, mockBookRepository);
+        mockReaderRepository = DataInitializer.InitializeReaders(guids);
+        mockBorrowingRepository = DataInitializer.InitializeBorrowings(guids, mockCopyRepository, mockReaderRepository);
     }
 
     #region SearchBooks
