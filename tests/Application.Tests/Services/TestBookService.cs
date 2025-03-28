@@ -13,7 +13,7 @@ public class TestBookService
     private readonly Mock<IRepository<Category>> mockCategoryRepository;
     private readonly Mock<IBookRepository> mockBookRepository;
     private readonly Mock<IRepository<Copy>> mockCopyRepository;
-    private readonly Mock<IReaderRepository> mockReaderRepository;
+    private readonly Mock<IRepository<Reader>> mockReaderRepository;
     private readonly Mock<IRepository<Borrowing>> mockBorrowingRepository;
 
     public TestBookService()
