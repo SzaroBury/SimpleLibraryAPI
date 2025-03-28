@@ -11,13 +11,13 @@ public class BookService: IBookService
     private readonly IBookRepository bookRepository;
     private readonly IAuthorService authorService;
     private readonly ICopyRepository copyRepository;
-    private readonly IBorrowingRepository borrowingRepository;
+    private readonly IRepository<Borrowing> borrowingRepository;
     private readonly ICategoryRepository categoryRepository;
 
     public BookService(IBookRepository bookRepository, 
                         IAuthorService authorService, 
                         ICopyRepository copyRepository, 
-                        IBorrowingRepository borrowingRepository, 
+                        IRepository<Borrowing> borrowingRepository, 
                         ICategoryRepository categoryRepository)
     {
         this.bookRepository = bookRepository;
@@ -195,7 +195,7 @@ public class BookService: IBookService
         foreach(var c in copies)
         {
             bool areThereActiveBorrowings = borrowingRepository
-                .GetBorrowings()
+                .GetQueryable()
                 .Any(bor => bor.CopyId == c 
                     && !bor.ActualReturnDate.HasValue
                 );
@@ -245,7 +245,7 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
         if (isAvailable.HasValue)
         {
             var copies = copyRepository.GetAllCopies(); //??
-            var borrowings = borrowingRepository.GetAllBorrowings(); //??
+            var borrowings = borrowingRepository.GetAllAsync().GetAwaiter().GetResult().ToList(); //??
             if (isAvailable.Value)
             {
                 searchBooksQuery = searchBooksQuery.Where(

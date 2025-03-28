@@ -157,7 +157,7 @@ public static class DataInitializer
         return mockReaderRepository;
     }
 
-    public static Mock<IBorrowingRepository> InitializeBorrowings(
+    public static Mock<IRepository<Borrowing>> InitializeBorrowings(
         Dictionary<string, Guid> guids, 
         Mock<ICopyRepository> mockCopyRepository,
         Mock<IReaderRepository> mockReaderRepository)
@@ -177,16 +177,16 @@ public static class DataInitializer
         Borrowing bor6 = new() { Id = guids["bor6"], Copy = c6, CopyId = guids["b4_c6"], Reader = r1, ReaderId = guids["r"], StartedDate = DateTime.Now.AddDays(-5) };
         List<Borrowing> borrowings = [bor1, bor2, bor3, bor4, bor5, bor6];
 
-        Mock<IBorrowingRepository> mockBorrowingRepository = new();
-        mockBorrowingRepository.Setup(repo => repo.GetAllBorrowings()).Returns(borrowings);
-        mockBorrowingRepository.Setup(repo => repo.GetBorrowings()).Returns(borrowings.AsQueryable());
-        mockBorrowingRepository.Setup(repo => repo.GetBorrowing(guids["bor1"])).Returns(bor1);
-        mockBorrowingRepository.Setup(repo => repo.GetBorrowing(guids["bor2"])).Returns(bor2);
-        mockBorrowingRepository.Setup(repo => repo.GetBorrowing(guids["bor3"])).Returns(bor3);
-        mockBorrowingRepository.Setup(repo => repo.GetBorrowing(guids["bor4"])).Returns(bor4);
-        mockBorrowingRepository.Setup(repo => repo.GetBorrowing(guids["bor5"])).Returns(bor5);
-        mockBorrowingRepository.Setup(repo => repo.GetBorrowing(guids["bor6"])).Returns(bor6);
-
+        Mock<IRepository<Borrowing>> mockBorrowingRepository = new();
+        mockBorrowingRepository.Setup(repo => repo.GetAllAsync()).ReturnsAsync(borrowings);
+        mockBorrowingRepository.Setup(repo => repo.GetQueryable()).Returns(borrowings.AsQueryable());
+        mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor1"])).ReturnsAsync(bor1);
+        mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor2"])).ReturnsAsync(bor2);
+        mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor3"])).ReturnsAsync(bor3);
+        mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor4"])).ReturnsAsync(bor4);
+        mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor5"])).ReturnsAsync(bor5);
+        mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor6"])).ReturnsAsync(bor6);
+        
         return mockBorrowingRepository;
     }
 }
