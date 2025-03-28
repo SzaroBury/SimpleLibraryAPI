@@ -10,7 +10,7 @@ public class TestBookService
 {
     private readonly Dictionary<string, Guid> guids = DataInitializer.InitializeGuids();
     private readonly Mock<IAuthorService> mockAuthorService;
-    private readonly Mock<ICategoryRepository> mockCategoryRepository;
+    private readonly Mock<IRepository<Category>> mockCategoryRepository;
     private readonly Mock<IBookRepository> mockBookRepository;
     private readonly Mock<ICopyRepository> mockCopyRepository;
     private readonly Mock<IReaderRepository> mockReaderRepository;

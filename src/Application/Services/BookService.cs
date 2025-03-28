@@ -12,13 +12,13 @@ public class BookService: IBookService
     private readonly IAuthorService authorService;
     private readonly ICopyRepository copyRepository;
     private readonly IRepository<Borrowing> borrowingRepository;
-    private readonly ICategoryRepository categoryRepository;
+    private readonly IRepository<Category> categoryRepository;
 
     public BookService(IBookRepository bookRepository, 
                         IAuthorService authorService, 
                         ICopyRepository copyRepository, 
                         IRepository<Borrowing> borrowingRepository, 
-                        ICategoryRepository categoryRepository)
+                        IRepository<Category> categoryRepository)
     {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
@@ -65,7 +65,7 @@ public class BookService: IBookService
         {
             throw new FormatException("Invalid category's id format.");
         }
-        var category = categoryRepository.GetCategory(categoryGuid) 
+        var category = await categoryRepository.GetByIdAsync(categoryGuid) 
             ?? throw new ArgumentException("Category with the given id is not present in the system.");
 
         var author = await authorService.GetAuthorByIdAsync(book.AuthorId);
@@ -161,7 +161,7 @@ public class BookService: IBookService
                 throw new FormatException("Invalid category's id format.");
             }
 
-            var category = categoryRepository.GetCategory(categoryGuid)
+            var category = await categoryRepository.GetByIdAsync(categoryGuid)
                 ?? throw new ArgumentException("Category with the given id is not present in the system.");
                 
             existingBook.Category = category;
@@ -299,7 +299,7 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
                 throw new FormatException("Invalid category's id format.");
             }
             
-            var category = categoryRepository.GetCategory(categoryGuid)
+            var category = await categoryRepository.GetByIdAsync(categoryGuid)
                 ?? throw new KeyNotFoundException($"A category with the specified id ({categoryId}) was not found in the system.");
 
             searchBooksQuery = searchBooksQuery.Where(b => b.CategoryId == categoryGuid);

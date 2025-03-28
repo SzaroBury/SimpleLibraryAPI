@@ -68,30 +68,30 @@ public static class DataInitializer
         return mockAuthorService;
     }
 
-    public static Mock<ICategoryRepository> InitializeCategories(Dictionary<string, Guid> guids)
+    public static Mock<IRepository<Category>> InitializeCategories(Dictionary<string, Guid> guids)
     {
         Category c1 = new() { Id = guids["c1"], Name = "Novel" };
         Category c2 = new() { Id = guids["c2"], Name = "Other" };
         List<Category> categories = [c1, c2];
 
-        Mock<ICategoryRepository> mockCategoryRepository = new();
-        mockCategoryRepository.Setup(repo => repo.GetAllCategories()).Returns(categories);
-        mockCategoryRepository.Setup(repo => repo.GetCategories()).Returns(categories.AsQueryable());
-        mockCategoryRepository.Setup(repo => repo.GetCategory(guids["c1"])).Returns(c1);
-        mockCategoryRepository.Setup(repo => repo.GetCategory(guids["c2"])).Returns(c2);
+        Mock<IRepository<Category>> mockCategoryRepository = new();
+        mockCategoryRepository.Setup(repo => repo.GetAllAsync()).ReturnsAsync(categories);
+        mockCategoryRepository.Setup(repo => repo.GetQueryable()).Returns(categories.AsQueryable());
+        mockCategoryRepository.Setup(repo => repo.GetByIdAsync(guids["c1"])).ReturnsAsync(c1);
+        mockCategoryRepository.Setup(repo => repo.GetByIdAsync(guids["c2"])).ReturnsAsync(c2);
         return mockCategoryRepository;
     }
 
     public static async Task<Mock<IBookRepository>> InitializeBookRepository(
         Dictionary<string, Guid> guids, 
-        Mock<IAuthorService> mockAuthorRepository, 
-        Mock<ICategoryRepository> mockCategoryRepository)
+        Mock<IAuthorService> mockAuthorService, 
+        Mock<IRepository<Category>> mockCategoryRepository)
     {
-        var a1 = await mockAuthorRepository.Object.GetAuthorByIdAsync(guids["a1"]);
-        var a2 = await mockAuthorRepository.Object.GetAuthorByIdAsync(guids["a1"]);
-        var a3 = await mockAuthorRepository.Object.GetAuthorByIdAsync(guids["a1"]);
-        Category c1 = mockCategoryRepository.Object.GetCategory(guids["c1"]) ?? throw new KeyNotFoundException("Category c1 not found.");
-        Category c2 = mockCategoryRepository.Object.GetCategory(guids["c2"]) ?? throw new KeyNotFoundException("Category c2 not found.");
+        var a1 = await mockAuthorService.Object.GetAuthorByIdAsync(guids["a1"]);
+        var a2 = await mockAuthorService.Object.GetAuthorByIdAsync(guids["a1"]);
+        var a3 = await mockAuthorService.Object.GetAuthorByIdAsync(guids["a1"]);
+        var c1 = await mockCategoryRepository.Object.GetByIdAsync(guids["c1"]) ?? throw new KeyNotFoundException("Category c1 not found.");
+        var c2 = await mockCategoryRepository.Object.GetByIdAsync(guids["c2"]) ?? throw new KeyNotFoundException("Category c2 not found.");
 
         Book b1 = new() { Id = guids["b1"], Title = "Some old book", Author = a1, AuthorId = guids["a1"], Category = c1, CategoryId = guids["c1"], Language = Language.English, ReleaseDate = new DateTime(1900, 1, 1) };
         Book b2 = new() { Id = guids["b2"], Title = "Some old German book", Author = a1, AuthorId = guids["a1"], Category = c1, CategoryId = guids["c1"], Language = Language.German, ReleaseDate = new DateTime(1800, 1, 1) };
@@ -186,7 +186,7 @@ public static class DataInitializer
         mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor4"])).ReturnsAsync(bor4);
         mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor5"])).ReturnsAsync(bor5);
         mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor6"])).ReturnsAsync(bor6);
-        
+
         return mockBorrowingRepository;
     }
 }
