@@ -18,11 +18,9 @@ builder.Services.AddDbContext<LibraryEFContext>(options =>
 //    options.User.RequireUniqueEmail = true;
 //}).AddEntityFrameworkStores<IdentityContext>();
 
+builder.Services.AddScoped(typeof(IRepository<>),   typeof(Repository<>));
 builder.Services.AddScoped<IAuthorRepository,   AuthorRepositoryEF>();
 builder.Services.AddScoped<IBookRepository,     BookRepositoryEF>();
-builder.Services.AddScoped<IBorrowingRepository,BorrowingRepositoryEF>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepositoryEF>();
-builder.Services.AddScoped<ICopyRepository,     CopyRepositoryEF>();
 builder.Services.AddScoped<IReaderRepository,   ReaderRepositoryEF>();
 builder.Services.AddScoped<IBookService, BookService>();
 

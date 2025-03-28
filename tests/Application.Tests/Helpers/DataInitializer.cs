@@ -82,7 +82,7 @@ public static class DataInitializer
         return mockCategoryRepository;
     }
 
-    public static async Task<Mock<IBookRepository>> InitializeBookRepository(
+    public static async Task<Mock<IBookRepository>> InitializeBookRepositoryAsync(
         Dictionary<string, Guid> guids, 
         Mock<IAuthorService> mockAuthorService, 
         Mock<IRepository<Category>> mockCategoryRepository)
@@ -114,7 +114,7 @@ public static class DataInitializer
         return mockBookRepository;
     }
 
-    public static Mock<ICopyRepository> InitializeCopies(
+    public static Mock<IRepository<Copy>> InitializeCopies(
         Dictionary<string, Guid> guids, 
         Mock<IBookRepository> mockBookRepository)
     {
@@ -131,15 +131,15 @@ public static class DataInitializer
         Copy c6 = new() { Id = guids["b4_c6"], Book = b4, BookId = guids["b4"] };
         List<Copy> copies = [c1, c2, c3, c4, c5, c6];
 
-        Mock<ICopyRepository> mockCopyRepository = new();
-        mockCopyRepository.Setup(repo => repo.GetAllCopies()).Returns(copies);
-        mockCopyRepository.Setup(repo => repo.GetCopies()).Returns(copies.AsQueryable());
-        mockCopyRepository.Setup(repo => repo.GetCopy(guids["b1_c1"])).Returns(c1);
-        mockCopyRepository.Setup(repo => repo.GetCopy(guids["b1_c2"])).Returns(c2);
-        mockCopyRepository.Setup(repo => repo.GetCopy(guids["b2_c3"])).Returns(c3);
-        mockCopyRepository.Setup(repo => repo.GetCopy(guids["b2_c4"])).Returns(c4);
-        mockCopyRepository.Setup(repo => repo.GetCopy(guids["b3_c5"])).Returns(c5);
-        mockCopyRepository.Setup(repo => repo.GetCopy(guids["b4_c6"])).Returns(c6);
+        Mock<IRepository<Copy>> mockCopyRepository = new();
+        mockCopyRepository.Setup(repo => repo.GetAllAsync()).ReturnsAsync(copies);
+        mockCopyRepository.Setup(repo => repo.GetQueryable()).Returns(copies.AsQueryable());
+        mockCopyRepository.Setup(repo => repo.GetByIdAsync(guids["b1_c1"])).ReturnsAsync(c1);
+        mockCopyRepository.Setup(repo => repo.GetByIdAsync(guids["b1_c2"])).ReturnsAsync(c2);
+        mockCopyRepository.Setup(repo => repo.GetByIdAsync(guids["b2_c3"])).ReturnsAsync(c3);
+        mockCopyRepository.Setup(repo => repo.GetByIdAsync(guids["b2_c4"])).ReturnsAsync(c4);
+        mockCopyRepository.Setup(repo => repo.GetByIdAsync(guids["b3_c5"])).ReturnsAsync(c5);
+        mockCopyRepository.Setup(repo => repo.GetByIdAsync(guids["b4_c6"])).ReturnsAsync(c6);
 
         return mockCopyRepository;
     }
@@ -157,17 +157,17 @@ public static class DataInitializer
         return mockReaderRepository;
     }
 
-    public static Mock<IRepository<Borrowing>> InitializeBorrowings(
+    public async static Task<Mock<IRepository<Borrowing>>> InitializeBorrowingsAsync(
         Dictionary<string, Guid> guids, 
-        Mock<ICopyRepository> mockCopyRepository,
+        Mock<IRepository<Copy>> mockCopyRepository,
         Mock<IReaderRepository> mockReaderRepository)
     {
-        Copy c1 = mockCopyRepository.Object.GetCopy(guids["b1_c1"]) ?? throw new KeyNotFoundException("Copy c1 not found.");
-        Copy c2 = mockCopyRepository.Object.GetCopy(guids["b1_c2"]) ?? throw new KeyNotFoundException("Copy c2 not found.");
-        Copy c3 = mockCopyRepository.Object.GetCopy(guids["b2_c3"]) ?? throw new KeyNotFoundException("Copy c3 not found.");
-        Copy c5 = mockCopyRepository.Object.GetCopy(guids["b3_c5"]) ?? throw new KeyNotFoundException("Copy c5 not found.");
-        Copy c6 = mockCopyRepository.Object.GetCopy(guids["b4_c6"]) ?? throw new KeyNotFoundException("Copy c6 not found.");
-        Reader r1 = mockReaderRepository.Object.GetReader(guids["r"]) ?? throw new KeyNotFoundException("Reader r1 not found.");
+        var c1 = await mockCopyRepository.Object.GetByIdAsync(guids["b1_c1"]) ?? throw new KeyNotFoundException("Copy c1 not found.");
+        var c2 = await mockCopyRepository.Object.GetByIdAsync(guids["b1_c2"]) ?? throw new KeyNotFoundException("Copy c2 not found.");
+        var c3 = await mockCopyRepository.Object.GetByIdAsync(guids["b2_c3"]) ?? throw new KeyNotFoundException("Copy c3 not found.");
+        var c5 = await mockCopyRepository.Object.GetByIdAsync(guids["b3_c5"]) ?? throw new KeyNotFoundException("Copy c5 not found.");
+        var c6 = await mockCopyRepository.Object.GetByIdAsync(guids["b4_c6"]) ?? throw new KeyNotFoundException("Copy c6 not found.");
+        var r1 = mockReaderRepository.Object.GetReader(guids["r"]) ?? throw new KeyNotFoundException("Reader r1 not found.");
 
         Borrowing bor1 = new() { Id = guids["bor1"], Copy = c1, CopyId = guids["b1_c1"], Reader = r1, ReaderId = guids["r"], StartedDate = DateTime.Now.AddDays(-5) };
         Borrowing bor2 = new() { Id = guids["bor2"], Copy = c2, CopyId = guids["b1_c2"], Reader = r1, ReaderId = guids["r"], StartedDate = DateTime.Now.AddDays(-5) };

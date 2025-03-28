@@ -10,13 +10,13 @@ public class BookService: IBookService
 {
     private readonly IBookRepository bookRepository;
     private readonly IAuthorService authorService;
-    private readonly ICopyRepository copyRepository;
+    private readonly IRepository<Copy> copyRepository;
     private readonly IRepository<Borrowing> borrowingRepository;
     private readonly IRepository<Category> categoryRepository;
 
     public BookService(IBookRepository bookRepository, 
                         IAuthorService authorService, 
-                        ICopyRepository copyRepository, 
+                        IRepository<Copy> copyRepository, 
                         IRepository<Borrowing> borrowingRepository, 
                         IRepository<Category> categoryRepository)
     {
@@ -187,7 +187,7 @@ public class BookService: IBookService
     {     
         Book book = await GetBookByIdAsync(id);
 
-        var copies = copyRepository.GetCopies()
+        var copies = copyRepository.GetQueryable()
             .Where(c => c.BookId == book.Id)
             .Select(c => c.Id)
             .ToList();
@@ -203,7 +203,7 @@ public class BookService: IBookService
             {
                 throw new InvalidOperationException("The book cannot be deleted. There are still active borrowings in the system.");
             }
-            copyRepository.DeleteCopy(c);
+            await copyRepository.DeleteAsync(c);
         }
 
         bookRepository.DeleteBook(book.Id);
@@ -244,7 +244,7 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
 
         if (isAvailable.HasValue)
         {
-            var copies = copyRepository.GetAllCopies(); //??
+            var copies = copyRepository.GetAllAsync().GetAwaiter().GetResult().ToList(); //??
             var borrowings = borrowingRepository.GetAllAsync().GetAwaiter().GetResult().ToList(); //??
             if (isAvailable.Value)
             {

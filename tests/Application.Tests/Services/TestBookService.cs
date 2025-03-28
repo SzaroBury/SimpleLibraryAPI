@@ -12,7 +12,7 @@ public class TestBookService
     private readonly Mock<IAuthorService> mockAuthorService;
     private readonly Mock<IRepository<Category>> mockCategoryRepository;
     private readonly Mock<IBookRepository> mockBookRepository;
-    private readonly Mock<ICopyRepository> mockCopyRepository;
+    private readonly Mock<IRepository<Copy>> mockCopyRepository;
     private readonly Mock<IReaderRepository> mockReaderRepository;
     private readonly Mock<IRepository<Borrowing>> mockBorrowingRepository;
 
@@ -20,10 +20,10 @@ public class TestBookService
     {   
         mockAuthorService = DataInitializer.InitializeAuthorService(guids);
         mockCategoryRepository = DataInitializer.InitializeCategories(guids);
-        mockBookRepository = DataInitializer.InitializeBookRepository(guids, mockAuthorService, mockCategoryRepository).GetAwaiter().GetResult();
+        mockBookRepository = DataInitializer.InitializeBookRepositoryAsync(guids, mockAuthorService, mockCategoryRepository).GetAwaiter().GetResult();
         mockCopyRepository = DataInitializer.InitializeCopies(guids, mockBookRepository);
         mockReaderRepository = DataInitializer.InitializeReaders(guids);
-        mockBorrowingRepository = DataInitializer.InitializeBorrowings(guids, mockCopyRepository, mockReaderRepository);
+        mockBorrowingRepository = DataInitializer.InitializeBorrowingsAsync(guids, mockCopyRepository, mockReaderRepository).GetAwaiter().GetResult();
     }
 
     #region SearchBooks
