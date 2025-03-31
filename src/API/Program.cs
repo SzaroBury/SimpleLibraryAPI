@@ -19,9 +19,8 @@ builder.Services.AddDbContext<LibraryEFContext>(options =>
 //}).AddEntityFrameworkStores<IdentityContext>();
 
 builder.Services.AddScoped(typeof(IRepository<>),   typeof(Repository<>));
-builder.Services.AddScoped<IAuthorRepository,   AuthorRepositoryEF>();
-builder.Services.AddScoped<IBookRepository,     BookRepositoryEF>();
 builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IAuthorService, AuthorService>();
 
 builder.Services.AddControllers().AddJsonOptions(x =>
 {
