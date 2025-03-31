@@ -66,7 +66,7 @@ public class AuthorService: IAuthorService
 
         return newAuthor;
     }
-    public async Task<Author> UpdateAuthorAsync(string id, AuthorPostDTO author)
+    public async Task<Author> UpdateAuthorAsync(string id, AuthorPutDTO author)
     {
         Author existingAuthor = await GetAuthorByIdAsync(id);
 
@@ -86,7 +86,7 @@ public class AuthorService: IAuthorService
             }
             existingAuthor.LastName = author.LastName;
         }
-        if(author.BornDate is not null)
+        if(author.Description is not null)
         {
             existingAuthor.Description = author.Description;
         }

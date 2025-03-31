@@ -9,7 +9,7 @@ public interface IAuthorService
     Task<Author> GetAuthorByIdAsync(string id);
     Task<Author> GetAuthorByIdAsync(Guid id);
     Task<Author> CreateAuthorAsync(AuthorPostDTO author);
-    Task<Author> UpdateAuthorAsync(string id, AuthorPostDTO author);
+    Task<Author> UpdateAuthorAsync(string id, AuthorPutDTO author);
     Task DeleteAuthorAsync(string id);
     Task<IEnumerable<Author>> SearchAuthorsAsync(
         string? searchTerm = null, 

@@ -160,9 +160,9 @@ public class TestAuthorService
     [Fact]
     public async Task UpdateAuthorAsync_ChangingNamesForExistingId_UpdatesNotNullMembersOfAuthor()
     {
-        var updatedAuthor = new Author { FirstName = "Updated", LastName = "Name" };
+        var updatedAuthor = new AuthorPutDTO("Updated", "Name");
 
-        var result = await authorService.UpdateAuthorAsync(updatedAuthor);
+        var result = await authorService.UpdateAuthorAsync(guids["a2"].ToString(), updatedAuthor);
 
         Assert.NotNull(result);
         // Assert.Equal(2, result.Id);
@@ -176,9 +176,9 @@ public class TestAuthorService
     [Fact]
     public async Task UpdateAuthorAsync_ChangingBirthDateForExistingId_UpdatesNotNullMembersOfAuthor()
     {
-        var updatedAuthor = new Author { BornDate = new DateTime(1949, 12, 31) };
+        var updatedAuthor = new AuthorPutDTO(BornDate: "1949-12-31");
 
-        var result = await authorService.UpdateAuthorAsync(updatedAuthor);
+        var result = await authorService.UpdateAuthorAsync(guids["a2"].ToString(), updatedAuthor);
 
         Assert.NotNull(result);
         // Assert.Equal(0, result.Id);
@@ -192,10 +192,10 @@ public class TestAuthorService
     [Fact]
     public async Task UpdateAuthorAsync_NonExistingId_ThrowsKeyNotFoundException()
     {
-        var updatedAuthor = new Author { FirstName = "Ghost", LastName = "Writer" };
+        var updatedAuthor = new AuthorPutDTO { FirstName = "Ghost", LastName = "Writer" };
 
         var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => 
-            authorService.UpdateAuthorAsync(updatedAuthor)
+            authorService.UpdateAuthorAsync(Guid.Empty.ToString(), updatedAuthor)
         );
 
         Assert.Equal("Author with ID 99 not found.", exception.Message);
