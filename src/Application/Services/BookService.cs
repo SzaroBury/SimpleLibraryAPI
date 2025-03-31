@@ -8,13 +8,13 @@ namespace SimpleLibrary.Application.Services;
 
 public class BookService: IBookService
 {
-    private readonly IBookRepository bookRepository;
+    private readonly IRepository<Book> bookRepository;
     private readonly IAuthorService authorService;
     private readonly IRepository<Copy> copyRepository;
     private readonly IRepository<Borrowing> borrowingRepository;
     private readonly IRepository<Category> categoryRepository;
 
-    public BookService(IBookRepository bookRepository, 
+    public BookService(IRepository<Book> bookRepository, 
                         IAuthorService authorService, 
                         IRepository<Copy> copyRepository, 
                         IRepository<Borrowing> borrowingRepository, 
@@ -27,24 +27,21 @@ public class BookService: IBookService
         this.categoryRepository = categoryRepository;
     }
 
-    public Task<IEnumerable<Book>> GetAllBooksAsync()
+    public async Task<IEnumerable<Book>> GetAllBooksAsync()
     {
-        return Task.FromResult(bookRepository.GetAllBooks().AsEnumerable());
+        return await bookRepository.GetAllAsync();
     }
     public Task<Book> GetBookByIdAsync(string id)
     {
-        if(!Guid.TryParse(id, out var bookGuid))
-        {
-            throw new FormatException("Invalid book's id format.");
-        }
+        var bookGuid = ValidateGuid(id);
         return GetBookByIdAsync(bookGuid);
     }
-    public Task<Book> GetBookByIdAsync(Guid id)
+    public async Task<Book> GetBookByIdAsync(Guid id)
     {
-        var result = bookRepository.GetBook(id) 
+        var result = await bookRepository.GetByIdAsync(id) 
             ?? throw new KeyNotFoundException($"A book with the specified id ({id}) was not found in the system.");
 
-        return Task.FromResult(result);
+        return result;
     }
     public async Task<Book> CreateBookAsync(BookPostDTO book)
     {
@@ -78,7 +75,7 @@ public class BookService: IBookService
             ? string.Join(',', book.Tags.Select(t => t.ToLower())) 
             : book.Tags.First() ?? "";
 
-        bool isThereSimilarBook = bookRepository.GetBooks()
+        bool isThereSimilarBook = bookRepository.GetQueryable()
             .Any(b => b.Title.ToLower() == book.Title.ToLower() 
                 && b.AuthorId == author.Id
             );
@@ -100,7 +97,7 @@ public class BookService: IBookService
             Tags = tagsInString,
         };
 
-        bookRepository.CreateBook(newBook);
+        await bookRepository.AddAsync(newBook);
         return newBook;
     }
     public async Task<Book> UpdateBookAsync(BookPutDTO book)
@@ -168,7 +165,7 @@ public class BookService: IBookService
             existingBook.CategoryId = categoryGuid;
         }
 
-        bool isThereSimilarBook = bookRepository.GetBooks()
+        bool isThereSimilarBook = bookRepository.GetQueryable()
             .Any(b => b.Id != existingBook.Id 
                 && b.Title.ToLower() == existingBook.Title.ToLower()
                 && b.AuthorId == existingBook.AuthorId
@@ -179,7 +176,7 @@ public class BookService: IBookService
             throw new InvalidOperationException("There is already a similar book in the system.");
         }
 
-        bookRepository.UpdateBook(existingBook);
+        await bookRepository.UpdateAsync(existingBook);
 
         return existingBook;
     }
@@ -206,7 +203,7 @@ public class BookService: IBookService
             await copyRepository.DeleteAsync(c);
         }
 
-        bookRepository.DeleteBook(book.Id);
+        await bookRepository.DeleteAsync(book.Id);
     }
 
 public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null, 
@@ -224,15 +221,17 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
             throw new ArgumentOutOfRangeException("Page and size of a page must be a positive number.");
         }
 
-        var searchBooksQuery = bookRepository.GetBooks();
+        var searchBooksQuery = bookRepository.GetQueryable();
+        var searchBooksResult = searchBooksQuery.ToList();
+        
         if (!string.IsNullOrEmpty(searchTerm))
         {
             searchBooksQuery = searchBooksQuery.Where(b =>
                 b.Title.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || b.Description.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || b.Tags.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
-                || b.Language.ToString()!.ToLower().Contains(searchTerm.ToLower())
-                || b.Author!.FirstName.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Language.ToString().ToLower().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || b.Author.FirstName.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || b.Author.LastName.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || b.Author.Description.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || b.Author.Tags.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
@@ -240,7 +239,9 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
                 || b.Category.Description.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || b.Category.Tags.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
             );
+            searchBooksResult = searchBooksQuery.ToList();
         }
+
 
         if (isAvailable.HasValue)
         {
@@ -266,6 +267,7 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
                     )
                 );
             }
+            searchBooksResult = searchBooksQuery.ToList();
         }
 
         if (!string.IsNullOrEmpty(olderThan))
@@ -275,6 +277,7 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
                 throw new FormatException("Invalid date format of olderThan parameter. Please use the following format: YYYY-MM-DD");
             }
             searchBooksQuery = searchBooksQuery.Where(b => b.ReleaseDate <= olderThanDate);
+            searchBooksResult = searchBooksQuery.ToList();
         }
 
         if (!string.IsNullOrEmpty(newerThan))
@@ -284,12 +287,14 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
                 throw new FormatException("Invalid date format of newerThan parameter. Please use the following format: YYYY-MM-DD");
             }
             searchBooksQuery = searchBooksQuery.Where(b => b.ReleaseDate >= newerThanDate);
+            searchBooksResult = searchBooksQuery.ToList();
         }
 
         if (!string.IsNullOrEmpty(authorId))
         {
             var author = await authorService.GetAuthorByIdAsync(authorId);
             searchBooksQuery = searchBooksQuery.Where(b => b.AuthorId == author.Id);
+            searchBooksResult = searchBooksQuery.ToList();
         }
 
         if (!string.IsNullOrEmpty(categoryId))
@@ -303,6 +308,7 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
                 ?? throw new KeyNotFoundException($"A category with the specified id ({categoryId}) was not found in the system.");
 
             searchBooksQuery = searchBooksQuery.Where(b => b.CategoryId == categoryGuid);
+            searchBooksResult = searchBooksQuery.ToList();
         }
 
         var count = searchBooksQuery.Count();
@@ -313,8 +319,17 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
         }
 
         searchBooksQuery = searchBooksQuery.Skip((page - 1) * pageSize);
-        searchBooksQuery = searchBooksQuery.Count() > pageSize ? searchBooksQuery.Take(pageSize) : searchBooksQuery;
+        searchBooksQuery = count > pageSize ? searchBooksQuery.Take(pageSize) : searchBooksQuery;
 
         return searchBooksQuery.ToList();
+    }
+
+    private static Guid ValidateGuid(string id)
+    {
+        if(!Guid.TryParse(id, out var bookGuid))
+        {
+            throw new FormatException("Invalid ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
+        }
+        return bookGuid;
     }
 }

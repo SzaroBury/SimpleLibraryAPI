@@ -88,8 +88,8 @@ public static class DataInitializer
         Mock<IRepository<Category>> mockCategoryRepository)
     {
         var a1 = await mockAuthorRepository.Object.GetByIdAsync(guids["a1"]) ?? throw new KeyNotFoundException("Author a1 not found.");
-        var a2 = await mockAuthorRepository.Object.GetByIdAsync(guids["a1"]) ?? throw new KeyNotFoundException("Author a2 not found.");
-        var a3 = await mockAuthorRepository.Object.GetByIdAsync(guids["a1"]) ?? throw new KeyNotFoundException("Author a3 not found.");
+        var a2 = await mockAuthorRepository.Object.GetByIdAsync(guids["a2"]) ?? throw new KeyNotFoundException("Author a2 not found.");
+        var a3 = await mockAuthorRepository.Object.GetByIdAsync(guids["a3"]) ?? throw new KeyNotFoundException("Author a3 not found.");
         var c1 = await mockCategoryRepository.Object.GetByIdAsync(guids["c1"]) ?? throw new KeyNotFoundException("Category c1 not found.");
         var c2 = await mockCategoryRepository.Object.GetByIdAsync(guids["c2"]) ?? throw new KeyNotFoundException("Category c2 not found.");
 
@@ -114,14 +114,14 @@ public static class DataInitializer
         return mockBookRepository;
     }
 
-    public static Mock<IRepository<Copy>> InitializeCopies(
+    public async static Task<Mock<IRepository<Copy>>> InitializeCopies(
         Dictionary<string, Guid> guids, 
-        Mock<IBookRepository> mockBookRepository)
+        Mock<IRepository<Book>> mockBookRepository)
     {
-        Book b1 = mockBookRepository.Object.GetBook(guids["b1"]) ?? throw new KeyNotFoundException("Book b1 not found.");
-        Book b2 = mockBookRepository.Object.GetBook(guids["b2"]) ?? throw new KeyNotFoundException("Book b2 not found.");
-        Book b3 = mockBookRepository.Object.GetBook(guids["b3"]) ?? throw new KeyNotFoundException("Book b3 not found.");
-        Book b4 = mockBookRepository.Object.GetBook(guids["b4"]) ?? throw new KeyNotFoundException("Book b4 not found.");
+        Book b1 = await mockBookRepository.Object.GetByIdAsync(guids["b1"]) ?? throw new KeyNotFoundException("Book b1 not found.");
+        Book b2 = await mockBookRepository.Object.GetByIdAsync(guids["b2"]) ?? throw new KeyNotFoundException("Book b2 not found.");
+        Book b3 = await mockBookRepository.Object.GetByIdAsync(guids["b3"]) ?? throw new KeyNotFoundException("Book b3 not found.");
+        Book b4 = await mockBookRepository.Object.GetByIdAsync(guids["b4"]) ?? throw new KeyNotFoundException("Book b4 not found.");
 
         Copy c1 = new() { Id = guids["b1_c1"], Book = b1, BookId = guids["b1"] };
         Copy c2 = new() { Id = guids["b1_c2"], Book = b1, BookId = guids["b1"] };

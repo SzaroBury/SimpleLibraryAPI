@@ -9,30 +9,26 @@ namespace SimpleLibrary.Tests.Application.Services;
 public class TestBookService
 {
     private readonly Dictionary<string, Guid> guids = DataInitializer.InitializeGuids();
-    private readonly Mock<IAuthorService> mockAuthorService;
-    private readonly Mock<IRepository<Category>> mockCategoryRepository;
-    private readonly Mock<IBookRepository> mockBookRepository;
-    private readonly Mock<IRepository<Copy>> mockCopyRepository;
-    private readonly Mock<IRepository<Reader>> mockReaderRepository;
-    private readonly Mock<IRepository<Borrowing>> mockBorrowingRepository;
+    private readonly Mock<IRepository<Book>> mockBookRepository;
+    private readonly BookService bookService;
 
     public TestBookService()
     {   
-        mockAuthorService = DataInitializer.InitializeAuthorService(guids);
-        mockCategoryRepository = DataInitializer.InitializeCategories(guids);
-        mockBookRepository = DataInitializer.InitializeBookRepositoryAsync(guids, mockAuthorService, mockCategoryRepository).GetAwaiter().GetResult();
-        mockCopyRepository = DataInitializer.InitializeCopies(guids, mockBookRepository);
-        mockReaderRepository = DataInitializer.InitializeReaders(guids);
-        mockBorrowingRepository = DataInitializer.InitializeBorrowingsAsync(guids, mockCopyRepository, mockReaderRepository).GetAwaiter().GetResult();
+        Mock<IRepository<Author>> mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);
+        Mock<IAuthorService> mockAuthorService = DataInitializer.InitializeAuthorService(guids);
+        Mock<IRepository<Category>> mockCategoryRepository = DataInitializer.InitializeCategories(guids);
+        mockBookRepository = DataInitializer.InitializeBookRepositoryAsync(guids, mockAuthorRepository, mockCategoryRepository).GetAwaiter().GetResult();
+        Mock<IRepository<Copy>> mockCopyRepository = DataInitializer.InitializeCopies(guids, mockBookRepository).GetAwaiter().GetResult();
+        Mock<IRepository<Reader>> mockReaderRepository = DataInitializer.InitializeReaders(guids);
+        Mock<IRepository<Borrowing>> mockBorrowingRepository = DataInitializer.InitializeBorrowingsAsync(guids, mockCopyRepository, mockReaderRepository).GetAwaiter().GetResult();
+
+        bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
     }
 
     #region SearchBooks
     [Fact]
     public async Task SearchBooks_NoFilters_ReturnsAllBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync();
 
@@ -51,9 +47,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_SearchSome_ReturnsCertainBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(searchTerm: "Some");
 
@@ -70,9 +63,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_SearchMickiewicz_ReturnsCertainBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(searchTerm: "Mickiewicz");
 
@@ -87,9 +77,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_SearchNovel_ReturnsCertainBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(searchTerm: "Novel");
 
@@ -105,9 +92,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_SearchTomato_ReturnsEmptyList()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(searchTerm: "Tomato");
 
@@ -120,9 +104,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_OnlyAvailable_ReturnsCertainBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(isAvailable: true);
 
@@ -137,9 +118,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_OnlyNotAvailable_ReturnsCertainBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(isAvailable: false);
 
@@ -156,9 +134,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_OlderThan_ReturnsCertainBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(olderThan: "1900-01-01");
 
@@ -175,9 +150,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_InvalidFormatOfOlderThan_ThrowsFormatException()
     {
-        //Arrange 
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act && Assert
         await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(olderThan: "123"));
         await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(olderThan: "test"));
@@ -186,9 +158,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_NewerThan_ReturnsCertainBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(newerThan: "1900-01-01");
 
@@ -204,9 +173,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_InvalidFormatOfNewerThan_ThrowsFormatException()
     {
-        //Arrange 
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act && Assert
         await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(newerThan: "123"));
         await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(newerThan: "test"));
@@ -215,9 +181,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_ByExistingAuthor_ReturnsCertainBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(authorId: guids["a2"].ToString());
 
@@ -232,9 +195,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_ByNonExistingAuthor_ThrowsArgumentOutOfRangeException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => bookService.SearchBooksAsync(authorId: Guid.Empty.ToString()));
     }
@@ -242,9 +202,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_ByExistingCategory_ReturnsCertainBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(categoryId: guids["c1"].ToString());
 
@@ -260,9 +217,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_ByNonExistingCategory_ThrowsArgumentOutOfRangeException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => bookService.SearchBooksAsync(categoryId: Guid.Empty.ToString()));
     }
@@ -270,9 +224,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_PageTwoOfSizeTwo_ReturnsTwoBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(page: 2, pageSize: 2);
 
@@ -287,9 +238,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_PageOneOfSizeThree_ReturnsThreeBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(page: 1, pageSize: 3);
 
@@ -302,9 +250,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_PageTwoOfSizeThree_ReturnsThreeBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(page: 2, pageSize: 3);
 
@@ -317,9 +262,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_PageOneOfSizeFive_ReturnsFiveBooks()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(pageSize: 5);
 
@@ -332,9 +274,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_PageTwoOfSizeFive_ReturnsOneBook()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var response = await bookService.SearchBooksAsync(page: 2, pageSize: 5);
 
@@ -347,9 +286,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_NonExistingPage_ThrowsInvalidOperationException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         await Assert.ThrowsAsync<InvalidOperationException>(() => bookService.SearchBooksAsync(page: 4, pageSize: 5));
     }
@@ -357,9 +293,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_NegativePageNumber_ThrowsArgumentOutOfRangeException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => bookService.SearchBooksAsync(page: -4));
 
@@ -368,9 +301,6 @@ public class TestBookService
     [Fact]
     public async Task SearchBooks_NegativePageSize_ThrowsArgumentOutOfRangeException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => bookService.SearchBooksAsync(pageSize: -5));
     }
@@ -380,9 +310,6 @@ public class TestBookService
     [Fact]
     public async Task GetBookById_ExistingBook_ReturnsBook()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         var result = await bookService.GetBookByIdAsync(guids["b1"].ToString());
 
@@ -394,9 +321,6 @@ public class TestBookService
     [Fact]
     public async Task GetBookById_NonExisitingBook_ThrowsKeyNotFoundException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => bookService.GetBookByIdAsync(Guid.Empty.ToString()));
     }
@@ -404,9 +328,6 @@ public class TestBookService
     [Fact]
     public async Task GetBookById_NegativeId_ThrowsArgumentException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => bookService.GetBookByIdAsync(Guid.Empty.ToString()));
     }
@@ -416,8 +337,6 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_CorrectInput_CreatesBook()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var panTadeusz = new BookPostDTO(
             "Pan Tadeusz",
             "Full title: Sir Thaddeus, or the Last Foray in Lithuania: A Nobility's Tale of the Years 1811–1812, in Twelve Books of Verse.",
@@ -439,8 +358,6 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_EmptyTitle_ThrowsArgumentException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someUnknownBook = new BookPostDTO(
             "",
             "Desc of some unknown book",
@@ -458,8 +375,6 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_InvalidDateFormat_ThrowsFormatException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someBook = new BookPostDTO(
             "Some book",
             "Desc of some book",
@@ -477,8 +392,6 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_InvalidLanguageFormat_ThrowsFormatException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
             var someBook = new BookPostDTO(
             "Some book",
             "Desc of some book",
@@ -496,8 +409,6 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_NonExistingAuthor_ThrowsArgumentException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someBook = new BookPostDTO(
             "Some book",
             "Desc of some book",
@@ -515,8 +426,6 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_NonExistingCategory_ThrowsArgumentException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someBook = new BookPostDTO(
             "Some book",
             "Desc of some book",
@@ -534,8 +443,6 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_SimiliarToExisting_ThrowsInvalidOperationException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var dziadyIII = new BookPostDTO ("Dziady część III", "", "1832-1-1", "Polish", ["tag", "another"], guids["a2"].ToString(), guids["c2"].ToString());
 
         //Act
@@ -547,8 +454,6 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_ChangedTitle_UpdatesBook()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someOlderBook = new BookPutDTO(
             Id: guids["b1"].ToString(),
             Title: "Some older book"
@@ -565,8 +470,6 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_NonExistingBook_ThrowsKeyNotFoundException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someUnknownBook = new BookPutDTO(
             Id: Guid.Empty.ToString(),
             Title: "Some book"
@@ -579,8 +482,6 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_EmptyTitle_ThrowsArgumentException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someUpdatedBook = new BookPutDTO(
             Id: guids["b1"].ToString(),
             Title: ""
@@ -594,8 +495,6 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidDateFormat_ThrowsFormatException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someUpdatedBook = new BookPutDTO(
             Id: guids["b1"].ToString(),
             ReleaseDate: "Hello world"
@@ -609,8 +508,6 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidLanguageFormat_ThrowsFormatException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someUpdatedBook = new BookPutDTO(
             Id: guids["b1"].ToString(),
             Language: "Simlish"
@@ -624,8 +521,6 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_NonExistingAuthor_ThrowsArgumentException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someUpdatedBook = new BookPutDTO(
             Id: guids["b1"].ToString(),
             AuthorId: Guid.Empty.ToString()
@@ -639,8 +534,6 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_NonExistingCategory_ThrowsArgumentException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someUpdatedBook = new BookPutDTO(
             Id: guids["b1"].ToString(),
             CategoryId: Guid.Empty.ToString()
@@ -654,8 +547,6 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_SimilarBookExisting_ThrowsInvalidOperationException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
         var someUpdatedBook = new BookPutDTO(
             Id: guids["b4"].ToString(),
             Title: "Dziady część III"
@@ -671,22 +562,16 @@ public class TestBookService
     [Fact]
     public async Task DeleteBook_ExistingBookWithoutActiveBorrowings_DeletesBookAndCopies()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act
         await bookService.DeleteBookAsync(guids["b6"].ToString());
 
         //Assert
-        mockBookRepository.Verify(r => r.DeleteBook(guids["b6"]));
+        mockBookRepository.Verify(r => r.DeleteAsync(guids["b6"]));
     }
 
     [Fact]
     public async Task DeleteBook_ExistingBookWithActiveBorrowings_ThrowsInvalidOperation()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => bookService.DeleteBookAsync(guids["b2"].ToString()));
         Assert.Contains("The book can not be deleted. There are still active borrowings in the system.", ex.Message);
@@ -695,9 +580,6 @@ public class TestBookService
     [Fact]
     public async Task DeleteBook_NegativeId_ThrowsArgumentException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act & Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(() => bookService.DeleteBookAsync(Guid.Empty.ToString()));
         Assert.Contains("Invalid id.", ex.Message);
@@ -706,9 +588,6 @@ public class TestBookService
     [Fact]
     public async Task DeleteBook_NonExistingBook_ThrowsKeyNotFoundException()
     {
-        //Arrange
-        BookService bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
-
         //Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => bookService.DeleteBookAsync(Guid.Empty.ToString()));
     }
