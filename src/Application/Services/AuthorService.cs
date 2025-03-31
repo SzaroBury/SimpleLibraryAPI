@@ -21,10 +21,7 @@ public class AuthorService: IAuthorService
 
     public async Task<Author> GetAuthorByIdAsync(string id)
     {
-        if(!Guid.TryParse(id, out var authorGuid))
-        {
-            throw new FormatException("Invalid author's id format.");
-        }
+        var authorGuid = ValidateGuid(id);
         return await GetAuthorByIdAsync(authorGuid);
     }
 
@@ -87,6 +84,14 @@ public class AuthorService: IAuthorService
         int page = 1, 
         int pageSize = 25)
     {
-        throw new NotImplementedException();
+    }
+
+    private static Guid ValidateGuid(string id)
+    {
+        if(!Guid.TryParse(id, out var authorGuid))
+        {
+            throw new FormatException("Invalid ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
+        }
+        return authorGuid;
     }
 }
