@@ -30,35 +30,35 @@ public class AuthorService: IAuthorService
         return await authorRepository.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"An author with the specified id ({id}) was not found in the system");
     }
-    public async Task<Author> CreateAuthorAsync(AuthorPostDTO authorDTO)
+    public async Task<Author> CreateAuthorAsync(AuthorPostDTO author)
     {
-        if(string.IsNullOrEmpty(authorDTO.FirstName) || string.IsNullOrEmpty(authorDTO.LastName))
+        if(string.IsNullOrEmpty(author.FirstName) || string.IsNullOrEmpty(author.LastName))
         {
             throw new ArgumentException("The author's first name and last name cannot be left empty.");
         }
         DateTime? authorsBornDate = null;
-        if(string.IsNullOrEmpty(authorDTO.BornDate))
+        if(string.IsNullOrEmpty(author.BornDate))
         {
-            if(!DateTime.TryParse(authorDTO.BornDate, out DateTime notNullAuthorsBornDate))
+            if(!DateTime.TryParse(author.BornDate, out DateTime notNullAuthorsBornDate))
             {
                 throw new FormatException("Invalid date format. Please use the following format: YYYY-MM-DD");
             }
             authorsBornDate = notNullAuthorsBornDate;
         }
-        if(authorDTO.Tags.Any(tag => tag.Contains(',')))
+        if(author.Tags.Any(tag => tag.Contains(',')))
         {
             throw new FormatException("Invalid tags format. Please do not use commas in tags.");
         }
 
-        var tagsInString = authorDTO.Tags.ToList().Count > 1 
-            ? string.Join(',', authorDTO.Tags) 
-            : authorDTO.Tags.First() ?? "";
+        var tagsInString = author.Tags.ToList().Count > 1 
+            ? string.Join(',', author.Tags) 
+            : author.Tags.First() ?? "";
 
         Author newAuthor = new() 
         {
-            FirstName = authorDTO.FirstName,
-            LastName = authorDTO.LastName,
-            Description = authorDTO.Description,
+            FirstName = author.FirstName,
+            LastName = author.LastName,
+            Description = author.Description,
             BornDate = authorsBornDate,
             Tags = tagsInString
         };
@@ -68,7 +68,56 @@ public class AuthorService: IAuthorService
     }
     public async Task<Author> UpdateAuthorAsync(string id, AuthorPostDTO author)
     {
-        throw new NotImplementedException();
+        Author existingAuthor = await GetAuthorByIdAsync(id);
+
+        if(author.FirstName is not null)
+        {
+            if(string.IsNullOrWhiteSpace(author.FirstName))
+            {
+                throw new ArgumentException("The author's first name cannot be left empty.");
+            }
+            existingAuthor.FirstName = author.FirstName;
+        }
+        if(author.LastName is not null)
+        {
+            if(string.IsNullOrWhiteSpace(author.LastName))
+            {
+                throw new ArgumentException("The author's last name cannot be left empty.");
+            }
+            existingAuthor.LastName = author.LastName;
+        }
+        if(author.BornDate is not null)
+        {
+            existingAuthor.Description = author.Description;
+        }
+
+        if(author.BornDate is not null)
+        {
+            DateTime? authorsBornDate = null;
+            if(!string.IsNullOrWhiteSpace(author.BornDate))
+            {
+                if(!DateTime.TryParse(author.BornDate, out DateTime notNullAuthorsBornDate))
+                {
+                    throw new FormatException("Invalid date format. Please use the following format: YYYY-MM-DD");
+                }
+                authorsBornDate = notNullAuthorsBornDate;
+            }
+        }
+        
+        if(author.Tags is not null)
+        {
+            if(author.Tags.Any(tag => tag.Contains(',')))
+            {
+                throw new FormatException("Invalid tags format. Please do not use commas in tags.");
+            }
+            var tagsInString = author.Tags.ToList().Count > 1 
+                ? string.Join(',', author.Tags) 
+                : author.Tags.First() ?? "";
+            existingAuthor.Tags = tagsInString;
+        }
+        
+        await authorRepository.UpdateAsync(existingAuthor);
+        return existingAuthor;
     }
     public async Task DeleteAuthorAsync(string id)
     {
@@ -90,6 +139,7 @@ public class AuthorService: IAuthorService
         int page = 1, 
         int pageSize = 25)
     {
+        throw new NotImplementedException();
     }
 
     private static Guid ValidateGuid(string id)
