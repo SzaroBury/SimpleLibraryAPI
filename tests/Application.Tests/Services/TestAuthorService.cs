@@ -14,7 +14,9 @@ public class TestAuthorService
     public TestAuthorService()
     {
         mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);        
-        authorService = new AuthorService(mockAuthorRepository.Object);
+        Mock<IRepository<Category>> mockCategoryRepository = DataInitializer.InitializeCategories(guids);
+        Mock<IRepository<Book>> mockBookRepository = DataInitializer.InitializeBookRepositoryAsync(guids, mockAuthorRepository, mockCategoryRepository).GetAwaiter().GetResult();
+        authorService = new AuthorService(mockAuthorRepository.Object, mockBookRepository.Object);
     }
 
     [Fact]

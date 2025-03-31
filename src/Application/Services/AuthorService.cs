@@ -8,29 +8,28 @@ namespace SimpleLibrary.Application.Services;
 public class AuthorService: IAuthorService
 {
     private readonly IRepository<Author> authorRepository;
+    private readonly IRepository<Book> bookRepository;
 
-    public AuthorService(IRepository<Author> authorRepository)
+    public AuthorService(IRepository<Author> authorRepository, IRepository<Book> bookRepository)
     {
         this.authorRepository = authorRepository;
+        this.bookRepository = bookRepository;
     }
 
     public async Task<IEnumerable<Author>> GetAllAuthorsAsync()
     {
         return await authorRepository.GetAllAsync();
     }
-
     public async Task<Author> GetAuthorByIdAsync(string id)
     {
         var authorGuid = ValidateGuid(id);
         return await GetAuthorByIdAsync(authorGuid);
     }
-
     public async Task<Author> GetAuthorByIdAsync(Guid id)
     {
         return await authorRepository.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"An author with the specified id ({id}) was not found in the system");
     }
-
     public async Task<Author> CreateAuthorAsync(AuthorPostDTO authorDTO)
     {
         if(string.IsNullOrEmpty(authorDTO.FirstName) || string.IsNullOrEmpty(authorDTO.LastName))
@@ -67,16 +66,23 @@ public class AuthorService: IAuthorService
 
         return newAuthor;
     }
-
-    public Task<Author> UpdateAuthorAsync(Author author)
+    public async Task<Author> UpdateAuthorAsync(string id, AuthorPostDTO author)
     {
         throw new NotImplementedException();
     }
-    public Task DeleteAuthorAsync(string id)
+    public async Task DeleteAuthorAsync(string id)
     {
-        throw new NotImplementedException();
-    }
+        var author = await GetAuthorByIdAsync(id);
 
+        var books = bookRepository.GetQueryable().Where(b => b.AuthorId == author.Id).ToList();
+
+        if(books.Count > 0)
+        {
+            string joinedBooks = string.Join(", ", books.Select(b => b.Title));
+            throw new InvalidOperationException($"The author cannot be deleted as there are still books associated with this author in the system: {joinedBooks}.");
+        }
+        await authorRepository.DeleteAsync(author.Id);
+    }
     public Task<IEnumerable<Author>> SearchAuthorsAsync(
         string? searchTerm = null, 
         string? olderThan = null, 
