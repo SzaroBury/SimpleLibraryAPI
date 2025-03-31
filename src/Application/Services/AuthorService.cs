@@ -139,7 +139,55 @@ public class AuthorService: IAuthorService
         int page = 1, 
         int pageSize = 25)
     {
-        throw new NotImplementedException();
+        if(page <= 0 || pageSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException($"Page ({page}) must be a positive number.");
+        }
+        if(pageSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException($"Size of a page ({pageSize}) must be a positive number.");
+        }
+
+        var searchAuthorsQuery = authorRepository.GetQueryable();
+
+        if (!string.IsNullOrEmpty(searchTerm))
+        {       
+            searchAuthorsQuery = searchAuthorsQuery.Where(a =>
+                a.FirstName     .Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || a.LastName   .Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || a.Description.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || a.Tags       .Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+            );
+        }
+
+        if (!string.IsNullOrEmpty(olderThan))
+        {
+            if (!DateTime.TryParse(olderThan, out DateTime olderThanDate))
+            {
+                throw new FormatException("Invalid date format of olderThan parameter. Please use the following format: YYYY-MM-DD");
+            }
+            searchAuthorsQuery = searchAuthorsQuery.Where(b => b.BornDate < olderThanDate);
+        }
+
+        if (!string.IsNullOrEmpty(youngerThan))
+        {
+            if(!DateTime.TryParse(youngerThan, out DateTime youngerThanDate))
+            {
+                throw new FormatException("Invalid date format of newerThan parameter. Please use the following format: YYYY-MM-DD");
+            }
+            searchAuthorsQuery = searchAuthorsQuery.Where(b => b.BornDate > youngerThanDate);
+        }
+        
+        var count = searchAuthorsQuery.Count();
+        if (count > 0  && page > Math.Ceiling( (decimal)count / pageSize ))
+        {
+            throw new InvalidOperationException("Invalid pgae. Not so many authors.");
+        }
+
+        searchAuthorsQuery = searchAuthorsQuery.Skip((page - 1) * pageSize);
+        searchAuthorsQuery = searchAuthorsQuery.Count() > pageSize ? searchAuthorsQuery.Take(pageSize) : searchAuthorsQuery;
+
+        return Task.FromResult(searchAuthorsQuery.AsEnumerable());
     }
 
     private static Guid ValidateGuid(string id)
