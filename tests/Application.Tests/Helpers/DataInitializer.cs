@@ -62,9 +62,19 @@ public static class DataInitializer
 
         Mock<IAuthorService> mockAuthorService = new();
         mockAuthorService.Setup(repo => repo.GetAllAuthorsAsync()).ReturnsAsync(authors);
+        mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a1"].ToString())).ReturnsAsync(a1);
         mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a1"])).ReturnsAsync(a1);
+        mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a2"].ToString())).ReturnsAsync(a2);
         mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a2"])).ReturnsAsync(a2);
+        mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a3"].ToString())).ReturnsAsync(a3);
         mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a3"])).ReturnsAsync(a3);
+        string capturedInput = string.Empty;
+        mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(It.Is<string>(input => IsInAuthors(authors, input))))
+            .Callback<string>(input => capturedInput = input)
+            .Throws(() => new KeyNotFoundException($"An author with the specified id ({capturedInput}) was not found in the system."));
+        mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(It.Is<string>(input => !IsValidGuid(input))))
+            .Throws(new FormatException("Invalid author ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000."));
+
         return mockAuthorService;
     }
 
@@ -188,5 +198,19 @@ public static class DataInitializer
         mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor6"])).ReturnsAsync(bor6);
 
         return mockBorrowingRepository;
+    }
+
+    private static bool IsValidGuid(string input)
+    {
+        var isValid = Guid.TryParse(input, out _);
+        Console.WriteLine($"Checking '{input}' → IsValid: {isValid}");
+        return isValid;
+    }
+
+    private static bool IsInAuthors(List<Author> authors, string guid)
+    {
+        var isIn = !authors.Any(author => author.Id.ToString() == guid);
+        Console.WriteLine($"Checking '{guid}' → IsInAuthors: {isIn}");
+        return isIn;
     }
 }
