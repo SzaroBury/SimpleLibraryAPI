@@ -58,18 +58,15 @@ public class BookService: IBookService
             throw new FormatException("Invalid language format. Pick one of the following values: English, Polish, German, French, Spanish, Other.");
         }
 
-        if(!Guid.TryParse(book.CategoryId, out var categoryGuid))
-        {
-            throw new FormatException("Invalid category's id format.");
-        }
-        var category = await categoryRepository.GetByIdAsync(categoryGuid) 
-            ?? throw new ArgumentException("Category with the given id is not present in the system.");
+        var categoryGuid = ValidateGuid(book.CategoryId, "category");
+        var category = await categoryRepository.GetByIdAsync(categoryGuid)
+            ?? throw new KeyNotFoundException("Category with the given id is not present in the system.");
 
         var author = await authorService.GetAuthorByIdAsync(book.AuthorId);
 
         if(book.Tags.Any(tag => tag.Contains(',')))
         {
-            throw new FormatException("Invalid tags format. Please do not use commas in tags.");
+            throw new FormatException("Invalid format of tags. Please do not use commas.");
         }
         var tagsInString = book.Tags.ToList().Count > 1 
             ? string.Join(',', book.Tags.Select(t => t.ToLower())) 
@@ -81,7 +78,7 @@ public class BookService: IBookService
             );
         if(isThereSimilarBook)
         {
-            throw new InvalidOperationException("There is a similar book in the system.");
+            throw new InvalidOperationException("There is already a similar book in the system.");
         }
 
         Book newBook = new()
@@ -106,11 +103,16 @@ public class BookService: IBookService
 
         if(book.Title is not null && existingBook.Title != book.Title)
         {
-            if(string.IsNullOrEmpty(""))
+            if(string.IsNullOrEmpty(book.Title))
             {
                 throw new ArgumentException("Title can not be empty.");
             }
             existingBook.Title = book.Title;
+        }
+
+        if(book.Description is not null && existingBook.Description != book.Description)
+        {
+            existingBook.Description = book.Description;
         }
 
         if(book.ReleaseDate is not null)
@@ -153,10 +155,7 @@ public class BookService: IBookService
 
         if(book.CategoryId is not null)
         {
-            if(!Guid.TryParse(book.CategoryId, out var categoryGuid))
-            {
-                throw new FormatException("Invalid category's id format.");
-            }
+            var categoryGuid = ValidateGuid(book.CategoryId, "category");
 
             var category = await categoryRepository.GetByIdAsync(categoryGuid)
                 ?? throw new ArgumentException("Category with the given id is not present in the system.");
@@ -198,7 +197,7 @@ public class BookService: IBookService
                 );
             if(areThereActiveBorrowings)
             {
-                throw new InvalidOperationException("The book cannot be deleted. There are still active borrowings in the system.");
+                throw new InvalidOperationException("The book can not be deleted. There are still active borrowings in the system.");
             }
             await copyRepository.DeleteAsync(c);
         }
@@ -222,7 +221,7 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
         }
 
         var searchBooksQuery = bookRepository.GetQueryable();
-        var searchBooksResult = searchBooksQuery.ToList();
+        // var searchBooksResult = searchBooksQuery.ToList();
         
         if (!string.IsNullOrEmpty(searchTerm))
         {
@@ -239,7 +238,6 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
                 || b.Category.Description.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || b.Category.Tags.ToString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
             );
-            searchBooksResult = searchBooksQuery.ToList();
         }
 
 
@@ -267,7 +265,6 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
                     )
                 );
             }
-            searchBooksResult = searchBooksQuery.ToList();
         }
 
         if (!string.IsNullOrEmpty(olderThan))
@@ -277,7 +274,6 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
                 throw new FormatException("Invalid date format of olderThan parameter. Please use the following format: YYYY-MM-DD");
             }
             searchBooksQuery = searchBooksQuery.Where(b => b.ReleaseDate <= olderThanDate);
-            searchBooksResult = searchBooksQuery.ToList();
         }
 
         if (!string.IsNullOrEmpty(newerThan))
@@ -287,28 +283,22 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
                 throw new FormatException("Invalid date format of newerThan parameter. Please use the following format: YYYY-MM-DD");
             }
             searchBooksQuery = searchBooksQuery.Where(b => b.ReleaseDate >= newerThanDate);
-            searchBooksResult = searchBooksQuery.ToList();
         }
 
         if (!string.IsNullOrEmpty(authorId))
         {
             var author = await authorService.GetAuthorByIdAsync(authorId);
             searchBooksQuery = searchBooksQuery.Where(b => b.AuthorId == author.Id);
-            searchBooksResult = searchBooksQuery.ToList();
         }
 
         if (!string.IsNullOrEmpty(categoryId))
         {
-            if(!Guid.TryParse(categoryId, out var categoryGuid))
-            {
-                throw new FormatException("Invalid category's id format.");
-            }
+            var categoryGuid = ValidateGuid(categoryId, "category");
             
             var category = await categoryRepository.GetByIdAsync(categoryGuid)
                 ?? throw new KeyNotFoundException($"A category with the specified id ({categoryId}) was not found in the system.");
 
             searchBooksQuery = searchBooksQuery.Where(b => b.CategoryId == categoryGuid);
-            searchBooksResult = searchBooksQuery.ToList();
         }
 
         var count = searchBooksQuery.Count();
@@ -324,12 +314,12 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
         return searchBooksQuery.ToList();
     }
 
-    private static Guid ValidateGuid(string id)
+    private static Guid ValidateGuid(string id, string entity = "book")
     {
-        if(!Guid.TryParse(id, out var bookGuid))
+        if(!Guid.TryParse(id, out var guid))
         {
-            throw new FormatException("Invalid ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
+            throw new FormatException($"Invalid {entity} ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
         }
-        return bookGuid;
+        return guid;
     }
 }
