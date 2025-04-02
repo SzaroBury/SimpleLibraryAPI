@@ -14,6 +14,7 @@ public static class DataInitializer
             ["a1"] = Guid.NewGuid(),
             ["a2"] = Guid.NewGuid(),
             ["a3"] = Guid.NewGuid(),
+            ["a4"] = Guid.NewGuid(),
             ["c1"] = Guid.NewGuid(),
             ["c2"] = Guid.NewGuid(),
             ["b1"] = Guid.NewGuid(),
@@ -43,13 +44,16 @@ public static class DataInitializer
         Author a1 = new() { Id = guids["a1"], FirstName = "N/A", LastName = "N/A", BornDate = null };
         Author a2 = new() { Id = guids["a2"], FirstName = "Adam", LastName = "Mickiewicz", BornDate = new DateTime(1798, 12, 24) };
         Author a3 = new() { Id = guids["a3"], FirstName = "Jan", LastName = "Kowalski", BornDate = new DateTime(1968, 12, 09) };
-        List<Author> authors = [a1, a2, a3];
+        Author a4 = new() { Id = guids["a4"], FirstName = "Some random", LastName = "Dude", BornDate = new DateTime(1997, 7, 5) };
+        List<Author> authors = [a1, a2, a3, a4];
 
         Mock<IRepository<Author>> mockAuthorRepository = new();
         mockAuthorRepository.Setup(repo => repo.GetAllAsync()).ReturnsAsync(authors);
+        mockAuthorRepository.Setup(repo => repo.GetQueryable()).Returns(authors.AsQueryable());
         mockAuthorRepository.Setup(repo => repo.GetByIdAsync(guids["a1"])).ReturnsAsync(a1);
         mockAuthorRepository.Setup(repo => repo.GetByIdAsync(guids["a2"])).ReturnsAsync(a2);
         mockAuthorRepository.Setup(repo => repo.GetByIdAsync(guids["a3"])).ReturnsAsync(a3);
+        mockAuthorRepository.Setup(repo => repo.GetByIdAsync(guids["a4"])).ReturnsAsync(a4);
         return mockAuthorRepository;
     }
 
@@ -57,8 +61,9 @@ public static class DataInitializer
     {
         Author a1 = new() { Id = guids["a1"], FirstName = "N/A", LastName = "N/A", BornDate = null };
         Author a2 = new() { Id = guids["a2"], FirstName = "Adam", LastName = "Mickiewicz", BornDate = new DateTime(1798, 12, 24) };
-        Author a3 = new() { Id = guids["a3"], FirstName = "Jan", LastName = "Kowalski", BornDate = new DateTime(1968, 12, 09) };
-        List<Author> authors = [a1, a2, a3];
+        Author a3 = new() { Id = guids["a3"], FirstName = "Jan", LastName = "Kowalski", BornDate = new DateTime(1968, 12, 9) };
+        Author a4 = new() { Id = guids["a4"], FirstName = "Some random", LastName = "Dude", BornDate = new DateTime(1997, 7, 5) };
+        List<Author> authors = [a1, a2, a3, a4];
 
         Mock<IAuthorService> mockAuthorService = new();
         mockAuthorService.Setup(repo => repo.GetAllAuthorsAsync()).ReturnsAsync(authors);
@@ -68,6 +73,8 @@ public static class DataInitializer
         mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a2"])).ReturnsAsync(a2);
         mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a3"].ToString())).ReturnsAsync(a3);
         mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a3"])).ReturnsAsync(a3);
+        mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a4"].ToString())).ReturnsAsync(a4);
+        mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(guids["a4"])).ReturnsAsync(a4);
         string capturedInput = string.Empty;
         mockAuthorService.Setup(repo => repo.GetAuthorByIdAsync(It.Is<string>(input => IsInAuthors(authors, input))))
             .Callback<string>(input => capturedInput = input)
@@ -103,7 +110,7 @@ public static class DataInitializer
         var c1 = await mockCategoryRepository.Object.GetByIdAsync(guids["c1"]) ?? throw new KeyNotFoundException("Category c1 not found.");
         var c2 = await mockCategoryRepository.Object.GetByIdAsync(guids["c2"]) ?? throw new KeyNotFoundException("Category c2 not found.");
 
-        Book b1 = new() { Id = guids["b1"], Title = "Some old book", Author = a1, AuthorId = guids["a1"], Category = c1, CategoryId = guids["c1"], Language = Language.English, ReleaseDate = new DateTime(1900, 1, 1) };
+        Book b1 = new() { Id = guids["b1"], Title = "Some old book", Author = a1, AuthorId = guids["a1"], Category = c1, CategoryId = guids["c1"], Language = Language.English, ReleaseDate = new DateTime(1900, 1, 1), Tags = "fantasy" };
         Book b2 = new() { Id = guids["b2"], Title = "Some old German book", Author = a1, AuthorId = guids["a1"], Category = c1, CategoryId = guids["c1"], Language = Language.German, ReleaseDate = new DateTime(1800, 1, 1) };
         Book b3 = new() { Id = guids["b3"], Title = "Some new French book", Author = a1, AuthorId = guids["a1"], Category = c2, CategoryId = guids["c2"], Language = Language.French, ReleaseDate = new DateTime(2010, 5, 7) };
         Book b4 = new() { Id = guids["b4"], Title = "Dziady część II", Author = a2, AuthorId = guids["a2"], Category = c2, CategoryId = guids["c2"], Language = Language.Polish, ReleaseDate = new DateTime(1823, 1, 1) };
