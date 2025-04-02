@@ -27,111 +27,44 @@ public class TestBookService
     }
 
     #region SearchBooks
-    [Fact]
-    public async Task SearchBooks_NoFilters_ReturnsAllBooks()
+    [Theory]
+    [InlineData(null, 6, new[] { "b1", "b2", "b3", "b4", "b5", "b6" })]
+    [InlineData("Some", 4, new[] { "b1", "b2", "b3", "b6" })]
+    [InlineData("Mickiewicz", 2, new[] { "b4", "b5" })]
+    [InlineData("Novel", 3, new[] { "b1", "b2", "b6" })]
+    [InlineData("Tomato", 0, new string[] { })]
+    public async Task SearchBooks_BySearchTerm_ReturnsExpectedResults(string? searchTerm, int expectedCount, string[] expectedIds)
     {
-        //Act
-        var response = await bookService.SearchBooksAsync();
+        // Act
+        var response = await bookService.SearchBooksAsync(searchTerm: searchTerm);
 
-        //Assert
+        // Assert
         Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(6, response.ToList().Count);
-        Assert.Contains(response, b => b.Id == guids["b1"]);
-        Assert.Contains(response, b => b.Id == guids["b2"]);
-        Assert.Contains(response, b => b.Id == guids["b3"]);
-        Assert.Contains(response, b => b.Id == guids["b4"]);
-        Assert.Contains(response, b => b.Id == guids["b5"]);
-        Assert.Contains(response, b => b.Id == guids["b6"]);
+        Assert.IsAssignableFrom<IEnumerable<Book>>(response);
+        Assert.Equal(expectedCount, response.ToList().Count);
+        foreach (var expectedId in expectedIds)
+        {
+            Assert.Contains(response, b => b.Id == guids[expectedId]);
+        }
     }
 
-    [Fact]
-    public async Task SearchBooks_SearchSome_ReturnsCertainBooks()
+    [Theory]
+    [InlineData(true, 2, new[] { "b2", "b3" })]
+    [InlineData(false, 4, new[] { "b1", "b4", "b5", "b6" })]
+    public async Task SearchBooks_ByAvailability_ReturnsExpectedResults(bool isAvailable, int expectedCount, string[] expectedIds)
     {
-        //Act
-        var response = await bookService.SearchBooksAsync(searchTerm: "Some");
+        // Act
+        var response = await bookService.SearchBooksAsync(isAvailable: isAvailable);
 
-        //Assert
+        // Assert
         Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(4, response.ToList().Count);
-        Assert.Contains(response, b => b.Id == guids["b1"]);
-        Assert.Contains(response, b => b.Id == guids["b2"]);
-        Assert.Contains(response, b => b.Id == guids["b3"]);
-        Assert.Contains(response, b => b.Id == guids["b6"]);
+        Assert.IsAssignableFrom<IEnumerable<Book>>(response);
+        Assert.Equal(expectedCount, response.ToList().Count);
+        foreach (var expectedId in expectedIds)
+        {
+            Assert.Contains(response, b => b.Id == guids[expectedId]);
+        }
     }
-
-    [Fact]
-    public async Task SearchBooks_SearchMickiewicz_ReturnsCertainBooks()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(searchTerm: "Mickiewicz");
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(2, response.ToList().Count);
-        Assert.Contains(response, b => b.Id == guids["b4"]);
-        Assert.Contains(response, b => b.Id == guids["b5"]);
-    }
-
-    [Fact]
-    public async Task SearchBooks_SearchNovel_ReturnsCertainBooks()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(searchTerm: "Novel");
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(3, response.ToList().Count);
-        Assert.Contains(response, b => b.Id == guids["b1"]);
-        Assert.Contains(response, b => b.Id == guids["b2"]);
-        Assert.Contains(response, b => b.Id == guids["b6"]);
-    }
-
-    [Fact]
-    public async Task SearchBooks_SearchTomato_ReturnsEmptyList()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(searchTerm: "Tomato");
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Empty(response);
-    }
-
-    [Fact]
-    public async Task SearchBooks_OnlyAvailable_ReturnsCertainBooks()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(isAvailable: true);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(2, response.ToList().Count);
-        Assert.Contains(response, b => b.Id == guids["b2"]);
-        Assert.Contains(response, b => b.Id == guids["b3"]);
-    }
-
-    [Fact]
-    public async Task SearchBooks_OnlyNotAvailable_ReturnsCertainBooks()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(isAvailable: false);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(4, response.ToList().Count);
-        Assert.Contains(response, b => b.Id == guids["b1"]);
-        Assert.Contains(response, b => b.Id == guids["b4"]);
-        Assert.Contains(response, b => b.Id == guids["b5"]);
-        Assert.Contains(response, b => b.Id == guids["b6"]);
-    }
-
     [Fact]
     public async Task SearchBooks_OlderThan_ReturnsCertainBooks()
     {
@@ -146,14 +79,6 @@ public class TestBookService
         Assert.Contains(response, b => b.Id == guids["b2"]);
         Assert.Contains(response, b => b.Id == guids["b4"]);
         Assert.Contains(response, b => b.Id == guids["b5"]);
-    }
-
-    [Fact]
-    public async Task SearchBooks_InvalidFormatOfOlderThan_ThrowsFormatException()
-    {
-        //Act && Assert
-        await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(olderThan: "123"));
-        await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(olderThan: "test"));
     }
 
     [Fact]
@@ -172,14 +97,6 @@ public class TestBookService
     }
 
     [Fact]
-    public async Task SearchBooks_InvalidFormatOfNewerThan_ThrowsFormatException()
-    {
-        //Act && Assert
-        await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(newerThan: "123"));
-        await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(newerThan: "test"));
-    }
-
-    [Fact]
     public async Task SearchBooks_ByExistingAuthor_ReturnsCertainBooks()
     {
         //Act
@@ -191,6 +108,58 @@ public class TestBookService
         Assert.Equal(2, response.ToList().Count);
         Assert.Contains(response, b => b.Id == guids["b4"]);
         Assert.Contains(response, b => b.Id == guids["b5"]);
+    }
+
+    [Fact]
+    public async Task SearchBooks_ByExistingCategory_ReturnsCertainBooks()
+    {
+        //Act
+        var response = await bookService.SearchBooksAsync(categoryId: guids["c1"].ToString());
+
+        //Assert
+        Assert.NotNull(response);
+        Assert.IsType<List<Book>>(response);
+        Assert.Equal(3, response.ToList().Count);
+        Assert.Contains(response, b => b.Id == guids["b1"]);
+        Assert.Contains(response, b => b.Id == guids["b2"]);
+        Assert.Contains(response, b => b.Id == guids["b6"]);
+    }
+
+    [Theory]
+    [InlineData(2, 2, 2, new[] { "b3", "b4" })]
+    [InlineData(1, 3, 3, new[] { "b1", "b2", "b3" })]
+    [InlineData(2, 3, 3, new[] { "b4", "b5", "b6" })]
+    [InlineData(1, 5, 5, new[] { "b1", "b2", "b3", "b4", "b5" })]
+    [InlineData(2, 5, 1, new[] { "b6" })]
+    public async Task SearchBooks_Pagination_ReturnsExpectedResults(int page, int pageSize, int expectedCount, string[] expectedIds)
+    {
+        // Act
+        var response = await bookService.SearchBooksAsync(page: page, pageSize: pageSize);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.IsAssignableFrom<List<Book>>(response);
+        Assert.Equal(expectedCount, response.ToList().Count);
+        foreach (var expectedId in expectedIds)
+        {
+            Assert.Contains(response, b => b.Id == guids[expectedId]);
+        }
+    }
+
+    [Fact]
+    public async Task SearchBooks_InvalidFormatOfOlderThan_ThrowsFormatException()
+    {
+        //Act && Assert
+        await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(olderThan: "123"));
+        await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(olderThan: "test"));
+    }
+
+    [Fact]
+    public async Task SearchBooks_InvalidFormatOfNewerThan_ThrowsFormatException()
+    {
+        //Act && Assert
+        await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(newerThan: "123"));
+        await Assert.ThrowsAsync<FormatException>(() => bookService.SearchBooksAsync(newerThan: "test"));
     }
 
     [Fact]
@@ -217,21 +186,6 @@ public class TestBookService
     }
 
     [Fact]
-    public async Task SearchBooks_ByExistingCategory_ReturnsCertainBooks()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(categoryId: guids["c1"].ToString());
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(3, response.ToList().Count);
-        Assert.Contains(response, b => b.Id == guids["b1"]);
-        Assert.Contains(response, b => b.Id == guids["b2"]);
-        Assert.Contains(response, b => b.Id == guids["b6"]);
-    }
-
-    [Fact]
     public async Task SearchBooks_InvalidFormatOfCategoryId_ThrowsFormatException()
     {
         //Act && Assert
@@ -252,68 +206,6 @@ public class TestBookService
             bookService.SearchBooksAsync(categoryId: nonExistingCategoryId)
         );
         Assert.Equal($"A category with the specified id ({nonExistingCategoryId}) was not found in the system.", exception.Message);
-    }
-
-    [Fact]
-    public async Task SearchBooks_PageTwoOfSizeTwo_ReturnsTwoBooks()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(page: 2, pageSize: 2);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(2, response.ToList().Count);
-        Assert.Contains(response, b => b.Id == guids["b3"]);
-        Assert.Contains(response, b => b.Id == guids["b4"]);
-    }
-
-    [Fact]
-    public async Task SearchBooks_PageOneOfSizeThree_ReturnsThreeBooks()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(page: 1, pageSize: 3);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(3, response.ToList().Count);
-    }
-
-    [Fact]
-    public async Task SearchBooks_PageTwoOfSizeThree_ReturnsThreeBooks()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(page: 2, pageSize: 3);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(3, response.ToList().Count);
-    }
-
-    [Fact]
-    public async Task SearchBooks_PageOneOfSizeFive_ReturnsFiveBooks()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(pageSize: 5);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Equal(5, response.ToList().Count);
-    }
-
-    [Fact]
-    public async Task SearchBooks_PageTwoOfSizeFive_ReturnsOneBook()
-    {
-        //Act
-        var response = await bookService.SearchBooksAsync(page: 2, pageSize: 5);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Book>>(response);
-        Assert.Single(response);
     }
 
     [Fact]
