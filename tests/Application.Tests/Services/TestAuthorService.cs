@@ -18,7 +18,7 @@ public class TestAuthorService
         Mock<IRepository<Book>> mockBookRepository = DataInitializer.InitializeBookRepositoryAsync(guids, mockAuthorRepository, mockCategoryRepository).GetAwaiter().GetResult();
         authorService = new AuthorService(mockAuthorRepository.Object, mockBookRepository.Object);
     }
-
+    #region GetAllAuthorsAsync
     [Fact]
     public async Task GetAllAuthorsAsync_ReturnsAllAuthors()
     {
@@ -26,23 +26,34 @@ public class TestAuthorService
 
         Assert.NotNull(response);
         Assert.IsAssignableFrom<IEnumerable<Author>>(response);
-        Assert.Equal(2, response.Count());
+        Assert.Equal(4, response.Count());
     }
-
+    #endregion
+    #region GetAuthorByIdAsync
     [Fact]
     public async Task GetAuthorByIdAsync_ExistingId_ReturnsAuthor()
     {
         // Act
-        var author = await authorService.GetAuthorByIdAsync(Guid.NewGuid());
+        var author = await authorService.GetAuthorByIdAsync(guids["a2"].ToString());
 
         // Assert
         Assert.NotNull(author);
         // Assert.Equal(0, author.Id);
-        Assert.Equal("Firstname", author.FirstName);
-        Assert.Equal("Lastname", author.LastName);
-        Assert.Equal("Description", author.Description);
-        Assert.Equal(new DateTime(2000, 1, 1), author.BornDate);
-        Assert.Equal("Tag1, Tag2", author.Tags);
+        Assert.Equal("Adam", author.FirstName);
+        Assert.Equal("Mickiewicz", author.LastName);
+        Assert.Equal("", author.Description);
+        Assert.Equal(new DateTime(1798, 12, 24), author.BornDate);
+        Assert.Equal("", author.Tags);
+    }
+
+    [Fact]
+    public async Task GetAuthorByIdAsync_InvalidFormatOfId_ThrowsFormatException()
+    {
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<FormatException>(() => 
+            authorService.GetAuthorByIdAsync("test")
+        );
+        Assert.Equal($"Invalid author ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", exception.Message);
     }
 
     [Fact]
@@ -55,164 +66,200 @@ public class TestAuthorService
         var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => 
             authorService.GetAuthorByIdAsync(authorGuid)
         );
-        Assert.Equal($"Author with the given id ({authorGuid}) is not found in database.", exception.Message);
+        Assert.Equal($"An author with the specified ID ({authorGuid}) was not found in the system.", exception.Message);
+    }
+    #endregion
+    #region CreateAuthorAsync 
+    [Theory]
+    [InlineData("William", "Shakespeare", "English playwright", "1564-04-23", new[] { "Dramatist", "Poet" }, "William", "Shakespeare", "English playwright", "1564-04-23", "Dramatist,Poet")]
+    [InlineData("William", "Shakespeare", null, "1564-04-23", new[] { "Dramatist" }, "William", "Shakespeare", "", "1564-04-23", "Dramatist")]
+    [InlineData("William", "Shakespeare", "English playwright", null, new[] { "Dramatist" }, "William", "Shakespeare", "English playwright", null, "Dramatist")]
+    [InlineData("William", "Shakespeare", "English playwright", "1564-04-23", new[] { "Dramatist", "Poet", "Playwright" }, "William", "Shakespeare", "English playwright", "1564-04-23", "Dramatist,Poet,Playwright")]
+    [InlineData("William", "Shakespeare", "English playwright", "1564-04-23", null, "William", "Shakespeare", "English playwright", "1564-04-23", "")]
+    public async Task CreateAuthorAsync_ValidInput_ReturnsExpectedResult(
+        string firstName, string lastName, string? description, string? bornDate, string[]? tags,
+        string expectedFirstName, string expectedLastName, string expectedDescription, string? expectedBornDate, string expectedTags)
+    {
+        // Arrange
+        var newAuthor = new AuthorPostDTO(firstName, lastName, description, bornDate, tags);
+
+        // Act
+        var result = await authorService.CreateAuthorAsync(newAuthor);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedFirstName, result.FirstName);
+        Assert.Equal(expectedLastName, result.LastName);
+        Assert.Equal(expectedDescription, result.Description);
+        
+        if (expectedBornDate == null)
+        {
+            Assert.Null(result.BornDate);
+        }
+        else
+        {
+            Assert.Equal(DateTime.Parse(expectedBornDate), result.BornDate);
+        }
+
+        Assert.Equal(expectedTags, result.Tags);
     }
 
-    [Fact]
-    public async Task CreateAuthorAsync_AddsAuthor_ReturnsCreatedAuthor()
+    [Theory]
+    [InlineData("", "Shakespeare")]
+    [InlineData("William", "")]
+    [InlineData("", "")]
+    public async Task CreateAuthorAsync_EmptyFirstOrLastName_ThrowsArgumentException(string firstName, string lastName)
     {
-        var newAuthor = new AuthorPostDTO
-        (
-            "Jane", 
-            "Doe", 
-            "Jane Doe was cool", 
-            "1951-12-31",
-            ["sci-fi", "brutal"]
-        );
+        var newAuthor = new AuthorPostDTO(firstName, lastName, "English playwright", "1564-04-23", ["Dramatist"]);
 
-        var createdAuthor = await authorService.CreateAuthorAsync(newAuthor);
-
-        Assert.NotNull(createdAuthor);
-        // Assert.Equal(2, createdAuthor.Id);
-        Assert.Equal("Jane", createdAuthor.FirstName);
-        Assert.Equal("Doe", createdAuthor.LastName);
-        Assert.Equal("Jane Doe was cool", createdAuthor.Description);
-        Assert.Equal(new DateTime(1951, 12, 31), createdAuthor.BornDate);
-        Assert.Equal("sci-fi, brutal", createdAuthor.Tags);
-    }
-
-    [Fact]
-    public async Task CreateAuthorAsync_EmptyFirstName_ThrowsArgumentException()
-    {
-        var newAuthor = new AuthorPostDTO
-        (
-            "", 
-            "Doe", 
-            "Jane Doe was cool", 
-            "1951-12-31",
-            ["sci-fi", "brutal"]
-        );
-
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => 
-            authorService.CreateAuthorAsync(newAuthor)
-        );
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => authorService.CreateAuthorAsync(newAuthor));
 
         Assert.Equal("The author's first name and last name cannot be left empty.", exception.Message);
     }
 
     [Fact]
-    public async Task CreateAuthorAsync_EmptyLastName_ThrowsArgumentException()
+    public async Task CreateAuthorAsync_InvalidBornDate_ThrowsFormatException()
     {
-        var newAuthor = new AuthorPostDTO
-        (
-            "Jane", 
-            "", 
-            "Jane Doe was cool", 
-            "1951-12-31",
-            ["sci-fi", "brutal"]
-        );
+        var newAuthor = new AuthorPostDTO("William", "Shakespeare", "English playwright", "invalid-date", ["Dramatist"]);
 
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => 
-            authorService.CreateAuthorAsync(newAuthor)
-        );
-
-        Assert.Equal("The author's first name and last name cannot be left empty.", exception.Message);
-    }
-
-    [Fact]
-    public async Task CreateAuthorAsync_InvalidBornDateFormat_ThrowsFormatException()
-    {
-        var newAuthor = new AuthorPostDTO
-        (
-            "Jane", 
-            "Doe", 
-            "Jane Doe was cool", 
-            "testing",
-            ["sci-fi", "brutal"]
-        );
-
-        var exception = await Assert.ThrowsAsync<FormatException>(() => 
-            authorService.CreateAuthorAsync(newAuthor)
-        );
+        var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.CreateAuthorAsync(newAuthor));
 
         Assert.Equal("Invalid date format. Please use the following format: YYYY-MM-DD", exception.Message);
     }
 
     [Fact]
-    public async Task CreateAuthorAsync_CommaInTag_ThrowsFormatException()
+    public async Task CreateAuthorAsync_InvalidTags_ThrowsFormatException()
     {
-        var newAuthor = new AuthorPostDTO
-        (
-            "Jane", 
-            "Doe", 
-            "Jane Doe was cool", 
-            "1951-12-31",
-            ["sci-fi, novels", "brutal"]
-        );
+        var newAuthor = new AuthorPostDTO("William", "Shakespeare", "English playwright", "1564-04-23", ["Dramatist,Playwright"]);
 
-        var exception = await Assert.ThrowsAsync<FormatException>(() => 
-            authorService.CreateAuthorAsync(newAuthor)
-        );
+        var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.CreateAuthorAsync(newAuthor));
 
         Assert.Equal("Invalid tags format. Please do not use commas in tags.", exception.Message);
     }
-
-    [Fact]
-    public async Task UpdateAuthorAsync_ChangingNamesForExistingId_UpdatesNotNullMembersOfAuthor()
+    #endregion
+    #region UpdateAuthorAsync 
+    [Theory]
+    [InlineData("Updated", "Name", "New description", "2000-01-01", new[] { "Tag1", "Tag2" }, "Updated", "Name", "New description", "2000-01-01", "Tag1,Tag2")]
+    [InlineData("Updated FirstName", null, null, null, null, "Updated FirstName", "Mickiewicz", "", "1798-12-24", "")]
+    [InlineData(null, "Updated LastName", null, null, null, "Adam", "Updated LastName", "", "1798-12-24", "")]
+    [InlineData(null, null, "Updated Description", null, null, "Adam", "Mickiewicz", "Updated Description", "1798-12-24", "")]
+    [InlineData(null, null, null, "1800-01-01", null, "Adam", "Mickiewicz", "", "1800-01-01", "")]
+    [InlineData(null, null, null, null, new[] { "Poet", "Romanticism" }, "Adam", "Mickiewicz", "", "1798-12-24", "Poet,Romanticism")]
+    [InlineData("Updated Name", "Updated LastName", null, null, new[] { "Poet", "Romantic" }, "Updated Name", "Updated LastName", "", "1798-12-24", "Poet,Romantic")]
+    public async Task UpdateAuthorAsync_ValidInput_UpdatesAuthorCorrectly(
+        string? firstName, string? lastName, string? description, string? bornDate, string[]? tags,
+        string expectedFirstName, string expectedLastName, string expectedDescription, string expectedBornDate, string expectedTags)
     {
-        var updatedAuthor = new AuthorPutDTO("Updated", "Name");
+        // Arrange
+        var authorId = guids["a2"].ToString();
+        var updatedAuthor = new AuthorPutDTO(authorId, firstName, lastName, description, bornDate, tags);
 
-        var result = await authorService.UpdateAuthorAsync(guids["a2"].ToString(), updatedAuthor);
+        // Act
+        var result = await authorService.UpdateAuthorAsync(updatedAuthor);
 
+        // Assert
         Assert.NotNull(result);
-        // Assert.Equal(2, result.Id);
-        Assert.Equal("Updated", result.FirstName);
-        Assert.Equal("Name", result.LastName);
-        Assert.Equal("Description", result.Description);
-        Assert.Equal(new DateTime(2000, 01, 01), result.BornDate);
-        Assert.Equal("Tag1, Tag2", result.Tags);
+        Assert.Equal(guids["a2"], result.Id);
+        Assert.Equal(expectedFirstName, result.FirstName);
+        Assert.Equal(expectedLastName, result.LastName);
+        Assert.Equal(expectedDescription, result.Description);
+        
+        if (expectedBornDate == null)
+        {
+            Assert.Null(result.BornDate);
+        }
+        else
+        {
+            Assert.Equal(DateTime.Parse(expectedBornDate), result.BornDate);
+        }
+
+        Assert.Equal(expectedTags, result.Tags);
     }
 
     [Fact]
-    public async Task UpdateAuthorAsync_ChangingBirthDateForExistingId_UpdatesNotNullMembersOfAuthor()
+    public async Task UpdateAuthorAsync_InvalidIdFormat_ThrowsFormatException()
     {
-        var updatedAuthor = new AuthorPutDTO(BornDate: "1949-12-31");
+        var invalidAuthorId = "invalid-id-format";
+        var updatedAuthor = new AuthorPutDTO(invalidAuthorId, FirstName: "Updated Name");
 
-        var result = await authorService.UpdateAuthorAsync(guids["a2"].ToString(), updatedAuthor);
+        var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
 
-        Assert.NotNull(result);
-        // Assert.Equal(0, result.Id);
-        Assert.Equal("Firstname", result.FirstName);
-        Assert.Equal("Lastname", result.LastName);
-        Assert.Equal("Description", result.Description);
-        Assert.Equal(new DateTime(1949, 12, 31), result.BornDate);
-        Assert.Equal("Tag1, Tag2", result.Tags);
+        Assert.Equal("Invalid author ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", exception.Message);
     }
 
     [Fact]
     public async Task UpdateAuthorAsync_NonExistingId_ThrowsKeyNotFoundException()
     {
-        var updatedAuthor = new AuthorPutDTO { FirstName = "Ghost", LastName = "Writer" };
+        var nonExistingAuthorId = Guid.NewGuid().ToString(); // Losowy, nieistniejący ID
+        var updatedAuthor = new AuthorPutDTO(nonExistingAuthorId, FirstName: "Updated Name");
 
-        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => 
-            authorService.UpdateAuthorAsync(Guid.Empty.ToString(), updatedAuthor)
-        );
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
 
-        Assert.Equal("Author with ID 99 not found.", exception.Message);
+        Assert.Equal($"An author with the specified ID ({nonExistingAuthorId}) was not found in the system.", exception.Message);
     }
 
+
     [Fact]
-    public async Task DeleteAuthorAsync_ExistingId_DeletesAuthor()
+    public async Task UpdateAuthorAsync_EmptyFirstName_ThrowsArgumentException()
     {
-        var authorsGuid = Guid.NewGuid();
+        var authorId = guids["a2"].ToString();
+        var updatedAuthor = new AuthorPutDTO(authorId, FirstName: " ");
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
+
+        Assert.Equal("The author's first name cannot be left empty.", exception.Message);
+    }
+
+
+    [Fact]
+    public async Task UpdateAuthorAsync_EmptyLastName_ThrowsArgumentException()
+    {
+        var authorId = guids["a2"].ToString();
+        var updatedAuthor = new AuthorPutDTO(authorId, LastName: " ");
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
+
+        Assert.Equal("The author's last name cannot be left empty.", exception.Message);
+    }
+
+
+    [Fact]
+    public async Task UpdateAuthorAsync_InvalidBornDate_ThrowsFormatException()
+    {
+        var authorId = guids["a2"].ToString();
+        var updatedAuthor = new AuthorPutDTO(authorId, BornDate: "invalid-date");
+
+        var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
+
+        Assert.Equal("Invalid date format. Please use the following format: YYYY-MM-DD", exception.Message);
+    }
+
+
+    [Fact]
+    public async Task UpdateAuthorAsync_InvalidTags_ThrowsFormatException()
+    {
+        var authorId = guids["a2"].ToString();
+        var updatedTags = new List<string> { "Poet,Writer" }; // Nieprawidłowe, bo zawiera przecinek
+        var updatedAuthor = new AuthorPutDTO(authorId, Tags: updatedTags);
+
+        var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
+
+        Assert.Equal("Invalid tags format. Please do not use commas in tags.", exception.Message);
+    }    
+    #endregion
+    #region DeleteAuthorAsync
+    [Fact]
+    public async Task DeleteAuthorAsync_ValidAuthorId_DeletesAuthorSuccessfully()
+    {
+        var authorsGuid = guids["a4"];
 
         await authorService.DeleteAuthorAsync(authorsGuid.ToString());
 
         mockAuthorRepository.Verify(repo => repo.DeleteAsync(authorsGuid), Times.Once);
     }
-
+    
     [Fact]
-    public async Task DeleteAuthorAsync_NonExistingId_ThrowsKeyNotFoundException()
+    public async Task DeleteAuthorAsync_NonExistentAuthor_ThrowsKeyNotFoundException()
     {
         var authorsGuid = Guid.NewGuid();
 
@@ -220,200 +267,133 @@ public class TestAuthorService
             authorService.DeleteAuthorAsync(authorsGuid.ToString())
         );
 
-        Assert.Equal($"Author with ID {authorsGuid} not found.", exception.Message);
+        Assert.Equal($"An author with the specified ID ({authorsGuid}) was not found in the system.", exception.Message);
     }
 
     [Fact]
-    public async Task SearchAuthorsAsync_NoFilters_ReturnsAllAuthors()
+    public async Task DeleteAuthorAsync_AuthorWithBooks_ThrowsInvalidOperationException()
     {
-        //Act
-        var response = await authorService.SearchAuthorsAsync();
+        var authorsGuid = guids["a2"].ToString();
 
-        //Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            authorService.DeleteAuthorAsync(authorsGuid)
+        );
+
+        Assert.Equal($"The author cannot be deleted as there are still books associated with this author in the system: Dziady część II, Dziady część III.", exception.Message);
+    }
+    #endregion
+    #region SearchAuthorsAsync
+    [Theory]
+    [InlineData("", new[] { "N/A", "Adam", "Jan", "Some random" })]
+    [InlineData("Adam", new[] { "Adam" })] 
+    [InlineData("Kowalski", new[] { "Jan" })] 
+    [InlineData("fantasy", new[] { "N/A" })] 
+    [InlineData("unknown_term", new string[] { })]
+    public async Task SearchAuthorsAsync_SearchTerm_ReturnsExpectedResults(string searchTerm, string[] expectedFirstNames)
+    {
+        // Act
+        var response = await authorService.SearchAuthorsAsync(searchTerm: searchTerm);
+
+        // Assert
         Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.NotEmpty(response);
-        Assert.Contains(response, a => a.FirstName == "Firstname" && a.LastName == "Lastname");
-        Assert.Contains(response, a => a.FirstName == "John" && a.LastName == "Doe");
+        Assert.IsAssignableFrom<IEnumerable<Author>>(response);
+        Assert.Equal(expectedFirstNames.Length, response.Count());
+        foreach (var expectedName in expectedFirstNames)
+        {
+            Assert.Contains(response, a => a.FirstName == expectedName);
+        }
+    }
+
+    [Theory]
+    [InlineData("1950-01-01", new[] { "Jan", "Some random" })]
+    [InlineData("2000-01-01", new string[] { })]
+    [InlineData("2020-01-01", new string[] { })]
+    public async Task SearchAuthorsAsync_FilteringByYoungerThan_ReturnsExpectedResults(string youngerThan, string[] expectedFirstNames)
+    {
+        // Act
+        var response = await authorService.SearchAuthorsAsync(youngerThan: youngerThan);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.IsAssignableFrom<IEnumerable<Author>>(response);
+        Assert.Equal(expectedFirstNames.Length, response.Count());
+        foreach (var expectedName in expectedFirstNames)
+        {
+            Assert.Contains(response, a => a.FirstName == expectedName);
+        }
+    }
+
+    [Theory]
+    [InlineData(1, 1, new[] { "N/A" })] // Pierwsza strona, jeden element na stronie – zwraca pierwszego autora
+    [InlineData(1, 2, new[] { "N/A", "Adam" })] // Pierwsza strona, dwa elementy – zwraca dwóch autorów
+    [InlineData(2, 1, new[] { "Adam" })] // Druga strona, jeden element na stronie – zwraca Johna
+    [InlineData(2, 2, new[] { "Jan", "Some random" })] // Druga strona, dwa elementy – zwraca tylko Johna
+    [InlineData(4, 1, new string[] { "Some random" })] // Trzecia strona, dwa elementy – pusta lista
+    public async Task SearchAuthorsAsync_Pagination_ReturnsExpectedResults(int page, int pageSize, string[] expectedFirstNames)
+    {
+        // Act
+        var response = await authorService.SearchAuthorsAsync(page: page, pageSize: pageSize);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.IsAssignableFrom<IEnumerable<Author>>(response);
+        Assert.Equal(expectedFirstNames.Length, response.Count());
+        foreach (var expectedName in expectedFirstNames)
+        {
+            Assert.Contains(response, a => a.FirstName == expectedName);
+        }
     }
 
     [Fact]
-    public async Task SearchAuthorsAsync_FilteringWithJohn_ReturnsOnlyJohn()
+    public async Task SearchAuthorsAsync_SearchingTwoLetters_ThrowsArgumentException()
     {
-        //Act
-        var response = await authorService.SearchAuthorsAsync("John");
+        var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
+            await authorService.SearchAuthorsAsync(searchTerm: "ts"));
 
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.NotEmpty(response);
-        Assert.Single(response);
-        Assert.Contains(response, a => a.FirstName == "John" && a.LastName == "Doe");
+        Assert.Equal($"The searching term need to have at least three letters.", exception.Message);
     }
 
     [Fact]
-    public async Task SearchAuthorsAsync_FilteringWithTags_ReturnsOnlyJohn()
+    public async Task SearchAuthorsAsync_PageLessThanOne_ThrowsArgumentException()
     {
-        //Act
-        var response = await authorService.SearchAuthorsAsync("fantasy");
+        var page = 0;
 
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.NotEmpty(response);
-        Assert.Single(response);
-        Assert.Contains(response, a => a.FirstName == "John" && a.LastName == "Doe");
+        var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
+            await authorService.SearchAuthorsAsync(page: page));
+
+        Assert.Equal($"Page ({page}) must be greater than zero.", exception.Message);
     }
 
     [Fact]
-    public async Task SearchAuthorsAsync_FilteringWithUnknownTerm_ReturnsEmptyList()
+    public async Task SearchAuthorsAsync_PageSizeLessThanOne_ThrowsArgumentException()
     {
-        //Act
-        var response = await authorService.SearchAuthorsAsync("term");
+        var pageSize = 0;
 
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Empty(response);
+        var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
+            await authorService.SearchAuthorsAsync(pageSize: pageSize));
+
+        Assert.Equal($"Size of a page ({pageSize}) must be greater than zero.", exception.Message);
     }
 
     [Fact]
-    public async Task SearchAuthorsAsync_FilteringByOlderThan_ReturnsOnlyJohn()
+    public async Task SearchAuthorsAsync_InvalidOlderThanDate_ThrowsFormatException()
     {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(olderThan: "1990-01-01");
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Single(response);
-        Assert.Contains(response, a => a.FirstName == "John" && a.LastName == "Doe");
+        await Assert.ThrowsAsync<FormatException>(async () =>
+            await authorService.SearchAuthorsAsync(olderThan: "invalid-date"));
     }
 
     [Fact]
-    public async Task SearchAuthorsAsync_FilteringByOlderThanWithEqualDate_ReturnsEmptyList()
+    public async Task SearchAuthorsAsync_InvalidYoungerThanDate_ThrowsFormatException()
     {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(olderThan: "1950-01-01");
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Empty(response);
+        await Assert.ThrowsAsync<FormatException>(async () =>
+            await authorService.SearchAuthorsAsync(youngerThan: "invalid-date"));
     }
 
     [Fact]
-    public async Task SearchAuthorsAsync_FilteringByOlderThanWithNoOneMeetingTheCondition_ReturnsEmptyList()
+    public async Task SearchAuthorsAsync_PageOutOfRange_ThrowsInvalidOperationException()
     {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(olderThan: "1920-01-01");
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Empty(response);
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await authorService.SearchAuthorsAsync(page: 100, pageSize: 1));
     }
-
-    [Fact]
-    public async Task SearchAuthorsAsync_FilteringByYoungerThan_ReturnsOnlyFirstname()
-    {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(youngerThan: "1990-01-01");
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Single(response);
-        Assert.Contains(response, a => a.FirstName == "Firstname" && a.LastName == "Lastname");
-    }
-
-    [Fact]
-    public async Task SearchAuthorsAsync_FilteringByYoungerThanWithEqualDate_ReturnsEmptyList()
-    {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(youngerThan: "2000-01-01");
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Empty(response);
-    }
-
-    [Fact]
-    public async Task SearchAuthorsAsync_FilteringByYoungerThanWithNoOneMeetingTheCondition_ReturnsEmptyList()
-    {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(youngerThan: "2020-01-01");
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Empty(response);
-    }
-
-    [Fact]
-    public async Task SearchAuthorsAsync_FirstPageOnePerPage_ReturnsOnlyFirstname()
-    {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(page: 1, pageSize: 1);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Single(response);
-        Assert.Contains(response, a => a.FirstName == "Firstname" && a.LastName == "Lastname");
-    }
-
-    [Fact]
-    public async Task SearchAuthorsAsync_FirstPageTwoPerPage_ReturnsBothAuthors()
-    {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(page: 1, pageSize: 2);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.NotEmpty(response);
-        Assert.Equal(2, response.ToList().Count);
-        Assert.Contains(response, a => a.FirstName == "Firstname" && a.LastName == "Lastname");
-        Assert.Contains(response, a => a.FirstName == "John" && a.LastName == "Doe");
-    }
-
-    [Fact]
-    public async Task SearchAuthorsAsync_SecondPageOnePerPage_ReturnsOnlyJohn()
-    {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(page: 2, pageSize: 1);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Single(response);
-        Assert.Contains(response, a => a.FirstName == "John" && a.LastName == "Doe");
-    }
-
-    [Fact]
-    public async Task SearchAuthorsAsync_SecondPageTwoPerPage_ReturnsOnlyJohn()
-    {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(page: 2, pageSize: 2);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Single(response);
-        Assert.Contains(response, a => a.FirstName == "John" && a.LastName == "Doe");
-    }
-
-    [Fact]
-    public async Task SearchAuthorsAsync_ThirdPageTwoPerPage_ReturnsEmptyList()
-    {
-        //Act
-        var response = await authorService.SearchAuthorsAsync(page: 3, pageSize: 2);
-
-        //Assert
-        Assert.NotNull(response);
-        Assert.IsType<List<Author>>(response);
-        Assert.Empty(response);
-    }
+    #endregion
 }

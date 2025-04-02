@@ -28,7 +28,7 @@ public class AuthorService: IAuthorService
     public async Task<Author> GetAuthorByIdAsync(Guid id)
     {
         return await authorRepository.GetByIdAsync(id)
-            ?? throw new KeyNotFoundException($"An author with the specified id ({id}) was not found in the system");
+            ?? throw new KeyNotFoundException($"An author with the specified ID ({id}) was not found in the system.");
     }
     public async Task<Author> CreateAuthorAsync(AuthorPostDTO author)
     {
@@ -37,7 +37,7 @@ public class AuthorService: IAuthorService
             throw new ArgumentException("The author's first name and last name cannot be left empty.");
         }
         DateTime? authorsBornDate = null;
-        if(string.IsNullOrEmpty(author.BornDate))
+        if(!string.IsNullOrEmpty(author.BornDate))
         {
             if(!DateTime.TryParse(author.BornDate, out DateTime notNullAuthorsBornDate))
             {
@@ -45,20 +45,24 @@ public class AuthorService: IAuthorService
             }
             authorsBornDate = notNullAuthorsBornDate;
         }
-        if(author.Tags.Any(tag => tag.Contains(',')))
+        string tagsInString = "";
+        if(author.Tags is not null)
         {
-            throw new FormatException("Invalid tags format. Please do not use commas in tags.");
-        }
+            if(author.Tags.Any(tag => tag.Contains(',')))
+            {
+                throw new FormatException("Invalid tags format. Please do not use commas in tags.");
+            }
 
-        var tagsInString = author.Tags.ToList().Count > 1 
+        tagsInString = author.Tags.ToList().Count > 1 
             ? string.Join(',', author.Tags) 
             : author.Tags.First() ?? "";
+        }
 
         Author newAuthor = new() 
         {
             FirstName = author.FirstName,
             LastName = author.LastName,
-            Description = author.Description,
+            Description = author.Description ?? "",
             BornDate = authorsBornDate,
             Tags = tagsInString
         };
@@ -66,9 +70,9 @@ public class AuthorService: IAuthorService
 
         return newAuthor;
     }
-    public async Task<Author> UpdateAuthorAsync(string id, AuthorPutDTO author)
+    public async Task<Author> UpdateAuthorAsync(AuthorPutDTO author)
     {
-        Author existingAuthor = await GetAuthorByIdAsync(id);
+        Author existingAuthor = await GetAuthorByIdAsync(author.Id);
 
         if(author.FirstName is not null)
         {
@@ -102,6 +106,7 @@ public class AuthorService: IAuthorService
                 }
                 authorsBornDate = notNullAuthorsBornDate;
             }
+            existingAuthor.BornDate = authorsBornDate;
         }
         
         if(author.Tags is not null)
@@ -139,24 +144,35 @@ public class AuthorService: IAuthorService
         int page = 1, 
         int pageSize = 25)
     {
-        if(page <= 0 || pageSize <= 0)
+        if(page < 1)
         {
-            throw new ArgumentOutOfRangeException($"Page ({page}) must be a positive number.");
+            throw new ArgumentException($"Page ({page}) must be greater than zero.");
         }
-        if(pageSize <= 0)
+        if(pageSize < 1)
         {
-            throw new ArgumentOutOfRangeException($"Size of a page ({pageSize}) must be a positive number.");
+            throw new ArgumentException($"Size of a page ({pageSize}) must be greater than zero.");
         }
 
         var searchAuthorsQuery = authorRepository.GetQueryable();
 
         if (!string.IsNullOrEmpty(searchTerm))
-        {       
+        {
+            if(searchTerm.Length < 3)
+            {
+                throw new ArgumentException($"The searching term need to have at least three letters.");
+            }
             searchAuthorsQuery = searchAuthorsQuery.Where(a =>
                 a.FirstName     .Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || a.LastName   .Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || a.Description.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || a.Tags       .Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                || bookRepository.GetQueryable().Any(
+                    b => b.AuthorId == a.Id
+                    && (
+                        b.Title.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                        || b.Tags.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
+                    )
+                )
             );
         }
 
@@ -181,7 +197,7 @@ public class AuthorService: IAuthorService
         var count = searchAuthorsQuery.Count();
         if (count > 0  && page > Math.Ceiling( (decimal)count / pageSize ))
         {
-            throw new InvalidOperationException("Invalid pgae. Not so many authors.");
+            throw new InvalidOperationException("Invalid page. Not so many authors.");
         }
 
         searchAuthorsQuery = searchAuthorsQuery.Skip((page - 1) * pageSize);
@@ -194,7 +210,7 @@ public class AuthorService: IAuthorService
     {
         if(!Guid.TryParse(id, out var authorGuid))
         {
-            throw new FormatException("Invalid ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
+            throw new FormatException("Invalid author ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
         }
         return authorGuid;
     }
