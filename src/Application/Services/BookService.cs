@@ -1,35 +1,22 @@
 ﻿using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.Enumerations;
 using SimpleLibrary.Domain.DTO;
-using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services.Abstraction;
 
 namespace SimpleLibrary.Application.Services;
 
 public class BookService: IBookService
 {
-    private readonly IRepository<Book> bookRepository;
-    private readonly IAuthorService authorService;
-    private readonly IRepository<Copy> copyRepository;
-    private readonly IRepository<Borrowing> borrowingRepository;
-    private readonly IRepository<Category> categoryRepository;
+    private readonly IUnitOfWork unitOfWork;
 
-    public BookService(IRepository<Book> bookRepository, 
-                        IAuthorService authorService, 
-                        IRepository<Copy> copyRepository, 
-                        IRepository<Borrowing> borrowingRepository, 
-                        IRepository<Category> categoryRepository)
+    public BookService(IUnitOfWork unitOfWork)
     {
-        this.bookRepository = bookRepository;
-        this.authorService = authorService;
-        this.copyRepository = copyRepository;
-        this.borrowingRepository = borrowingRepository;
-        this.categoryRepository = categoryRepository;
+        this.unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<Book>> GetAllBooksAsync()
     {
-        return await bookRepository.GetAllAsync();
+        return await unitOfWork.GetRepository<Book>().GetAllAsync();
     }
     public Task<Book> GetBookByIdAsync(string id)
     {
@@ -38,7 +25,7 @@ public class BookService: IBookService
     }
     public async Task<Book> GetBookByIdAsync(Guid id)
     {
-        var result = await bookRepository.GetByIdAsync(id) 
+        var result = await unitOfWork.GetRepository<Book>().GetByIdAsync(id) 
             ?? throw new KeyNotFoundException($"A book with the specified id ({id}) was not found in the system.");
 
         return result;
@@ -59,10 +46,12 @@ public class BookService: IBookService
         }
 
         var categoryGuid = ValidateGuid(book.CategoryId, "category");
-        var category = await categoryRepository.GetByIdAsync(categoryGuid)
-            ?? throw new KeyNotFoundException("Category with the given id is not present in the system.");
+        var category = await unitOfWork.GetRepository<Category>().GetByIdAsync(categoryGuid)
+            ?? throw new KeyNotFoundException($"A category with the specified ID ({book.CategoryId}) was not found in the system.");
 
-        var author = await authorService.GetAuthorByIdAsync(book.AuthorId);
+        var authorGuid = ValidateGuid(book.AuthorId, "author");
+        var author = await unitOfWork.GetRepository<Author>().GetByIdAsync(authorGuid)
+            ?? throw new KeyNotFoundException($"An author with the specified ID ({book.AuthorId}) was not found in the system.");
 
         if(book.Tags.Any(tag => tag.Contains(',')))
         {
@@ -72,7 +61,7 @@ public class BookService: IBookService
             ? string.Join(',', book.Tags.Select(t => t.ToLower())) 
             : book.Tags.First() ?? "";
 
-        bool isThereSimilarBook = bookRepository.GetQueryable()
+        bool isThereSimilarBook = unitOfWork.GetRepository<Book>().GetQueryable()
             .Any(b => b.Title.ToLower() == book.Title.ToLower() 
                 && b.AuthorId == author.Id
             );
@@ -94,10 +83,10 @@ public class BookService: IBookService
             Tags = tagsInString,
         };
 
-        await bookRepository.AddAsync(newBook);
+        await unitOfWork.GetRepository<Book>().AddAsync(newBook);
         return newBook;
     }
-    public async Task<Book> UpdateBookAsync(BookPutDTO book)
+    public async Task<Book> UpdateBookAsync(BookPatchDTO book)
     {
         Book existingBook = await GetBookByIdAsync(book.Id);
 
@@ -147,7 +136,9 @@ public class BookService: IBookService
 
         if(book.AuthorId is not null)
         {
-            var author = await authorService.GetAuthorByIdAsync(book.AuthorId);
+            var authorGuid = ValidateGuid(book.AuthorId, "author");
+            var author = await unitOfWork.GetRepository<Author>().GetByIdAsync(authorGuid)
+                ?? throw new KeyNotFoundException($"An author with the specified ID ({book.AuthorId}) was not found in the system.");
                 
             existingBook.Author = author;
             existingBook.AuthorId = author.Id;
@@ -157,14 +148,14 @@ public class BookService: IBookService
         {
             var categoryGuid = ValidateGuid(book.CategoryId, "category");
 
-            var category = await categoryRepository.GetByIdAsync(categoryGuid)
+            var category = await unitOfWork.GetRepository<Category>().GetByIdAsync(categoryGuid)
                 ?? throw new ArgumentException("Category with the given id is not present in the system.");
                 
             existingBook.Category = category;
             existingBook.CategoryId = categoryGuid;
         }
 
-        bool isThereSimilarBook = bookRepository.GetQueryable()
+        bool isThereSimilarBook = unitOfWork.GetRepository<Book>().GetQueryable()
             .Any(b => b.Id != existingBook.Id 
                 && b.Title.ToLower() == existingBook.Title.ToLower()
                 && b.AuthorId == existingBook.AuthorId
@@ -175,7 +166,8 @@ public class BookService: IBookService
             throw new InvalidOperationException("There is already a similar book in the system.");
         }
 
-        await bookRepository.UpdateAsync(existingBook);
+        unitOfWork.GetRepository<Book>().Update(existingBook);
+        await unitOfWork.SaveChangesAsync();
 
         return existingBook;
     }
@@ -183,14 +175,14 @@ public class BookService: IBookService
     {     
         Book book = await GetBookByIdAsync(id);
 
-        var copies = copyRepository.GetQueryable()
+        var copies = unitOfWork.GetRepository<Copy>().GetQueryable()
             .Where(c => c.BookId == book.Id)
             .Select(c => c.Id)
             .ToList();
 
         foreach(var c in copies)
         {
-            bool areThereActiveBorrowings = borrowingRepository
+            bool areThereActiveBorrowings = unitOfWork.GetRepository<Borrowing>()
                 .GetQueryable()
                 .Any(bor => bor.CopyId == c 
                     && !bor.ActualReturnDate.HasValue
@@ -199,10 +191,10 @@ public class BookService: IBookService
             {
                 throw new InvalidOperationException("The book can not be deleted. There are still active borrowings in the system.");
             }
-            await copyRepository.DeleteAsync(c);
+            await unitOfWork.GetRepository<Copy>().DeleteAsync(c);
         }
 
-        await bookRepository.DeleteAsync(book.Id);
+        await unitOfWork.GetRepository<Book>().DeleteAsync(book.Id);
     }
 
 public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null, 
@@ -220,7 +212,7 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
             throw new ArgumentOutOfRangeException("Page and size of a page must be a positive number.");
         }
 
-        var searchBooksQuery = bookRepository.GetQueryable();
+        var searchBooksQuery = unitOfWork.GetRepository<Book>().GetQueryable();
         // var searchBooksResult = searchBooksQuery.ToList();
         
         if (!string.IsNullOrEmpty(searchTerm))
@@ -243,8 +235,8 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
 
         if (isAvailable.HasValue)
         {
-            var copies = copyRepository.GetAllAsync().GetAwaiter().GetResult().ToList(); //??
-            var borrowings = borrowingRepository.GetAllAsync().GetAwaiter().GetResult().ToList(); //??
+            var copies = unitOfWork.GetRepository<Copy>().GetAllAsync().GetAwaiter().GetResult().ToList(); //??
+            var borrowings = unitOfWork.GetRepository<Borrowing>().GetAllAsync().GetAwaiter().GetResult().ToList(); //??
             if (isAvailable.Value)
             {
                 searchBooksQuery = searchBooksQuery.Where(
@@ -287,15 +279,17 @@ public async Task<IEnumerable<Book>> SearchBooksAsync(string? searchTerm = null,
 
         if (!string.IsNullOrEmpty(authorId))
         {
-            var author = await authorService.GetAuthorByIdAsync(authorId);
-            searchBooksQuery = searchBooksQuery.Where(b => b.AuthorId == author.Id);
+            var authorGuid = ValidateGuid(authorId, "author");
+            var author = await unitOfWork.GetRepository<Author>().GetByIdAsync(authorGuid)
+                ?? throw new KeyNotFoundException($"An author with the specified ID ({authorId}) was not found in the system.");
+
+            searchBooksQuery = searchBooksQuery.Where(b => b.AuthorId == authorGuid);
         }
 
         if (!string.IsNullOrEmpty(categoryId))
         {
             var categoryGuid = ValidateGuid(categoryId, "category");
-            
-            var category = await categoryRepository.GetByIdAsync(categoryGuid)
+            var category = await unitOfWork.GetRepository<Category>().GetByIdAsync(categoryGuid)
                 ?? throw new KeyNotFoundException($"A category with the specified id ({categoryId}) was not found in the system.");
 
             searchBooksQuery = searchBooksQuery.Where(b => b.CategoryId == categoryGuid);

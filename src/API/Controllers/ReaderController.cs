@@ -1,41 +1,70 @@
 ﻿using SimpleLibrary.API.Attributes;
-using SimpleLibrary.Domain.Models;
-using SimpleLibrary.Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using SimpleLibrary.Application.Services.Abstraction;
+using SimpleLibrary.Domain.DTO;
 
 namespace SimpleLibrary.API.Controllers;
 
-[Route("api/reader")]
+[Route("api/readers")]
 [ApiController]
 public class ReaderController : ControllerBase
 {
-    private readonly IRepository<Reader> readerRepository;
+    private readonly IReaderService readerService;
     private readonly ILogger<ReaderController> logger;
-    public ReaderController(IRepository<Reader> readerRepository, ILogger<ReaderController> logger)
+    
+    public ReaderController(IReaderService readerService, ILogger<ReaderController> logger)
     {
-        this.readerRepository = readerRepository;
+        this.readerService = readerService;
         this.logger = logger;
     }
 
-    [HttpGet("/api/readers")]
+    [HttpGet]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> Search(
+        [FromQuery] string? search, 
+        [FromQuery] string? copy, 
+        [FromQuery] bool? banned,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize)
     {
         try
         {
-            logger.LogInformation("GetAll request received.");
-            var result = await readerRepository.GetAllAsync();
+            logger.LogInformation("Search request received.");
+            var result = await readerService.SearchReadersAsync(search, copy, banned, page ?? 1, pageSize ?? 25);
             return Ok(result);
+        }
+        catch(ArgumentException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: ArgumentException catched during invoking Search(search: {search}, copy: {copy}, banned: {banned}, page: {page}, pageSize: {pageSize}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(FormatException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Search(search: {search}, copy: {copy}, banned: {banned}, page: {page}, pageSize: {pageSize}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Search(search: {search}, copy: {copy}, banned: {banned}, page: {page}, pageSize: {pageSize}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(InvalidOperationException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: InvalidOperationException catched during invoking Search(search: {search}, copy: {copy}, banned: {banned}, page: {page}, pageSize: {pageSize}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking GetAll():");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Search(search: {search}, copy: {copy}, banned: {banned}, page: {page}, pageSize: {pageSize}):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, "Unexpected error.");
         }
     }
 
-    // GET api/Reader/5
     [HttpGet("{id}")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Get(string id)
@@ -43,12 +72,7 @@ public class ReaderController : ControllerBase
         try
         {
             logger.LogInformation("Get request received.");
-            if(!Guid.TryParse(id, out var readerGuid))
-            {
-                throw new FormatException("Invalid ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
-            }
-            var result = await readerRepository.GetByIdAsync(readerGuid)
-                ?? throw new KeyNotFoundException($"A category record with the specified ID ({id}) could not be found in the system.");
+            var result = await readerService.GetReaderByIdAsync(id);
             return Ok(result);
         }
         catch(FormatException e)
@@ -71,45 +95,72 @@ public class ReaderController : ControllerBase
         }
     }
 
-    // POST api/Reader
     [HttpPost]
     [ApiKey("Librarian", "Admin")]
-    public async Task<IActionResult> Post(Reader reader)
+    public async Task<IActionResult> Post(ReaderPostDTO reader)
     {
         try
         {
             logger.LogInformation("Post request received.");
-            await readerRepository.AddAsync(reader);
-            return Ok("Object was sucesfully added to the datebase.");
+            var result = await readerService.CreateReaderAsync(reader);
+            return Ok(result);
+        }
+        catch(ArgumentException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: ArgumentException catched during invoking Post(<ReaderPostDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(FormatException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Post(<ReaderPostDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(InvalidOperationException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: InvalidOperationException catched during invoking Post(<ReaderPostDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Post(<Reader Object>):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Post(<ReaderPostDTO Object>):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, "Unexpected error.");
         }
     }
 
-    // PUT api/Reader/5
-    [HttpPut("{id}")]
+    [HttpPatch]
     [ApiKey("Librarian", "Admin")]
-    public async Task<IActionResult> Put(string id, Reader reader)
+    public async Task<IActionResult> Patch(ReaderPatchDTO reader)
     {            
         try
         {
-            logger.LogInformation("Put request received.");
-            await readerRepository.UpdateAsync(reader);
-            return Ok("Object was sucesfully updated in the datebase.");
+            logger.LogInformation("Patch request received.");
+            var result = await readerService.UpdateReaderAsync(reader);
+            return Ok(result);
+        }
+        catch(FormatException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Patch(<ReaderPatchDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Patch(<ReaderPatchDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return NotFound(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Put(id: {id}, <Reader Object>):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<ReaderPatchDTO Object>):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, "Unexpected error.");
         }
     }
 
-    // DELETE api/Reader/5
     [HttpDelete("{id}")]
     [ApiKey("Admin")]
     public async Task<IActionResult> Delete(string id)
@@ -117,11 +168,7 @@ public class ReaderController : ControllerBase
         try
         {
             logger.LogInformation("Delete request received.");
-            if(!Guid.TryParse(id, out var readerGuid))
-            {
-                throw new FormatException("Invalid ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
-            }
-            await readerRepository.DeleteAsync(readerGuid);
+            await readerService.DeleteReaderAsync(id);
             return Ok("Object was sucesfully deleted from the datebase.");
         }
         catch(FormatException e)
@@ -129,6 +176,12 @@ public class ReaderController : ControllerBase
             logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Delete(id: {id}):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
+        }
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Delete(id: {id}):");
+            logger.LogInformation($"    {e.Message}");
+            return NotFound(e.Message);
         }
         catch (Exception e)
         {

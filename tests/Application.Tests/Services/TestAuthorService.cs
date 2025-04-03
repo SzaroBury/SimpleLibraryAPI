@@ -1,22 +1,22 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.DTO;
-using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services;
+using SimpleLibrary.Domain.Repositories;
 
 namespace SimpleLibrary.Tests.Application.Services;
 
 public class TestAuthorService
 {
     private readonly Dictionary<string, Guid> guids = DataInitializer.InitializeGuids();
-    private readonly Mock<IRepository<Author>> mockAuthorRepository = new();
+    private readonly IUnitOfWork unitOfWork;
+    private readonly Mock<IRepository<Author>> mockAuthorRepository;
     private readonly AuthorService authorService;
 
     public TestAuthorService()
     {
-        mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);        
-        Mock<IRepository<Category>> mockCategoryRepository = DataInitializer.InitializeCategories(guids);
-        Mock<IRepository<Book>> mockBookRepository = DataInitializer.InitializeBookRepositoryAsync(guids, mockAuthorRepository, mockCategoryRepository).GetAwaiter().GetResult();
-        authorService = new AuthorService(mockAuthorRepository.Object, mockBookRepository.Object);
+        mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);
+        unitOfWork = DataInitializer.InitializeUnitOfWorkAsync(guids, mockAuthorRepository).GetAwaiter().GetResult().Object;
+        authorService = new AuthorService(unitOfWork);
     }
     #region GetAllAuthorsAsync
     [Fact]
@@ -152,7 +152,7 @@ public class TestAuthorService
     {
         // Arrange
         var authorId = guids["a2"].ToString();
-        var updatedAuthor = new AuthorPutDTO(authorId, firstName, lastName, description, bornDate, tags);
+        var updatedAuthor = new AuthorPatchDTO(authorId, firstName, lastName, description, bornDate, tags);
 
         // Act
         var result = await authorService.UpdateAuthorAsync(updatedAuthor);
@@ -180,7 +180,7 @@ public class TestAuthorService
     public async Task UpdateAuthorAsync_InvalidIdFormat_ThrowsFormatException()
     {
         var invalidAuthorId = "invalid-id-format";
-        var updatedAuthor = new AuthorPutDTO(invalidAuthorId, FirstName: "Updated Name");
+        var updatedAuthor = new AuthorPatchDTO(invalidAuthorId, FirstName: "Updated Name");
 
         var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
 
@@ -191,7 +191,7 @@ public class TestAuthorService
     public async Task UpdateAuthorAsync_NonExistingId_ThrowsKeyNotFoundException()
     {
         var nonExistingAuthorId = Guid.NewGuid().ToString(); // Losowy, nieistniejący ID
-        var updatedAuthor = new AuthorPutDTO(nonExistingAuthorId, FirstName: "Updated Name");
+        var updatedAuthor = new AuthorPatchDTO(nonExistingAuthorId, FirstName: "Updated Name");
 
         var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
 
@@ -203,7 +203,7 @@ public class TestAuthorService
     public async Task UpdateAuthorAsync_EmptyFirstName_ThrowsArgumentException()
     {
         var authorId = guids["a2"].ToString();
-        var updatedAuthor = new AuthorPutDTO(authorId, FirstName: " ");
+        var updatedAuthor = new AuthorPatchDTO(authorId, FirstName: " ");
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
 
@@ -215,7 +215,7 @@ public class TestAuthorService
     public async Task UpdateAuthorAsync_EmptyLastName_ThrowsArgumentException()
     {
         var authorId = guids["a2"].ToString();
-        var updatedAuthor = new AuthorPutDTO(authorId, LastName: " ");
+        var updatedAuthor = new AuthorPatchDTO(authorId, LastName: " ");
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
 
@@ -227,7 +227,7 @@ public class TestAuthorService
     public async Task UpdateAuthorAsync_InvalidBornDate_ThrowsFormatException()
     {
         var authorId = guids["a2"].ToString();
-        var updatedAuthor = new AuthorPutDTO(authorId, BornDate: "invalid-date");
+        var updatedAuthor = new AuthorPatchDTO(authorId, BornDate: "invalid-date");
 
         var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
 
@@ -240,7 +240,7 @@ public class TestAuthorService
     {
         var authorId = guids["a2"].ToString();
         var updatedTags = new List<string> { "Poet,Writer" }; // Nieprawidłowe, bo zawiera przecinek
-        var updatedAuthor = new AuthorPutDTO(authorId, Tags: updatedTags);
+        var updatedAuthor = new AuthorPatchDTO(authorId, Tags: updatedTags);
 
         var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
 

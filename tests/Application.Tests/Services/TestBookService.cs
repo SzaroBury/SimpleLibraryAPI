@@ -1,7 +1,6 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Domain.Repositories;
-using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Application.Services;
 using SimpleLibrary.Domain.Enumerations;
 
@@ -10,20 +9,18 @@ namespace SimpleLibrary.Tests.Application.Services;
 public class TestBookService
 {
     private readonly Dictionary<string, Guid> guids = DataInitializer.InitializeGuids();
+    private readonly IUnitOfWork unitOfWork;
     private readonly Mock<IRepository<Book>> mockBookRepository;
     private readonly BookService bookService;
 
     public TestBookService()
     {   
         Mock<IRepository<Author>> mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);
-        Mock<IAuthorService> mockAuthorService = DataInitializer.InitializeAuthorService(guids);
         Mock<IRepository<Category>> mockCategoryRepository = DataInitializer.InitializeCategories(guids);
         mockBookRepository = DataInitializer.InitializeBookRepositoryAsync(guids, mockAuthorRepository, mockCategoryRepository).GetAwaiter().GetResult();
-        Mock<IRepository<Copy>> mockCopyRepository = DataInitializer.InitializeCopies(guids, mockBookRepository).GetAwaiter().GetResult();
-        Mock<IRepository<Reader>> mockReaderRepository = DataInitializer.InitializeReaders(guids);
-        Mock<IRepository<Borrowing>> mockBorrowingRepository = DataInitializer.InitializeBorrowingsAsync(guids, mockCopyRepository, mockReaderRepository).GetAwaiter().GetResult();
+        unitOfWork = DataInitializer.InitializeUnitOfWorkAsync(guids, mockBookRepository: mockBookRepository).GetAwaiter().GetResult().Object;
 
-        bookService = new(mockBookRepository.Object, mockAuthorService.Object, mockCopyRepository.Object, mockBorrowingRepository.Object, mockCategoryRepository.Object);
+        bookService = new(unitOfWork);
     }
 
     #region SearchBooks
@@ -49,9 +46,9 @@ public class TestBookService
     }
 
     [Theory]
-    [InlineData(true, 2, new[] { "b2", "b3" })]
-    [InlineData(false, 4, new[] { "b1", "b4", "b5", "b6" })]
-    public async Task SearchBooks_ByAvailability_ReturnsExpectedResults(bool isAvailable, int expectedCount, string[] expectedIds)
+    [InlineData(true, new[] { "b1", "b2", "b3", "b6" })]
+    [InlineData(false, new[] { "b4", "b5" })]
+    public async Task SearchBooks_ByAvailability_ReturnsExpectedResults(bool isAvailable, string[] expectedIds)
     {
         // Act
         var response = await bookService.SearchBooksAsync(isAvailable: isAvailable);
@@ -59,7 +56,7 @@ public class TestBookService
         // Assert
         Assert.NotNull(response);
         Assert.IsAssignableFrom<IEnumerable<Book>>(response);
-        Assert.Equal(expectedCount, response.ToList().Count);
+        Assert.Equal(expectedIds.Count(), response.Count());
         foreach (var expectedId in expectedIds)
         {
             Assert.Contains(response, b => b.Id == guids[expectedId]);
@@ -182,7 +179,7 @@ public class TestBookService
         var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => 
             bookService.SearchBooksAsync(authorId: nonExistingAuthorId)
         );
-        Assert.Equal($"An author with the specified id ({nonExistingAuthorId}) was not found in the system.", exception.Message);
+        Assert.Equal($"An author with the specified ID ({nonExistingAuthorId}) was not found in the system.", exception.Message);
     }
 
     [Fact]
@@ -377,6 +374,7 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_NonExistingCategory_ThrowsKeyNotFoundException()
     {
+        var nonExistingCategoryId = Guid.Empty.ToString();
         var someBook = new BookPostDTO(
             "Some book",
             "Desc of some book",
@@ -384,14 +382,14 @@ public class TestBookService
             "Polish",
             ["novel"],
             guids["a2"].ToString(),
-            Guid.Empty.ToString()
+            nonExistingCategoryId
         );
 
         //Act & Assert
         var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => 
             bookService.CreateBookAsync(someBook)
         );
-        Assert.Equal("Category with the given id is not present in the system.", exception.Message);
+        Assert.Equal($"A category with the specified ID ({nonExistingCategoryId}) was not found in the system.", exception.Message);
     }
 
     [Fact]
@@ -430,7 +428,7 @@ public class TestBookService
         var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => 
             bookService.CreateBookAsync(someBook)
         );
-        Assert.Equal($"An author with the specified id ({guids["c1"]}) was not found in the system.", exception.Message);
+        Assert.Equal($"An author with the specified ID ({guids["c1"]}) was not found in the system.", exception.Message);
     }
 
     [Fact]
@@ -474,7 +472,7 @@ public class TestBookService
         var authorId = guids["a2"].ToString();
         var categoryId = guids["c2"].ToString();
 
-        var someOlderBook = new BookPutDTO(
+        var someOlderBook = new BookPatchDTO(
             bookId,
             Title: "Some older book",
             Description: "Test description",
@@ -504,7 +502,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidFormatOfBookId_ThrowsFormatException()
     {
-        var someUnknownBook = new BookPutDTO(
+        var someUnknownBook = new BookPatchDTO(
             Id: "test",
             Title: "Some book"
         );
@@ -518,7 +516,7 @@ public class TestBookService
     public async Task UpdateBook_NonExistingBook_ThrowsKeyNotFoundException()
     {
         var nonExistingBookId = Guid.Empty.ToString();
-        var someUnknownBook = new BookPutDTO(
+        var someUnknownBook = new BookPatchDTO(
             Id: nonExistingBookId,
             Title: "Some book"
         );
@@ -531,7 +529,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_EmptyTitle_ThrowsArgumentException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             Title: ""
         );
@@ -544,7 +542,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidDateFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             ReleaseDate: "Hello world"
         );
@@ -557,7 +555,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidLanguageFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             Language: "Simlish"
         );
@@ -570,7 +568,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidTagsFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             Tags: ["novel,", "book"]
         );
@@ -583,7 +581,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidAuthorIdFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             AuthorId: "test"
         );
@@ -597,20 +595,20 @@ public class TestBookService
     public async Task UpdateBook_NonExistingAuthor_ThrowsKeyNotFoundException()
     {
         var nonExistingAuthorId = Guid.Empty.ToString();
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             AuthorId: nonExistingAuthorId
         );
 
         //Act & Assert
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => bookService.UpdateBookAsync(someUpdatedBook));
-        Assert.Equal($"An author with the specified id ({nonExistingAuthorId}) was not found in the system.", ex.Message);
+        Assert.Equal($"An author with the specified ID ({nonExistingAuthorId}) was not found in the system.", ex.Message);
     }
 
     [Fact]
     public async Task UpdateBook_InvalidCategoryIdFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             CategoryId: "test"
         );
@@ -624,7 +622,7 @@ public class TestBookService
     public async Task UpdateBook_NonExistingCategory_ThrowsArgumentException()
     {
         var nonExistingCategoryId = Guid.Empty.ToString();
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             CategoryId: nonExistingCategoryId
         );
@@ -637,7 +635,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_SimilarBookExisting_ThrowsInvalidOperationException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b4"].ToString(),
             Title: "Dziady część III"
         );

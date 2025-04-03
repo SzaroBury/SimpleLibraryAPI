@@ -1,5 +1,4 @@
 using SimpleLibrary.Domain.Models;
-using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Domain.DTO;
 
@@ -7,18 +6,16 @@ namespace SimpleLibrary.Application.Services;
 
 public class AuthorService: IAuthorService
 {
-    private readonly IRepository<Author> authorRepository;
-    private readonly IRepository<Book> bookRepository;
+    private readonly IUnitOfWork unitOfWork;
 
-    public AuthorService(IRepository<Author> authorRepository, IRepository<Book> bookRepository)
+    public AuthorService(IUnitOfWork unitOfWork)
     {
-        this.authorRepository = authorRepository;
-        this.bookRepository = bookRepository;
+        this.unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<Author>> GetAllAuthorsAsync()
     {
-        return await authorRepository.GetAllAsync();
+        return await unitOfWork.GetRepository<Author>().GetAllAsync();
     }
     public async Task<Author> GetAuthorByIdAsync(string id)
     {
@@ -27,7 +24,7 @@ public class AuthorService: IAuthorService
     }
     public async Task<Author> GetAuthorByIdAsync(Guid id)
     {
-        return await authorRepository.GetByIdAsync(id)
+        return await unitOfWork.GetRepository<Author>().GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"An author with the specified ID ({id}) was not found in the system.");
     }
     public async Task<Author> CreateAuthorAsync(AuthorPostDTO author)
@@ -66,11 +63,12 @@ public class AuthorService: IAuthorService
             BornDate = authorsBornDate,
             Tags = tagsInString
         };
-        await authorRepository.AddAsync(newAuthor);
+        await unitOfWork.GetRepository<Author>().AddAsync(newAuthor);
+        await unitOfWork.SaveChangesAsync();
 
         return newAuthor;
     }
-    public async Task<Author> UpdateAuthorAsync(AuthorPutDTO author)
+    public async Task<Author> UpdateAuthorAsync(AuthorPatchDTO author)
     {
         Author existingAuthor = await GetAuthorByIdAsync(author.Id);
 
@@ -121,21 +119,23 @@ public class AuthorService: IAuthorService
             existingAuthor.Tags = tagsInString;
         }
         
-        await authorRepository.UpdateAsync(existingAuthor);
+        unitOfWork.GetRepository<Author>().Update(existingAuthor);
+        await unitOfWork.SaveChangesAsync();
         return existingAuthor;
     }
     public async Task DeleteAuthorAsync(string id)
     {
         var author = await GetAuthorByIdAsync(id);
 
-        var books = bookRepository.GetQueryable().Where(b => b.AuthorId == author.Id).ToList();
+        var books = unitOfWork.GetRepository<Book>().GetQueryable().Where(b => b.AuthorId == author.Id).ToList();
 
         if(books.Count > 0)
         {
             string joinedBooks = string.Join(", ", books.Select(b => b.Title));
             throw new InvalidOperationException($"The author cannot be deleted as there are still books associated with this author in the system: {joinedBooks}.");
         }
-        await authorRepository.DeleteAsync(author.Id);
+        await unitOfWork.GetRepository<Author>().DeleteAsync(author.Id);
+        await unitOfWork.SaveChangesAsync();
     }
     public Task<IEnumerable<Author>> SearchAuthorsAsync(
         string? searchTerm = null, 
@@ -153,7 +153,7 @@ public class AuthorService: IAuthorService
             throw new ArgumentException($"Size of a page ({pageSize}) must be greater than zero.");
         }
 
-        var searchAuthorsQuery = authorRepository.GetQueryable();
+        var searchAuthorsQuery = unitOfWork.GetRepository<Author>().GetQueryable();
 
         if (!string.IsNullOrEmpty(searchTerm))
         {
@@ -166,7 +166,7 @@ public class AuthorService: IAuthorService
                 || a.LastName   .Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || a.Description.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
                 || a.Tags       .Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)
-                || bookRepository.GetQueryable().Any(
+                || unitOfWork.GetRepository<Book>().GetQueryable().Any(
                     b => b.AuthorId == a.Id
                     && (
                         b.Title.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase)

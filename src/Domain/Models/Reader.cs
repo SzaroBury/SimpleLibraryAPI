@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SimpleLibrary.Domain.Models;
+﻿namespace SimpleLibrary.Domain.Models;
 
 public class Reader
 {

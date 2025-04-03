@@ -11,16 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Adding services to the container.
 builder.Services.AddDbContext<LibraryEFContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AppModel")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//builder.Services.AddIdentity<User, Role>(options =>
-//{
-//    options.User.RequireUniqueEmail = true;
-//}).AddEntityFrameworkStores<IdentityContext>();
-
-builder.Services.AddScoped(typeof(IRepository<>),   typeof(Repository<>));
-builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IBorrowingService, BorrowingService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ICopyService, CopyService>();
+builder.Services.AddScoped<IReaderService, ReaderService>();
 
 builder.Services.AddControllers().AddJsonOptions(x =>
 {
