@@ -31,13 +31,11 @@ public class Repository<T> : IRepository<T> where T : class
     public async Task AddAsync(T entity)
     {
         await dbSet.AddAsync(entity);
-        await context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(T entity)
+    public void Update(T entity)
     {
         dbSet.Update(entity);
-        await context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
@@ -46,7 +44,6 @@ public class Repository<T> : IRepository<T> where T : class
         if (entity != null)
         {
             dbSet.Remove(entity);
-            await context.SaveChangesAsync();
         }
     }
 }

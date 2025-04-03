@@ -99,7 +99,7 @@ public class BorrowingController : ControllerBase
         try
         {
             logger.LogInformation("Put request received.");
-            await borrowingRepository.UpdateAsync(borrowing);
+            borrowingRepository.Update(borrowing);
             return Ok("Object was sucesfully updated in the datebase.");
         }
         catch (Exception e)

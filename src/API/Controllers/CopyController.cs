@@ -99,7 +99,7 @@ public class CopyController : ControllerBase
         try
         {
             logger.LogInformation("Put request received.");
-            await copyRepository.UpdateAsync(copy);
+            copyRepository.Update(copy);
             return Ok("Object was sucesfully updated in the datebase.");
         }
         catch (Exception e)

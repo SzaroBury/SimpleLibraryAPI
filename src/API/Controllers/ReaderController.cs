@@ -98,7 +98,7 @@ public class ReaderController : ControllerBase
         try
         {
             logger.LogInformation("Put request received.");
-            await readerRepository.UpdateAsync(reader);
+            readerRepository.Update(reader);
             return Ok("Object was sucesfully updated in the datebase.");
         }
         catch (Exception e)

@@ -99,7 +99,7 @@ public class CategoryController : ControllerBase
         try
         {
             logger.LogInformation("Put request received.");
-            await categoryRepository.UpdateAsync(category);
+            categoryRepository.Update(category);
             return Ok("Object was sucesfully updated in the datebase.");
         }
         catch (Exception e)
