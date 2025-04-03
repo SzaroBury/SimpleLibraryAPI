@@ -1,22 +1,25 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.DTO;
-using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services;
+using SimpleLibrary.Domain.Repositories;
 
 namespace SimpleLibrary.Tests.Application.Services;
 
 public class TestAuthorService
 {
     private readonly Dictionary<string, Guid> guids = DataInitializer.InitializeGuids();
-    private readonly Mock<IRepository<Author>> mockAuthorRepository = new();
+    private readonly IUnitOfWork unitOfWork;
+    private readonly Mock<IRepository<Author>> mockAuthorRepository;
     private readonly AuthorService authorService;
 
     public TestAuthorService()
     {
-        mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);        
-        Mock<IRepository<Category>> mockCategoryRepository = DataInitializer.InitializeCategories(guids);
-        Mock<IRepository<Book>> mockBookRepository = DataInitializer.InitializeBookRepositoryAsync(guids, mockAuthorRepository, mockCategoryRepository).GetAwaiter().GetResult();
-        authorService = new AuthorService(mockAuthorRepository.Object, mockBookRepository.Object);
+        mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);
+        unitOfWork = DataInitializer.InitializeUnitOfWork(guids, mockAuthorRepository).Object;
+        authorService = new AuthorService(unitOfWork);
+
+        Console.WriteLine($"Mock repo: {mockAuthorRepository.GetHashCode()}");
+        Console.WriteLine($"Repo z UnitOfWork: {unitOfWork.GetRepository<Author>().GetHashCode()}");
     }
     #region GetAllAuthorsAsync
     [Fact]

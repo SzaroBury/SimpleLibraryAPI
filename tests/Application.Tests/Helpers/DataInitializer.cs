@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Domain.Enumerations;
 using SimpleLibrary.Domain.Models;
@@ -54,6 +55,7 @@ public static class DataInitializer
         mockAuthorRepository.Setup(repo => repo.GetByIdAsync(guids["a2"])).ReturnsAsync(a2);
         mockAuthorRepository.Setup(repo => repo.GetByIdAsync(guids["a3"])).ReturnsAsync(a3);
         mockAuthorRepository.Setup(repo => repo.GetByIdAsync(guids["a4"])).ReturnsAsync(a4);
+        mockAuthorRepository.Setup(repo => repo.DeleteAsync(It.IsAny<Guid>())).Returns(Task.CompletedTask);
         return mockAuthorRepository;
     }
 
@@ -205,6 +207,29 @@ public static class DataInitializer
         mockBorrowingRepository.Setup(repo => repo.GetByIdAsync(guids["bor6"])).ReturnsAsync(bor6);
 
         return mockBorrowingRepository;
+    }
+
+    public static Mock<IUnitOfWork> InitializeUnitOfWork(
+        Dictionary<string, Guid> guids, 
+        Mock<IRepository<Author>>? mockAuthorRepository = null,
+        Mock<IRepository<Book>>? mockBookRepository = null)
+    {
+        var authorRepository    = mockAuthorRepository ?? InitializeAuthorRepository(guids);
+        var categoryRepository  = InitializeCategories(guids);
+        var bookRepository      = mockBookRepository ?? InitializeBookRepositoryAsync(guids, authorRepository, categoryRepository).GetAwaiter().GetResult();
+        var copyRepository      = InitializeCopies(guids, bookRepository).GetAwaiter().GetResult();
+        var readerRepository    = InitializeReaders(guids);
+        var borrowingRepository = InitializeBorrowingsAsync(guids, copyRepository, readerRepository).GetAwaiter().GetResult();
+
+        Mock<IUnitOfWork> mockUnitOfWork = new();
+        mockUnitOfWork.Setup(uow => uow.GetRepository<Author>()).Returns(authorRepository.Object);
+        mockUnitOfWork.Setup(uow => uow.GetRepository<Category>()).Returns(categoryRepository.Object);
+        mockUnitOfWork.Setup(uow => uow.GetRepository<Book>()).Returns(bookRepository.Object);
+        mockUnitOfWork.Setup(uow => uow.GetRepository<Copy>()).Returns(copyRepository.Object);
+        mockUnitOfWork.Setup(uow => uow.GetRepository<Reader>()).Returns(readerRepository.Object);
+        mockUnitOfWork.Setup(uow => uow.GetRepository<Borrowing>()).Returns(borrowingRepository.Object);
+        mockUnitOfWork.Setup(uow => uow.SaveChangesAsync()).ReturnsAsync(0);
+        return mockUnitOfWork;
     }
 
     private static bool IsValidGuid(string input)
