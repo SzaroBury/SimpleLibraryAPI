@@ -5,10 +5,10 @@ namespace SimpleLibrary.Application.Services.Abstraction;
 public interface ICategoryService
 {
     Task<IEnumerable<Category>> GetAllCategoriesAsync();
-    Task<Category> GetCategoryByIdAsync(int id);
+    Task<Category> GetCategoryByIdAsync(string id);
     Task<Category> CreateCategoryAsync(Category Category);
     Task<Category> UpdateCategoryAsync(Category Category);
-    Task DeleteCategoryAsync(int id);
+    Task DeleteCategoryAsync(string id);
     Task<IEnumerable<Category>> SearchCategoriesAsync(
         string? searchTerm = null, 
         int? parentCategoryId = null,

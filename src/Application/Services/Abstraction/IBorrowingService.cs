@@ -5,10 +5,10 @@ namespace SimpleLibrary.Application.Services.Abstraction;
 public interface IBorrowingService
 {
     Task<IEnumerable<Borrowing>> GetAllBorrowingsAsync();
-    Task<Borrowing> GetBorrowingByIdAsync(int id);
+    Task<Borrowing> GetBorrowingByIdAsync(string id);
     Task<Borrowing> CreateBorrowingAsync(Borrowing borrowing);
     Task<Borrowing> UpdateBorrowingAsync(Borrowing borrowing);
-    Task DeleteBorrowingAsync(int id);
+    Task DeleteBorrowingAsync(string id);
     Task<IEnumerable<Borrowing>> SearchBorrowingsAsync(
         string? searchTerm = null, 
         string? olderThan = null, 
