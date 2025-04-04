@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SimpleLibrary.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/books")]
 [ApiController]
 public class BookController : ControllerBase
 {
@@ -18,7 +18,7 @@ public class BookController : ControllerBase
         this.bookService = bookService;
     }
 
-    [HttpGet("~/api/Books")]
+    [HttpGet]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> GetAll(
         [FromQuery] string search = "",
@@ -27,21 +27,34 @@ public class BookController : ControllerBase
         [FromQuery] string newerThan = "",
         [FromQuery] string author = "",
         [FromQuery] string category = "",
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 25)
+        [FromQuery] int? page = null,
+        [FromQuery] int? pageSize = null)
     {
         try
         {
             logger.LogInformation($"GetAll ({Request.QueryString})");
 
-            var result = await bookService.SearchBooksAsync(search, isAvailable, olderThan, newerThan, author, category, page, pageSize);
+            var result = await bookService.SearchBooksAsync(search, isAvailable, olderThan, newerThan, author, category, page ?? 1, pageSize ?? 25);
 
             return Ok(result);
         }
+        catch(ArgumentException e)
+        {
+            logger.LogInformation($"ArgumentException catched during invoking GetAll(search: {search}, olderThan: {olderThan}, newerThan: {newerThan}, author: {author}, category: {category}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(FormatException e)
+        {
+            logger.LogInformation($"FormatException catched during invoking GetAll(search: {search}, olderThan: {olderThan}, newerThan: {newerThan}, author: {author}, category: {category}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
         catch (Exception e)
         {
-            logger.LogError($"{HttpContext.Connection.RemoteIpAddress} -> BookController.GetAll() -> {e.Message}");
-            return StatusCode(500, $"Error: {e.Message}");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking GetAll(search: {search}, olderThan: {olderThan}, newerThan: {newerThan}, author: {author}, category: {category}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
+            logger.LogError($"    {e.Message}");
+            return StatusCode(500, $"Unexpected error.");
         }
     }
 
@@ -52,19 +65,26 @@ public class BookController : ControllerBase
         try
         {
             logger.LogInformation("Get request received.");
-
             var result = await bookService.GetBookByIdAsync(id);
-            
             return Ok(result);
         }
-        catch(KeyNotFoundException)
+        catch(FormatException e)
         {
-            return NotFound();
+            logger.LogInformation($"FormatException catched during invoking Get(id: {id}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"KeyNotFoundException catched during invoking Get(id: {id}):");
+            logger.LogInformation($"    {e.Message}");
+            return NotFound(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{HttpContext.Connection.RemoteIpAddress} -> BookController.Get(id: {id}) -> {e.Message}");
-            return StatusCode(500, $"Error: {e.Message}");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Get(id: {id}):");
+            logger.LogError($"    {e.Message}");
+            return StatusCode(500, $"Unexpected error.");
         }
     }
 
@@ -78,16 +98,41 @@ public class BookController : ControllerBase
             await bookService.CreateBookAsync(book);
             return StatusCode(200, "Object was sucesfully added to the datebase.");
         }
+        catch(ArgumentException e)
+        {
+            logger.LogInformation($"ArgumentException catched during invoking Post(<BookPostDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(FormatException e)
+        {
+            logger.LogInformation($"FormatException catched during invoking Post(<BookPostDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"KeyNotFoundException catched during invoking Post(<BookPostDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(InvalidOperationException e)
+        {
+            logger.LogInformation($"InvalidOperationException catched during invoking Post(<BookPostDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
         catch (Exception e)
         {
-            return StatusCode(500, $"Error: {e.Message}");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Post(<BookPostDTO Object>):");
+            logger.LogError($"    {e.Message}");
+            return StatusCode(500, $"Unexpected error.");
         }
-
     }
 
     [HttpPut]
     [ApiKey("Librarian", "Admin")]
-    public async Task<IActionResult> Update(BookPutDTO book)
+    public async Task<IActionResult> Put(BookPutDTO book)
     {
         try
         {
@@ -95,13 +140,35 @@ public class BookController : ControllerBase
             var result = await bookService.UpdateBookAsync(book);
             return Ok(result);
         }
-        catch(KeyNotFoundException)
+        catch(FormatException e)
         {
-            return NotFound();
+            logger.LogInformation($"FormatException catched during invoking Put(<BookPutDTO Object, Id: {book.Id}>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"KeyNotFoundException catched during invoking Put(<BookPutDTO Object, Id: {book.Id}>):");
+            logger.LogInformation($"    {e.Message}");
+            return NotFound(e.Message);
+        }
+        catch(ArgumentException e)
+        {
+            logger.LogInformation($"ArgumentException catched during invoking Put(<BookPutDTO Object, Id: {book.Id}>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }        
+        catch(InvalidOperationException e)
+        {
+            logger.LogInformation($"InvalidOperationException catched during invoking Put(<BookPutDTO Object, Id: {book.Id}>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            return StatusCode(500, $"Error: {e.Message}");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Put(<BookPutDTO Object, Id: {book.Id}>):");
+            logger.LogError($"    {e.Message}");
+            return StatusCode(500, $"Unexpected error.");
         }
     }
 
@@ -115,13 +182,23 @@ public class BookController : ControllerBase
             await bookService.DeleteBookAsync(id);
             return Ok();
         }
-        catch(KeyNotFoundException)
+        catch(FormatException e)
         {
-            return NotFound();
+            logger.LogInformation($"FormatException catched during invoking Delete(id: {id}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }        
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"KeyNotFoundException catched during invoking Delete(id: {id}):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            return StatusCode(500, $"Error: {e.Message}");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Delete(id: {id}):");
+            logger.LogError($"    {e.Message}");
+            return StatusCode(500, $"Unexpected error.");
         }
     }
 }
