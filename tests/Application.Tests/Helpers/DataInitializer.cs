@@ -31,6 +31,9 @@ public static class DataInitializer
             ["b3_c5"] = Guid.NewGuid(),
             ["b4_c6"] = Guid.NewGuid(),
             ["r"] = Guid.NewGuid(),
+            ["r2"] = Guid.NewGuid(),
+            ["r3"] = Guid.NewGuid(),
+            ["r4"] = Guid.NewGuid(),
             ["bor1"] = Guid.NewGuid(),
             ["bor2"] = Guid.NewGuid(),
             ["bor3"] = Guid.NewGuid(),
@@ -165,13 +168,19 @@ public static class DataInitializer
 
     public static Mock<IRepository<Reader>> InitializeReaders(Dictionary<string, Guid> guids)
     {
-        Reader r = new() { Id = guids["r"], CardNumber = "000-111-222", FirstName = "Jan", LastName = "Kowalski", Email = "jan.kowalski@mail.com", Phone = "+48 789 456 123" };
-        List<Reader> readers = [r];
+        Reader r  = new() { Id = guids["r"],  CardNumber = "012", FirstName = "Jan",   LastName = "Kowalski", Email = "jan.kowalski@mail.com",  Phone = "+48 789 456 123" };
+        Reader r2 = new() { Id = guids["r2"], CardNumber = "123", FirstName = "John",  LastName = "Stones",   Email = "john.stones@mail.com",   Phone = "+44 123 456 789" };
+        Reader r3 = new() { Id = guids["r3"], CardNumber = "234", FirstName = "Marek", LastName = "Konarek",  Email = "marek.konarek@mail.com", Phone = "+44 123 456 789" };
+        Reader r4 = new() { Id = guids["r4"], CardNumber = "345", FirstName = "Piotr", LastName = "Nowak",    Email = "piotrek.nowak@mail.com", Phone = "+44 123 456 789", IsBanned = true, BannedDate = DateTime.Today };
+        List<Reader> readers = [r, r2, r3, r4];
 
         Mock<IRepository<Reader>> mockReaderRepository = new();
         mockReaderRepository.Setup(repo => repo.GetAllAsync()).ReturnsAsync(readers);
         mockReaderRepository.Setup(repo => repo.GetQueryable()).Returns(readers.AsQueryable());
         mockReaderRepository.Setup(repo => repo.GetByIdAsync(guids["r"])).ReturnsAsync(r);
+        mockReaderRepository.Setup(repo => repo.GetByIdAsync(guids["r2"])).ReturnsAsync(r2);
+        mockReaderRepository.Setup(repo => repo.GetByIdAsync(guids["r3"])).ReturnsAsync(r3);
+        mockReaderRepository.Setup(repo => repo.GetByIdAsync(guids["r4"])).ReturnsAsync(r4);
 
         return mockReaderRepository;
     }
@@ -212,13 +221,14 @@ public static class DataInitializer
     public static Mock<IUnitOfWork> InitializeUnitOfWork(
         Dictionary<string, Guid> guids, 
         Mock<IRepository<Author>>? mockAuthorRepository = null,
-        Mock<IRepository<Book>>? mockBookRepository = null)
+        Mock<IRepository<Book>>? mockBookRepository = null,
+        Mock<IRepository<Reader>>? mockReaderRepository = null)
     {
         var authorRepository    = mockAuthorRepository ?? InitializeAuthorRepository(guids);
         var categoryRepository  = InitializeCategories(guids);
         var bookRepository      = mockBookRepository ?? InitializeBookRepositoryAsync(guids, authorRepository, categoryRepository).GetAwaiter().GetResult();
         var copyRepository      = InitializeCopies(guids, bookRepository).GetAwaiter().GetResult();
-        var readerRepository    = InitializeReaders(guids);
+        var readerRepository    = mockReaderRepository ?? InitializeReaders(guids);
         var borrowingRepository = InitializeBorrowingsAsync(guids, copyRepository, readerRepository).GetAwaiter().GetResult();
 
         Mock<IUnitOfWork> mockUnitOfWork = new();
