@@ -17,9 +17,6 @@ public class TestAuthorService
         mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);
         unitOfWork = DataInitializer.InitializeUnitOfWork(guids, mockAuthorRepository).Object;
         authorService = new AuthorService(unitOfWork);
-
-        Console.WriteLine($"Mock repo: {mockAuthorRepository.GetHashCode()}");
-        Console.WriteLine($"Repo z UnitOfWork: {unitOfWork.GetRepository<Author>().GetHashCode()}");
     }
     #region GetAllAuthorsAsync
     [Fact]
