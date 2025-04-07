@@ -1,5 +1,6 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Application.Services.Abstraction;
+using SimpleLibrary.Domain.DTO;
 
 namespace SimpleLibrary.Application.Services;
 
@@ -26,14 +27,23 @@ public class ReaderService: IReaderService
         return await unitOfWork.GetRepository<Reader>().GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"A Reader with the specified ID ({id}) was not found in the system.");
     }
-    public async Task<Reader> CreateReaderAsync(Reader reader)
+    public async Task<Reader> CreateReaderAsync(ReaderPostDTO reader)
     {
-        await unitOfWork.GetRepository<Reader>().AddAsync(reader);
+        Reader newReader = new() {
+            Id = Guid.NewGuid(),
+            FirstName = reader.FirstName,
+            LastName = reader.LastName,
+            CardNumber = "",
+            Email = reader.Email,
+            Phone = reader.Phone
+        };
+
+        await unitOfWork.GetRepository<Reader>().AddAsync(newReader);
         await unitOfWork.SaveChangesAsync();
 
-        return reader;
+        return newReader;
     }
-    public async Task<Reader> UpdateReaderAsync(Reader reader)
+    public async Task<Reader> UpdateReaderAsync(ReaderPutDTO reader)
     {
         Reader existingReader = await GetReaderByIdAsync(reader.Id);
         
@@ -51,7 +61,8 @@ public class ReaderService: IReaderService
     }
     public Task<IEnumerable<Reader>> SearchReadersAsync(
         string? searchTerm = null,
-        int? copyId = null,
+        string? copyId = null,
+        bool? isBanned = null,
         int page = 1, 
         int pageSize = 25)
     {
