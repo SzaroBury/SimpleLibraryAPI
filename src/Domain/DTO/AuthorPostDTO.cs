@@ -1,6 +1,7 @@
 namespace SimpleLibrary.Domain.DTO;
 
-public record AuthorPostDTO(
+public record AuthorPostDTO
+(
     string FirstName, 
     string LastName,
     string? Description, 
