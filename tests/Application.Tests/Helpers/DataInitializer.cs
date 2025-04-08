@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Domain.Enumerations;
 using SimpleLibrary.Domain.Models;
@@ -30,7 +29,7 @@ public static class DataInitializer
             ["b2_c4"] = Guid.NewGuid(),
             ["b3_c5"] = Guid.NewGuid(),
             ["b4_c6"] = Guid.NewGuid(),
-            ["r"] = Guid.NewGuid(),
+            ["r1"] = Guid.NewGuid(),
             ["r2"] = Guid.NewGuid(),
             ["r3"] = Guid.NewGuid(),
             ["r4"] = Guid.NewGuid(),
@@ -168,16 +167,16 @@ public static class DataInitializer
 
     public static Mock<IRepository<Reader>> InitializeReaders(Dictionary<string, Guid> guids)
     {
-        Reader r  = new() { Id = guids["r"],  CardNumber = "012", FirstName = "Jan",   LastName = "Kowalski", Email = "jan.kowalski@mail.com",  Phone = "+48 789 456 123" };
-        Reader r2 = new() { Id = guids["r2"], CardNumber = "123", FirstName = "John",  LastName = "Stones",   Email = "john.stones@mail.com",   Phone = "+44 123 456 789" };
-        Reader r3 = new() { Id = guids["r3"], CardNumber = "234", FirstName = "Marek", LastName = "Konarek",  Email = "marek.konarek@mail.com", Phone = "+44 123 456 789" };
-        Reader r4 = new() { Id = guids["r4"], CardNumber = "345", FirstName = "Piotr", LastName = "Nowak",    Email = "piotrek.nowak@mail.com", Phone = "+44 123 456 789", IsBanned = true, BannedDate = DateTime.Today };
+        Reader r  = new() { Id = guids["r1"],  CardNumber = "012", FirstName = "Jan",   LastName = "Kowalski", Email = "jan.kowalski@mail.com",  Phone = "+48789456123" };
+        Reader r2 = new() { Id = guids["r2"], CardNumber = "123", FirstName = "John",  LastName = "Stones",   Email = "john.stones@mail.com",   Phone = "+44123456789" };
+        Reader r3 = new() { Id = guids["r3"], CardNumber = "234", FirstName = "Marek", LastName = "Konarek",  Email = "marek.konarek@mail.com", Phone = "+48879456789" };
+        Reader r4 = new() { Id = guids["r4"], CardNumber = "345", FirstName = "Piotr", LastName = "Nowak",    Email = "example@mail.com",       Phone = "+48978456789", IsBanned = true, BannedDate = DateTime.Today };
         List<Reader> readers = [r, r2, r3, r4];
 
         Mock<IRepository<Reader>> mockReaderRepository = new();
         mockReaderRepository.Setup(repo => repo.GetAllAsync()).ReturnsAsync(readers);
         mockReaderRepository.Setup(repo => repo.GetQueryable()).Returns(readers.AsQueryable());
-        mockReaderRepository.Setup(repo => repo.GetByIdAsync(guids["r"])).ReturnsAsync(r);
+        mockReaderRepository.Setup(repo => repo.GetByIdAsync(guids["r1"])).ReturnsAsync(r);
         mockReaderRepository.Setup(repo => repo.GetByIdAsync(guids["r2"])).ReturnsAsync(r2);
         mockReaderRepository.Setup(repo => repo.GetByIdAsync(guids["r3"])).ReturnsAsync(r3);
         mockReaderRepository.Setup(repo => repo.GetByIdAsync(guids["r4"])).ReturnsAsync(r4);
@@ -195,14 +194,15 @@ public static class DataInitializer
         var c3 = await mockCopyRepository.Object.GetByIdAsync(guids["b2_c3"]) ?? throw new KeyNotFoundException("Copy c3 not found.");
         var c5 = await mockCopyRepository.Object.GetByIdAsync(guids["b3_c5"]) ?? throw new KeyNotFoundException("Copy c5 not found.");
         var c6 = await mockCopyRepository.Object.GetByIdAsync(guids["b4_c6"]) ?? throw new KeyNotFoundException("Copy c6 not found.");
-        var r1 = await mockReaderRepository.Object.GetByIdAsync(guids["r"]) ?? throw new KeyNotFoundException("Reader r1 not found.");
+        var r1 = await mockReaderRepository.Object.GetByIdAsync(guids["r1"]) ?? throw new KeyNotFoundException("Reader r1 not found.");
+        var r4 = await mockReaderRepository.Object.GetByIdAsync(guids["r4"]) ?? throw new KeyNotFoundException("Reader r4 not found.");
 
-        Borrowing bor1 = new() { Id = guids["bor1"], Copy = c1, CopyId = guids["b1_c1"], Reader = r1, ReaderId = guids["r"], StartedDate = DateTime.Now.AddDays(-5) };
-        Borrowing bor2 = new() { Id = guids["bor2"], Copy = c2, CopyId = guids["b1_c2"], Reader = r1, ReaderId = guids["r"], StartedDate = DateTime.Now.AddDays(-5) };
-        Borrowing bor3 = new() { Id = guids["bor3"], Copy = c3, CopyId = guids["b2_c3"], Reader = r1, ReaderId = guids["r"], StartedDate = DateTime.Now.AddDays(-5) };
-        Borrowing bor4 = new() { Id = guids["bor4"], Copy = c5, CopyId = guids["b3_c5"], Reader = r1, ReaderId = guids["r"], StartedDate = DateTime.Now.AddDays(-5), ActualReturnDate = DateTime.Now.AddDays(-2) };
-        Borrowing bor5 = new() { Id = guids["bor5"], Copy = c6, CopyId = guids["b4_c6"], Reader = r1, ReaderId = guids["r"], StartedDate = DateTime.Now.AddDays(-15), ActualReturnDate = DateTime.Now.AddDays(-10) };
-        Borrowing bor6 = new() { Id = guids["bor6"], Copy = c6, CopyId = guids["b4_c6"], Reader = r1, ReaderId = guids["r"], StartedDate = DateTime.Now.AddDays(-5) };
+        Borrowing bor1 = new() { Id = guids["bor1"], Copy = c1, CopyId = guids["b1_c1"], Reader = r1, ReaderId = guids["r1"],  StartedDate = DateTime.Now.AddDays(-5) };
+        Borrowing bor2 = new() { Id = guids["bor2"], Copy = c2, CopyId = guids["b1_c2"], Reader = r1, ReaderId = guids["r1"],  StartedDate = DateTime.Now.AddDays(-5) };
+        Borrowing bor3 = new() { Id = guids["bor3"], Copy = c3, CopyId = guids["b2_c3"], Reader = r1, ReaderId = guids["r1"],  StartedDate = DateTime.Now.AddDays(-5) };
+        Borrowing bor4 = new() { Id = guids["bor4"], Copy = c5, CopyId = guids["b3_c5"], Reader = r1, ReaderId = guids["r1"],  StartedDate = DateTime.Now.AddDays(-5),  ActualReturnDate = DateTime.Now.AddDays(-2) };
+        Borrowing bor5 = new() { Id = guids["bor5"], Copy = c6, CopyId = guids["b4_c6"], Reader = r1, ReaderId = guids["r1"],  StartedDate = DateTime.Now.AddDays(-15), ActualReturnDate = DateTime.Now.AddDays(-10) };
+        Borrowing bor6 = new() { Id = guids["bor6"], Copy = c6, CopyId = guids["b4_c6"], Reader = r4, ReaderId = guids["r4"], StartedDate = DateTime.Now.AddDays(-5) };
         List<Borrowing> borrowings = [bor1, bor2, bor3, bor4, bor5, bor6];
 
         Mock<IRepository<Borrowing>> mockBorrowingRepository = new();
