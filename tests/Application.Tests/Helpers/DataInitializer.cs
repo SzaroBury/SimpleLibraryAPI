@@ -144,12 +144,12 @@ public static class DataInitializer
         Book b3 = await mockBookRepository.Object.GetByIdAsync(guids["b3"]) ?? throw new KeyNotFoundException("Book b3 not found.");
         Book b4 = await mockBookRepository.Object.GetByIdAsync(guids["b4"]) ?? throw new KeyNotFoundException("Book b4 not found.");
 
-        Copy c1 = new() { Id = guids["b1_c1"], Book = b1, BookId = guids["b1"] };
-        Copy c2 = new() { Id = guids["b1_c2"], Book = b1, BookId = guids["b1"] };
-        Copy c3 = new() { Id = guids["b2_c3"], Book = b2, BookId = guids["b2"] };
-        Copy c4 = new() { Id = guids["b2_c4"], Book = b2, BookId = guids["b2"] };
-        Copy c5 = new() { Id = guids["b3_c5"], Book = b3, BookId = guids["b3"] };
-        Copy c6 = new() { Id = guids["b4_c6"], Book = b4, BookId = guids["b4"] };
+        Copy c1 = new() { Id = guids["b1_c1"], Book = b1, BookId = guids["b1"], CopyNumber = 1, ShelfNumber = 1, Condition = CopyCondition.Good, AcquisitionDate = DateTime.Today.AddDays(-30), LastInspectionDate = DateTime.Today.AddDays(-30) };
+        Copy c2 = new() { Id = guids["b1_c2"], Book = b1, BookId = guids["b1"], CopyNumber = 2, ShelfNumber = 1, Condition = CopyCondition.Good, AcquisitionDate = DateTime.Today.AddDays(-30), LastInspectionDate = DateTime.Today.AddDays(-30) };
+        Copy c3 = new() { Id = guids["b2_c3"], Book = b2, BookId = guids["b2"], CopyNumber = 1, ShelfNumber = 1, Condition = CopyCondition.Good, AcquisitionDate = DateTime.Today.AddDays(-30), LastInspectionDate = DateTime.Today.AddDays(-30) };
+        Copy c4 = new() { Id = guids["b2_c4"], Book = b2, BookId = guids["b2"], CopyNumber = 2, ShelfNumber = 1, Condition = CopyCondition.Good, AcquisitionDate = DateTime.Today.AddDays(-30), LastInspectionDate = DateTime.Today.AddDays(-30) };
+        Copy c5 = new() { Id = guids["b3_c5"], Book = b3, BookId = guids["b3"], CopyNumber = 1, ShelfNumber = 2, Condition = CopyCondition.Good, AcquisitionDate = DateTime.Today.AddDays(-30), LastInspectionDate = DateTime.Today.AddDays(-30) };
+        Copy c6 = new() { Id = guids["b4_c6"], Book = b4, BookId = guids["b4"], CopyNumber = 1, ShelfNumber = 2, Condition = CopyCondition.Good, AcquisitionDate = DateTime.Today.AddDays(-30), LastInspectionDate = DateTime.Today.AddDays(-30) };
         List<Copy> copies = [c1, c2, c3, c4, c5, c6];
 
         Mock<IRepository<Copy>> mockCopyRepository = new();
