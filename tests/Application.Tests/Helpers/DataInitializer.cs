@@ -17,6 +17,8 @@ public static class DataInitializer
             ["a4"] = Guid.NewGuid(),
             ["c1"] = Guid.NewGuid(),
             ["c2"] = Guid.NewGuid(),
+            ["c3"] = Guid.NewGuid(),
+            ["c4"] = Guid.NewGuid(),
             ["b1"] = Guid.NewGuid(),
             ["b2"] = Guid.NewGuid(),
             ["b3"] = Guid.NewGuid(),
@@ -93,13 +95,17 @@ public static class DataInitializer
     {
         Category c1 = new() { Id = guids["c1"], Name = "Novel" };
         Category c2 = new() { Id = guids["c2"], Name = "Other" };
-        List<Category> categories = [c1, c2];
+        Category c3 = new() { Id = guids["c3"], Name = "Fantasy" };
+        Category c4 = new() { Id = guids["c4"], Name = "High Fantasy", ParentCategoryId = guids["c3"] };
+        List<Category> categories = [c1, c2, c3, c4];
 
         Mock<IRepository<Category>> mockCategoryRepository = new();
         mockCategoryRepository.Setup(repo => repo.GetAllAsync()).ReturnsAsync(categories);
         mockCategoryRepository.Setup(repo => repo.GetQueryable()).Returns(categories.AsQueryable());
         mockCategoryRepository.Setup(repo => repo.GetByIdAsync(guids["c1"])).ReturnsAsync(c1);
         mockCategoryRepository.Setup(repo => repo.GetByIdAsync(guids["c2"])).ReturnsAsync(c2);
+        mockCategoryRepository.Setup(repo => repo.GetByIdAsync(guids["c3"])).ReturnsAsync(c3);
+        mockCategoryRepository.Setup(repo => repo.GetByIdAsync(guids["c4"])).ReturnsAsync(c4);
         return mockCategoryRepository;
     }
 
@@ -220,16 +226,19 @@ public static class DataInitializer
 
     public static Mock<IUnitOfWork> InitializeUnitOfWork(
         Dictionary<string, Guid> guids, 
-        Mock<IRepository<Author>>? mockAuthorRepository = null,
-        Mock<IRepository<Book>>? mockBookRepository = null,
-        Mock<IRepository<Reader>>? mockReaderRepository = null)
+        Mock<IRepository<Author>>?      mockAuthorRepository = null,
+        Mock<IRepository<Category>>?    mockCategoryRepository = null,
+        Mock<IRepository<Book>>?        mockBookRepository = null,
+        Mock<IRepository<Copy>>?        mockCopyRepository = null,
+        Mock<IRepository<Reader>>?      mockReaderRepository = null,
+        Mock<IRepository<Borrowing>>?   mockBorrowingRepository = null)
     {
-        var authorRepository    = mockAuthorRepository ?? InitializeAuthorRepository(guids);
-        var categoryRepository  = InitializeCategories(guids);
-        var bookRepository      = mockBookRepository ?? InitializeBookRepositoryAsync(guids, authorRepository, categoryRepository).GetAwaiter().GetResult();
-        var copyRepository      = InitializeCopies(guids, bookRepository).GetAwaiter().GetResult();
-        var readerRepository    = mockReaderRepository ?? InitializeReaders(guids);
-        var borrowingRepository = InitializeBorrowingsAsync(guids, copyRepository, readerRepository).GetAwaiter().GetResult();
+        var authorRepository    = mockAuthorRepository    ?? InitializeAuthorRepository(guids);
+        var categoryRepository  = mockCategoryRepository  ?? InitializeCategories(guids);
+        var bookRepository      = mockBookRepository      ?? InitializeBookRepositoryAsync(guids, authorRepository, categoryRepository).GetAwaiter().GetResult();
+        var copyRepository      = mockCopyRepository      ?? InitializeCopies(guids, bookRepository).GetAwaiter().GetResult();
+        var readerRepository    = mockReaderRepository    ?? InitializeReaders(guids);
+        var borrowingRepository = mockBorrowingRepository ?? InitializeBorrowingsAsync(guids, copyRepository, readerRepository).GetAwaiter().GetResult();
 
         Mock<IUnitOfWork> mockUnitOfWork = new();
         mockUnitOfWork.Setup(uow => uow.GetRepository<Author>()).Returns(authorRepository.Object);
