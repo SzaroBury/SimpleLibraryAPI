@@ -4,7 +4,7 @@ public record CategoryPutDTO
 (
     string Id,
     string? Name = null,
-    string? Tags = null,
     string? Description = null,
+    IEnumerable<string>? Tags = null,
     string? ParentCategoryId = null
 );
