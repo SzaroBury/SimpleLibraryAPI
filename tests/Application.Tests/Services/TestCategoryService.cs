@@ -1,5 +1,3 @@
-using Moq;
-using Xunit;
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Application.Services;
@@ -17,10 +15,7 @@ public class TestCategoryService
     public TestCategoryService()
     {
         mockCategoryRepository = DataInitializer.InitializeCategories(guids);
-        unitOfWork = DataInitializer.InitializeUnitOfWork(
-            guids,
-            mockCategoryRepository: mockCategoryRepository
-        ).Object;
+        unitOfWork = DataInitializer.InitializeUnitOfWorkAsync(guids, mockCategoryRepository: mockCategoryRepository).GetAwaiter().GetResult().Object;
 
         categoryService = new CategoryService(unitOfWork);
     }

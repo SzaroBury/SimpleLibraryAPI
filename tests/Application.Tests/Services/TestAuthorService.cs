@@ -15,7 +15,7 @@ public class TestAuthorService
     public TestAuthorService()
     {
         mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);
-        unitOfWork = DataInitializer.InitializeUnitOfWork(guids, mockAuthorRepository).Object;
+        unitOfWork = DataInitializer.InitializeUnitOfWorkAsync(guids, mockAuthorRepository).GetAwaiter().GetResult().Object;
         authorService = new AuthorService(unitOfWork);
     }
     #region GetAllAuthorsAsync

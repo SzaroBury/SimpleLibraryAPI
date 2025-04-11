@@ -15,7 +15,7 @@ public class TestReaderService
     public TestReaderService()
     {
         mockReaderRepository = DataInitializer.InitializeReaders(guids);
-        unitOfWork = DataInitializer.InitializeUnitOfWork(guids, mockReaderRepository: mockReaderRepository).Object;
+        unitOfWork = DataInitializer.InitializeUnitOfWorkAsync(guids, mockReaderRepository: mockReaderRepository).GetAwaiter().GetResult().Object;
         readerService = new ReaderService(unitOfWork);
     }
     #region GetAllReadersAsync
@@ -271,7 +271,7 @@ public class TestReaderService
             readerService.DeleteReaderAsync(readersGuid)
         );
 
-        Assert.Equal($"The reader cannot be deleted, because she/he has still borrowed 3 books: \"Some old book\" #1, \"Some old book\" #2, \"Some old German book\" #1.", exception.Message);
+        Assert.Equal($"The reader cannot be deleted, because she/he has still borrowed 2 books: \"Some old book\" #1, \"Some old German book\" #1.", exception.Message);
     }
 
     [Fact]

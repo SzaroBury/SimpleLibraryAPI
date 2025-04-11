@@ -24,6 +24,11 @@ public class Repository<T> : IRepository<T> where T : class
         return dbSet.AsQueryable();
     }
 
+    public Task<List<T>> ToListAsync(IQueryable<T> query)
+    {
+        return query.ToListAsync();
+    }
+
     public async Task<T?> GetByIdAsync(Guid id)
     {
         return await dbSet.FindAsync(id);

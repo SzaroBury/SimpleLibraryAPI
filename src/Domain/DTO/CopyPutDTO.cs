@@ -5,7 +5,9 @@ public record CopyPutDTO
     string Id,
     string? BookId = null,
     int? Shelf = null,
-    string? AcquisitionDate = null,
+    bool? IsLost = null,
     string? Condition = null,
-    string? LastInspectionDate = null
+    string? AcquisitionDate = null,
+    string? LastInspectionDate = null,
+    int? CopyNumber = null
 );

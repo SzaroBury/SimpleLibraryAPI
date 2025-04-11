@@ -4,7 +4,7 @@ public record CopyPostDTO
 (
     string BookId,
     int Shelf,
-    string? AcquisitionDate,
-    string? Condition,
-    string? LastInspectionDate
+    string? Condition = null,
+    string? AcquisitionDate = null,
+    string? LastInspectionDate = null
 );

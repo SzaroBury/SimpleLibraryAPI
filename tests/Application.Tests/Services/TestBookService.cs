@@ -18,7 +18,7 @@ public class TestBookService
         Mock<IRepository<Author>> mockAuthorRepository = DataInitializer.InitializeAuthorRepository(guids);
         Mock<IRepository<Category>> mockCategoryRepository = DataInitializer.InitializeCategories(guids);
         mockBookRepository = DataInitializer.InitializeBookRepositoryAsync(guids, mockAuthorRepository, mockCategoryRepository).GetAwaiter().GetResult();
-        unitOfWork = DataInitializer.InitializeUnitOfWork(guids, mockBookRepository: mockBookRepository).Object;
+        unitOfWork = DataInitializer.InitializeUnitOfWorkAsync(guids, mockBookRepository: mockBookRepository).GetAwaiter().GetResult().Object;
 
         bookService = new(unitOfWork);
     }
@@ -46,9 +46,9 @@ public class TestBookService
     }
 
     [Theory]
-    [InlineData(true, 2, new[] { "b2", "b3" })]
-    [InlineData(false, 4, new[] { "b1", "b4", "b5", "b6" })]
-    public async Task SearchBooks_ByAvailability_ReturnsExpectedResults(bool isAvailable, int expectedCount, string[] expectedIds)
+    [InlineData(true, new[] { "b1", "b2", "b3", "b6" })]
+    [InlineData(false, new[] { "b4", "b5" })]
+    public async Task SearchBooks_ByAvailability_ReturnsExpectedResults(bool isAvailable, string[] expectedIds)
     {
         // Act
         var response = await bookService.SearchBooksAsync(isAvailable: isAvailable);
@@ -56,7 +56,7 @@ public class TestBookService
         // Assert
         Assert.NotNull(response);
         Assert.IsAssignableFrom<IEnumerable<Book>>(response);
-        Assert.Equal(expectedCount, response.ToList().Count);
+        Assert.Equal(expectedIds.Count(), response.Count());
         foreach (var expectedId in expectedIds)
         {
             Assert.Contains(response, b => b.Id == guids[expectedId]);
