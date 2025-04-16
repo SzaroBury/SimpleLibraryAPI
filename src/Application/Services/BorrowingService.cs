@@ -34,6 +34,10 @@ public class BorrowingService: IBorrowingService
         if(!string.IsNullOrWhiteSpace(borrowing.StartedDate))
         {
             startedDate = ValidateAndParseDateTime(borrowing.StartedDate, "started");
+            if(startedDate > DateTime.Now)
+            {
+                throw new InvalidOperationException("The start date cannot be set to a future date.");
+            }
         }
 
         DateTime? actualReturnDate = null;
@@ -237,10 +241,12 @@ public class BorrowingService: IBorrowingService
 
     private static DateTime ValidateAndParseDateTime(string date, string propertyName)
     {
-        if(!DateTime.TryParseExact(date, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
+        string[] AcceptedFormats = [ "yyyy-MM-dd HH:mm", "yyyy-MM-dd" ];
+        if (!DateTime.TryParseExact(date, AcceptedFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
         {
-            throw new FormatException($"'{date}' is invalid {propertyName} date format. Please use DD-MM-YYYY format.");
+            throw new FormatException($"'{date}' is invalid {propertyName} date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.");
         }
+
         return result;
     }
 }
