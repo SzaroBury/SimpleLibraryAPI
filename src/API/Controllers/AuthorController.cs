@@ -19,7 +19,7 @@ public class AuthorController : ControllerBase
 
     [HttpGet("search")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public async Task<IActionResult> GetAll(
+    public async Task<IActionResult> Search(
         [FromQuery] string? search = null, 
         [FromQuery] string? olderThan = null, 
         [FromQuery] string? youngerThan = null, 
@@ -29,25 +29,25 @@ public class AuthorController : ControllerBase
     {
         try
         {
-            logger.LogInformation("GetAll request received.");
+            logger.LogInformation("Search request received.");
             var result = await authorService.SearchAuthorsAsync(search, olderThan, youngerThan, page ?? 1, pageSize ?? 25);
             return Ok(result);
         }
         catch(ArgumentException e)
         {
-            logger.LogInformation($"ArgumentException catched during invoking GetAll(search: {search}, olderThan: {olderThan}, youngerThan: {youngerThan}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
+            logger.LogInformation($"ArgumentException catched during invoking Search(search: {search}, olderThan: {olderThan}, youngerThan: {youngerThan}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(FormatException e)
         {
-            logger.LogInformation($"FormatException catched during invoking GetAll(search: {search}, olderThan: {olderThan}, youngerThan: {youngerThan}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
+            logger.LogInformation($"FormatException catched during invoking Search(search: {search}, olderThan: {olderThan}, youngerThan: {youngerThan}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking GetAll(search: {search}, olderThan: {olderThan}, youngerThan: {youngerThan}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Search(search: {search}, olderThan: {olderThan}, youngerThan: {youngerThan}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, $"Unexpected error.");
         }
@@ -113,31 +113,31 @@ public class AuthorController : ControllerBase
         }
     }
 
-    [HttpPut]
+    [HttpPatch]
     [ApiKey("Librarian", "Admin")]
-    public async Task<IActionResult> Put(AuthorPutDTO author)
+    public async Task<IActionResult> Patch(AuthorPatchDTO author)
     {
         try
         {
-            logger.LogInformation("Put request received.");
+            logger.LogInformation("Patch request received.");
             await authorService.UpdateAuthorAsync(author);
             return Ok("Object was sucesfully updated in the datebase.");
         }
         catch(FormatException e)
         {
-            logger.LogInformation($"FormatException catched during invoking Put(<AuthorPutDTO Object, Id: {author.Id}>):");
+            logger.LogInformation($"FormatException catched during invoking Patch(<AuthorPatchDTO Object, Id: {author.Id}>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(KeyNotFoundException e)
         {
-            logger.LogInformation($"KeyNotFoundException catched during invoking Put(<AuthorPutDTO Object, Id: {author.Id}>):");
+            logger.LogInformation($"KeyNotFoundException catched during invoking Patch(<AuthorPatchDTO Object, Id: {author.Id}>):");
             logger.LogInformation($"    {e.Message}");
             return NotFound(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Put(<AuthorPutDTO Object - id: {author.Id}>):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<AuthorPatchDTO Object - id: {author.Id}>):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, $"Unexpected error.");
         }

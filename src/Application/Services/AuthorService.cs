@@ -68,7 +68,7 @@ public class AuthorService: IAuthorService
 
         return newAuthor;
     }
-    public async Task<Author> UpdateAuthorAsync(AuthorPutDTO author)
+    public async Task<Author> UpdateAuthorAsync(AuthorPatchDTO author)
     {
         Author existingAuthor = await GetAuthorByIdAsync(author.Id);
 

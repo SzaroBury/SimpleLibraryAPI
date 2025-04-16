@@ -1,6 +1,6 @@
 namespace SimpleLibrary.Domain.DTO;
 
-public record AuthorPutDTO
+public record AuthorPatchDTO
 (
     string Id,
     string? FirstName = null, 
