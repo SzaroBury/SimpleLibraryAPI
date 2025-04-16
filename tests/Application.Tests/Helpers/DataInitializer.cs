@@ -116,15 +116,9 @@ public static class DataInitializer
         Mock<IRepository<Author>>? mockAuthorRepository = null, 
         Mock<IRepository<Category>>? mockCategoryRepository = null)
     {
-        if(mockAuthorRepository is null)
-        {
-            mockAuthorRepository = InitializeAuthorRepository(guids);
-        }
+        mockAuthorRepository ??= InitializeAuthorRepository(guids);
 
-        if(mockCategoryRepository is null)
-        {
-            mockCategoryRepository = InitializeCategories(guids);
-        }
+        mockCategoryRepository ??= InitializeCategories(guids);
 
         var a1 = await mockAuthorRepository.Object.GetByIdAsync(guids["a1"]) ?? throw new KeyNotFoundException("Author a1 not found.");
         var a2 = await mockAuthorRepository.Object.GetByIdAsync(guids["a2"]) ?? throw new KeyNotFoundException("Author a2 not found.");
@@ -155,8 +149,10 @@ public static class DataInitializer
 
     public async static Task<Mock<IRepository<Copy>>> InitializeCopiesAsync(
         Dictionary<string, Guid> guids, 
-        Mock<IRepository<Book>> mockBookRepository)
+        Mock<IRepository<Book>>? mockBookRepository = null)
     {
+        mockBookRepository ??= await InitializeBookRepositoryAsync(guids);
+
         Book b1 = await mockBookRepository.Object.GetByIdAsync(guids["b1"]) ?? throw new KeyNotFoundException("Book b1 not found.");
         Book b2 = await mockBookRepository.Object.GetByIdAsync(guids["b2"]) ?? throw new KeyNotFoundException("Book b2 not found.");
         Book b3 = await mockBookRepository.Object.GetByIdAsync(guids["b3"]) ?? throw new KeyNotFoundException("Book b3 not found.");
@@ -209,13 +205,12 @@ public static class DataInitializer
 
     public async static Task<Mock<IRepository<Borrowing>>> InitializeBorrowingsAsync(
         Dictionary<string, Guid> guids, 
-        Mock<IRepository<Copy>> mockCopyRepository,
+        Mock<IRepository<Copy>>? mockCopyRepository = null,
         Mock<IRepository<Reader>>? mockReaderRepository = null)
     {
-        if(mockReaderRepository is null)
-        {
-            mockReaderRepository = InitializeReaders(guids);
-        }
+        mockCopyRepository ??= await InitializeCopiesAsync(guids);
+
+        mockReaderRepository ??= InitializeReaders(guids);
 
         var c1 = await mockCopyRepository.Object.GetByIdAsync(guids["b1_c1"]) ?? throw new KeyNotFoundException("Copy c1 not found.");
         var c2 = await mockCopyRepository.Object.GetByIdAsync(guids["b1_c2"]) ?? throw new KeyNotFoundException("Copy c2 not found.");
