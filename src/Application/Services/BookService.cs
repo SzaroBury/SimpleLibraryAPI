@@ -86,7 +86,7 @@ public class BookService: IBookService
         await unitOfWork.GetRepository<Book>().AddAsync(newBook);
         return newBook;
     }
-    public async Task<Book> UpdateBookAsync(BookPutDTO book)
+    public async Task<Book> UpdateBookAsync(BookPatchDTO book)
     {
         Book existingBook = await GetBookByIdAsync(book.Id);
 

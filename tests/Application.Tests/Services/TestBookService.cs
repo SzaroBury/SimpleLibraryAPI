@@ -472,7 +472,7 @@ public class TestBookService
         var authorId = guids["a2"].ToString();
         var categoryId = guids["c2"].ToString();
 
-        var someOlderBook = new BookPutDTO(
+        var someOlderBook = new BookPatchDTO(
             bookId,
             Title: "Some older book",
             Description: "Test description",
@@ -502,7 +502,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidFormatOfBookId_ThrowsFormatException()
     {
-        var someUnknownBook = new BookPutDTO(
+        var someUnknownBook = new BookPatchDTO(
             Id: "test",
             Title: "Some book"
         );
@@ -516,7 +516,7 @@ public class TestBookService
     public async Task UpdateBook_NonExistingBook_ThrowsKeyNotFoundException()
     {
         var nonExistingBookId = Guid.Empty.ToString();
-        var someUnknownBook = new BookPutDTO(
+        var someUnknownBook = new BookPatchDTO(
             Id: nonExistingBookId,
             Title: "Some book"
         );
@@ -529,7 +529,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_EmptyTitle_ThrowsArgumentException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             Title: ""
         );
@@ -542,7 +542,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidDateFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             ReleaseDate: "Hello world"
         );
@@ -555,7 +555,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidLanguageFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             Language: "Simlish"
         );
@@ -568,7 +568,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidTagsFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             Tags: ["novel,", "book"]
         );
@@ -581,7 +581,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidAuthorIdFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             AuthorId: "test"
         );
@@ -595,7 +595,7 @@ public class TestBookService
     public async Task UpdateBook_NonExistingAuthor_ThrowsKeyNotFoundException()
     {
         var nonExistingAuthorId = Guid.Empty.ToString();
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             AuthorId: nonExistingAuthorId
         );
@@ -608,7 +608,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidCategoryIdFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             CategoryId: "test"
         );
@@ -622,7 +622,7 @@ public class TestBookService
     public async Task UpdateBook_NonExistingCategory_ThrowsArgumentException()
     {
         var nonExistingCategoryId = Guid.Empty.ToString();
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b1"].ToString(),
             CategoryId: nonExistingCategoryId
         );
@@ -635,7 +635,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_SimilarBookExisting_ThrowsInvalidOperationException()
     {
-        var someUpdatedBook = new BookPutDTO(
+        var someUpdatedBook = new BookPatchDTO(
             Id: guids["b4"].ToString(),
             Title: "Dziady część III"
         );

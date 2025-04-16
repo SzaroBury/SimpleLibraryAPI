@@ -18,9 +18,9 @@ public class BookController : ControllerBase
         this.bookService = bookService;
     }
 
-    [HttpGet]
+    [HttpGet("search")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public async Task<IActionResult> GetAll(
+    public async Task<IActionResult> Search(
         [FromQuery] string search = "",
         [FromQuery] bool? isAvailable = null,
         [FromQuery] string olderThan = "",
@@ -32,7 +32,7 @@ public class BookController : ControllerBase
     {
         try
         {
-            logger.LogInformation($"GetAll ({Request.QueryString})");
+            logger.LogInformation($"Search ({Request.QueryString})");
 
             var result = await bookService.SearchBooksAsync(search, isAvailable, olderThan, newerThan, author, category, page ?? 1, pageSize ?? 25);
 
@@ -40,19 +40,19 @@ public class BookController : ControllerBase
         }
         catch(ArgumentException e)
         {
-            logger.LogInformation($"ArgumentException catched during invoking GetAll(search: {search}, olderThan: {olderThan}, newerThan: {newerThan}, author: {author}, category: {category}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
+            logger.LogInformation($"ArgumentException catched during invoking Search(search: {search}, olderThan: {olderThan}, newerThan: {newerThan}, author: {author}, category: {category}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(FormatException e)
         {
-            logger.LogInformation($"FormatException catched during invoking GetAll(search: {search}, olderThan: {olderThan}, newerThan: {newerThan}, author: {author}, category: {category}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
+            logger.LogInformation($"FormatException catched during invoking Search(search: {search}, olderThan: {olderThan}, newerThan: {newerThan}, author: {author}, category: {category}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking GetAll(search: {search}, olderThan: {olderThan}, newerThan: {newerThan}, author: {author}, category: {category}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Search(search: {search}, olderThan: {olderThan}, newerThan: {newerThan}, author: {author}, category: {category}, page: {page ?? 1}, pageSize: {pageSize ?? 25}):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, $"Unexpected error.");
         }
@@ -130,9 +130,9 @@ public class BookController : ControllerBase
         }
     }
 
-    [HttpPut]
+    [HttpPatch]
     [ApiKey("Librarian", "Admin")]
-    public async Task<IActionResult> Put(BookPutDTO book)
+    public async Task<IActionResult> Patch(BookPatchDTO book)
     {
         try
         {
@@ -142,31 +142,31 @@ public class BookController : ControllerBase
         }
         catch(FormatException e)
         {
-            logger.LogInformation($"FormatException catched during invoking Put(<BookPutDTO Object, Id: {book.Id}>):");
+            logger.LogInformation($"FormatException catched during invoking Patch(<BookPatchDTO Object, Id: {book.Id}>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(KeyNotFoundException e)
         {
-            logger.LogInformation($"KeyNotFoundException catched during invoking Put(<BookPutDTO Object, Id: {book.Id}>):");
+            logger.LogInformation($"KeyNotFoundException catched during invoking Patch(<BookPatchDTO Object, Id: {book.Id}>):");
             logger.LogInformation($"    {e.Message}");
             return NotFound(e.Message);
         }
         catch(ArgumentException e)
         {
-            logger.LogInformation($"ArgumentException catched during invoking Put(<BookPutDTO Object, Id: {book.Id}>):");
+            logger.LogInformation($"ArgumentException catched during invoking Patch(<BookPatchDTO Object, Id: {book.Id}>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }        
         catch(InvalidOperationException e)
         {
-            logger.LogInformation($"InvalidOperationException catched during invoking Put(<BookPutDTO Object, Id: {book.Id}>):");
+            logger.LogInformation($"InvalidOperationException catched during invoking Patch(<BookPatchDTO Object, Id: {book.Id}>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Put(<BookPutDTO Object, Id: {book.Id}>):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<BookPatchDTO Object, Id: {book.Id}>):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, $"Unexpected error.");
         }

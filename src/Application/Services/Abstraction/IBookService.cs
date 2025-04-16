@@ -9,7 +9,7 @@ public interface IBookService
     public Task<Book> GetBookByIdAsync(string id);
     public Task<Book> GetBookByIdAsync(Guid id);
     public Task<Book> CreateBookAsync(BookPostDTO book);
-    public Task<Book> UpdateBookAsync(BookPutDTO book);
+    public Task<Book> UpdateBookAsync(BookPatchDTO book);
     public Task DeleteBookAsync(string id);
     public Task<IEnumerable<Book>> SearchBooksAsync(
         string? searchTerm = null, 
