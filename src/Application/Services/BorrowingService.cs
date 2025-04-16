@@ -69,7 +69,7 @@ public class BorrowingService: IBorrowingService
 
         return newBorrowing;
     }
-    public async Task<Borrowing> UpdateBorrowingAsync(BorrowingPutDTO borrowing)
+    public async Task<Borrowing> UpdateBorrowingAsync(BorrowingPatchDTO borrowing)
     {
         Borrowing existingBorrowing = await GetBorrowingByIdAsync(borrowing.Id);
 

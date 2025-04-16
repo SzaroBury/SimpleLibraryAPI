@@ -8,7 +8,7 @@ public interface IBorrowingService
     Task<IEnumerable<Borrowing>> GetAllBorrowingsAsync();
     Task<Borrowing> GetBorrowingByIdAsync(string id);
     Task<Borrowing> CreateBorrowingAsync(BorrowingPostDTO borrowing);
-    Task<Borrowing> UpdateBorrowingAsync(BorrowingPutDTO borrowing);
+    Task<Borrowing> UpdateBorrowingAsync(BorrowingPatchDTO borrowing);
     Task DeleteBorrowingAsync(string id);
     Task<IEnumerable<Borrowing>> SearchBorrowingsAsync(
         string? searchTerm = null, 

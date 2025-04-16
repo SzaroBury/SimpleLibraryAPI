@@ -137,7 +137,7 @@ public class BorrowingController : ControllerBase
 
     [HttpPatch]
     [ApiKey("Librarian", "Admin")]
-    public async Task<IActionResult> Patch(BorrowingPutDTO borrowing)
+    public async Task<IActionResult> Patch(BorrowingPatchDTO borrowing)
     { 
         try
         {
@@ -147,31 +147,31 @@ public class BorrowingController : ControllerBase
         }
         catch(ArgumentException e)
         {
-            logger.LogInformation($"ArgumentException catched during invoking Patch(<BorrowingPutDTO Object>):");
+            logger.LogInformation($"ArgumentException catched during invoking Patch(<BorrowingPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(FormatException e)
         {
-            logger.LogInformation($"FormatException catched during invoking Patch(<BorrowingPutDTO Object>):");
+            logger.LogInformation($"FormatException catched during invoking Patch(<BorrowingPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(KeyNotFoundException e)
         {
-            logger.LogInformation($"KeyNotFoundException catched during invoking Patch(<BorrowingPutDTO Object>):");
+            logger.LogInformation($"KeyNotFoundException catched during invoking Patch(<BorrowingPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(InvalidOperationException e)
         {
-            logger.LogInformation($"InvalidOperationException catched during invoking Patch(<BorrowingPutDTO Object>):");
+            logger.LogInformation($"InvalidOperationException catched during invoking Patch(<BorrowingPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<BorrowingPutDTO Object>):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<BorrowingPatchDTO Object>):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, $"Error: {e.Message}");
         }

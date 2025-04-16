@@ -249,7 +249,7 @@ public class TestBorrowingService
     {
         var borrowingId = guids["bor1"];
         var newStartedDate = DateTime.Today.AddDays(-10);
-        var dto = new BorrowingPutDTO(borrowingId.ToString(), StartedDate: newStartedDate.ToString("yyyy-MM-dd HH:mm"));
+        var dto = new BorrowingPatchDTO(borrowingId.ToString(), StartedDate: newStartedDate.ToString("yyyy-MM-dd HH:mm"));
 
         // Act
         var result = await borrowingService.UpdateBorrowingAsync(dto);
@@ -265,7 +265,7 @@ public class TestBorrowingService
         var borrowingId = guids["bor1"];
         var newReturnDate = DateTime.Today.AddDays(-2).ToString("yyyy-MM-dd");
 
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             borrowingId.ToString(),
             ActualReturnDate: newReturnDate
         );
@@ -281,7 +281,7 @@ public class TestBorrowingService
     public async Task UpdateBorrowingAsync_WithEmptyActualReturnDate_SetsNull()
     {
         var borrowingId = guids["bor1"];
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             borrowingId.ToString(),
             ActualReturnDate: ""
         );
@@ -297,7 +297,7 @@ public class TestBorrowingService
         var borrowingId = guids["bor1"];
         var newReaderId = guids["r2"];
 
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             borrowingId.ToString(),
             ReaderId: newReaderId.ToString()
         );
@@ -313,7 +313,7 @@ public class TestBorrowingService
         var borrowingId = guids["bor1"];
         var newCopyId = guids["b1_c2"];
 
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             borrowingId.ToString(),
             CopyId: newCopyId.ToString()
         );
@@ -332,7 +332,7 @@ public class TestBorrowingService
         var startedDate = DateTime.Now.AddDays(-14).ToString("yyyy-MM-dd");
         var returnDate = DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd");
 
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             borrowingId.ToString(),
             newCopyId.ToString(),
             newReaderId.ToString(),
@@ -351,7 +351,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithEmptyStartedDate_ThrowsArgumentException()
     {
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             guids["bor1"].ToString(),
             StartedDate: ""
         );
@@ -364,7 +364,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithInvalidStartedDateFormat_ThrowsFormatException()
     {
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             guids["bor1"].ToString(),
             StartedDate: "32-13-2023" // błąd
         );
@@ -379,7 +379,7 @@ public class TestBorrowingService
     {
         var futureDate = DateTime.Now.AddDays(2).ToString("yyyy-MM-dd");
 
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             guids["bor1"].ToString(),
             StartedDate: futureDate
         );
@@ -392,7 +392,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithInvalidActualReturnDateFormat_ThrowsFormatException()
     {
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             guids["bor1"].ToString(),
             ActualReturnDate: "not-a-date"
         );
@@ -407,7 +407,7 @@ public class TestBorrowingService
     {
         var futureReturnDate = DateTime.Now.AddDays(5).ToString("yyyy-MM-dd");
 
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             guids["bor1"].ToString(),
             ActualReturnDate: futureReturnDate
         );
@@ -422,7 +422,7 @@ public class TestBorrowingService
     {
         var invalidReturnDate = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd");
 
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             guids["bor1"].ToString(),
             ActualReturnDate: invalidReturnDate
         );
@@ -435,7 +435,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithInvalidCopyIdFormat_ThrowsFormatException()
     {
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             guids["bor1"].ToString(),
             CopyId: "not-a-guid"
         );
@@ -448,7 +448,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithInvalidReaderIdFormat_ThrowsFormatException()
     {
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             guids["bor1"].ToString(),
             ReaderId: "bad-guid"
         );
@@ -461,7 +461,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithBannedReader_ThrowsInvalidOperationException()
     {
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             guids["bor1"].ToString(),
             ReaderId: guids["r4"].ToString()
         );
@@ -474,7 +474,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithLostCopy_ThrowsInvalidOperationException()
     {
-        var dto = new BorrowingPutDTO(
+        var dto = new BorrowingPatchDTO(
             guids["bor1"].ToString(),
             CopyId: guids["b2_c7"].ToString()
         );
