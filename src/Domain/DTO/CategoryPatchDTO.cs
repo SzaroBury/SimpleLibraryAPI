@@ -1,6 +1,6 @@
 namespace SimpleLibrary.Domain.DTO;
     
-public record CategoryPutDTO
+public record CategoryPatchDTO
 (
     string Id,
     string? Name = null,

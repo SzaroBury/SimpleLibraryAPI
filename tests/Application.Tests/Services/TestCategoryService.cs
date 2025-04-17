@@ -85,7 +85,7 @@ public class TestCategoryService
     [Fact]
     public async Task UpdateCategoryAsync_ValidUpdate_UpdatesCategory()
     {
-        var dto = new CategoryPutDTO(guids["c1"].ToString(), "UpdatedName", "UpdatedDescription", new List<string> { "newtag" }, null);
+        var dto = new CategoryPatchDTO(guids["c1"].ToString(), "UpdatedName", "UpdatedDescription", new List<string> { "newtag" }, null);
         var result = await categoryService.UpdateCategoryAsync(dto);
 
         Assert.Equal("UpdatedName", result.Name);
@@ -96,7 +96,7 @@ public class TestCategoryService
     [Fact]
     public async Task UpdateCategoryAsync_SetItselfAsParent_ThrowsInvalidOperationException()
     {
-        var dto = new CategoryPutDTO(guids["c1"].ToString(), null, null, null, guids["c1"].ToString());
+        var dto = new CategoryPatchDTO(guids["c1"].ToString(), null, null, null, guids["c1"].ToString());
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => categoryService.UpdateCategoryAsync(dto));
         Assert.Equal("A category cannot be its own parent.", ex.Message);

@@ -138,7 +138,7 @@ public class CategoryController : ControllerBase
 
     [HttpPatch]
     [ApiKey( "Librarian", "Admin")]
-    public async Task<IActionResult> Patch(CategoryPutDTO category)
+    public async Task<IActionResult> Patch(CategoryPatchDTO category)
     {
         try
         {
@@ -148,31 +148,31 @@ public class CategoryController : ControllerBase
         }
         catch(FormatException e)
         {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Patch(<CategoryPutDTO Object>):");
+            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Patch(<CategoryPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(KeyNotFoundException e)
         {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Patch(<CategoryPutDTO Object>):");
+            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Patch(<CategoryPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(ArgumentException e)
         {
-            logger.LogInformation($"{DateTime.Now}: ArgumentException catched during invoking Patch(<CategoryPutDTO Object>):");
+            logger.LogInformation($"{DateTime.Now}: ArgumentException catched during invoking Patch(<CategoryPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(InvalidOperationException e)
         {
-            logger.LogInformation($"{DateTime.Now}: InvalidOperationException catched during invoking Patch(<CategoryPutDTO Object>):");
+            logger.LogInformation($"{DateTime.Now}: InvalidOperationException catched during invoking Patch(<CategoryPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return NotFound(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<CategoryPutDTO Object>):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<CategoryPatchDTO Object>):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, "Unexpected error.");
         }

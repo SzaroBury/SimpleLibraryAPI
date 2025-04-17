@@ -56,7 +56,7 @@ public class CategoryService: ICategoryService
 
         return newCategory;
     }
-    public async Task<Category> UpdateCategoryAsync(CategoryPutDTO category)
+    public async Task<Category> UpdateCategoryAsync(CategoryPatchDTO category)
     {
         Category existingCategory = await GetCategoryByIdAsync(category.Id);
 

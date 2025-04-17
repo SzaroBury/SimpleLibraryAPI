@@ -8,7 +8,7 @@ public interface ICategoryService
     Task<IEnumerable<Category>> GetAllCategoriesAsync();
     Task<Category> GetCategoryByIdAsync(string id);
     Task<Category> CreateCategoryAsync(CategoryPostDTO Category);
-    Task<Category> UpdateCategoryAsync(CategoryPutDTO Category);
+    Task<Category> UpdateCategoryAsync(CategoryPatchDTO Category);
     Task DeleteCategoryAsync(string id);
     Task<IEnumerable<Category>> SearchCategoriesAsync(
         string? searchTerm = null, 
