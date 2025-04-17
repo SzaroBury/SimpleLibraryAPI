@@ -1,31 +1,31 @@
 ﻿using SimpleLibrary.API.Attributes;
 using SimpleLibrary.Domain.Models;
-using SimpleLibrary.Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using SimpleLibrary.Domain.DTO;
+using SimpleLibrary.Application.Services.Abstraction;
 
 namespace SimpleLibrary.API.Controllers;
 
-[Route("api/copy")]
+[Route("api/copies")]
 [ApiController]
 public class CopyController : ControllerBase
 {
-    private readonly IRepository<Copy> copyRepository;
+    private readonly ICopyService copyService;
     private readonly ILogger<CopyController> logger;
-    public CopyController(IRepository<Copy> copyRepository, ILogger<CopyController> logger)
+    public CopyController(ICopyService copyService, ILogger<CopyController> logger)
     {
-        this.copyRepository = copyRepository;
+        this.copyService = copyService;
         this.logger = logger;
     }
 
-    // GET: api/<CopiesController>
-    [HttpGet("/api/copies")]
+    [HttpGet("search")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> Search(string? search, string? book, bool? isAvailable, int? page, int? pageSize)
     {
         try
         {
-            logger.LogInformation("GetAll request received.");
-            var result = await copyRepository.GetAllAsync();
+            logger.LogInformation("Search request received.");
+            var result = await copyService.SearchCopiesAsync(search, book, isAvailable, page ?? 1, pageSize ?? 25);
             return Ok(result);
         }
         catch (Exception e)
@@ -36,7 +36,6 @@ public class CopyController : ControllerBase
         }
     }
 
-    // GET api/<CopiesController>/5
     [HttpGet("{id}")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Get(string id)
@@ -44,12 +43,7 @@ public class CopyController : ControllerBase
         try
         {
             logger.LogInformation("Get request received.");
-            if(!Guid.TryParse(id, out var copyGuid))
-            {
-                throw new FormatException("Invalid ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
-            }
-            var result = await copyRepository.GetByIdAsync(copyGuid)
-                ?? throw new KeyNotFoundException($"A copy record with the specified ID ({id}) could not be found in the system.");
+            var result = await copyService.GetCopyByIdAsync(id);
             return Ok(result);
         }
         catch(FormatException e)
@@ -72,45 +66,78 @@ public class CopyController : ControllerBase
         }
     }
 
-    // POST api/<CopyController>
     [HttpPost]
     [ApiKey("Librarian", "Admin")]
-    public async Task<IActionResult> Post(Copy copy)
+    public async Task<IActionResult> Post(CopyPostDTO copy)
     {
         try
         {
             logger.LogInformation("Post request received.");
-            await copyRepository.AddAsync(copy);
-            return Ok("Object was sucesfully added to the datebase.");
+            var result = await copyService.CreateCopyAsync(copy);
+            return Ok(copy);
+        }
+        catch(FormatException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Post(<CopyPostDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Post(<CopyPostDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(ArgumentException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: ArguumentException catched during invoking Post(<CopyPostDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Post(<Copy Object>):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Post(<CopyPostDTO Object>):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, "Unexpected error.");
         }
     }
 
-    // PUT api/<CopiesController>/5
-    [HttpPut("{id}")]
+    [HttpPatch]
     [ApiKey("Librarian", "Admin")]
-    public async Task<IActionResult> Put(string id, Copy copy)
+    public async Task<IActionResult> Patch(CopyPutDTO copy)
     {
         try
         {
             logger.LogInformation("Put request received.");
-            copyRepository.Update(copy);
-            return Ok("Object was sucesfully updated in the datebase.");
+            var result = await copyService.UpdateCopyAsync(copy);
+            return Ok(copy);
+        }
+        catch(FormatException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Patch(<CopyPutDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Post(<CopyPutDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
+        }
+        catch(ArgumentException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: ArguumentException catched during invoking Post(<CopyPutDTO Object>):");
+            logger.LogInformation($"    {e.Message}");
+            return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Put(id: {id}, <Copy Object>):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<CopyPutDTO Object>):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, "Unexpected error.");
         }
     }
 
-    // DELETE api/<CopiesController>/5
     [HttpDelete("{id}")]
     [ApiKey("Admin")]
     public async Task<IActionResult> Delete(string id)
@@ -118,11 +145,7 @@ public class CopyController : ControllerBase
         try
         {
             logger.LogInformation("Delete request received.");
-            if(!Guid.TryParse(id, out var copyGuid))
-            {
-                throw new FormatException("Invalid ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.");
-            }
-            await copyRepository.DeleteAsync(copyGuid);
+            await copyService.DeleteCopyAsync(id);
             return Ok("Object was sucesfully deleted from the datebase.");
         }
         catch(FormatException e)
@@ -130,6 +153,12 @@ public class CopyController : ControllerBase
             logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Delete(id: {id}):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
+        }
+        catch(KeyNotFoundException e)
+        {
+            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Delete(id: {id}):");
+            logger.LogInformation($"    {e.Message}");
+            return NotFound(e.Message);
         }
         catch (Exception e)
         {
