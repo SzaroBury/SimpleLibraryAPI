@@ -1,6 +1,6 @@
 namespace SimpleLibrary.Domain.DTO;
     
-public record ReaderPutDTO
+public record ReaderPatchDTO
 (
     string Id,
     string? FirstName = null,

@@ -77,7 +77,7 @@ public class ReaderService: IReaderService
             i++;
             if(i > 100)
             {
-                throw new InsufficientExecutionStackException("There was a problem during generating a new card number.");
+                throw new InvalidOperationException("There was a problem during generating a new card number.");
             }
 
             int cardNumber = int.Parse(newCardNumber) + 1;
@@ -98,7 +98,7 @@ public class ReaderService: IReaderService
 
         return newReader;
     }
-    public async Task<Reader> UpdateReaderAsync(ReaderPutDTO reader)
+    public async Task<Reader> UpdateReaderAsync(ReaderPatchDTO reader)
     {
         Reader existingReader = await GetReaderByIdAsync(reader.Id);
 

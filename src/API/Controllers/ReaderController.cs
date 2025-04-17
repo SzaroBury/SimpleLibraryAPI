@@ -132,7 +132,7 @@ public class ReaderController : ControllerBase
 
     [HttpPatch]
     [ApiKey("Librarian", "Admin")]
-    public async Task<IActionResult> Patch(ReaderPutDTO reader)
+    public async Task<IActionResult> Patch(ReaderPatchDTO reader)
     {            
         try
         {
@@ -142,19 +142,19 @@ public class ReaderController : ControllerBase
         }
         catch(FormatException e)
         {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Patch(<ReaderPutDTO Object>):");
+            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Patch(<ReaderPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(KeyNotFoundException e)
         {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Patch(<ReaderPutDTO Object>):");
+            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Patch(<ReaderPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return NotFound(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<ReaderPutDTO Object>):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<ReaderPatchDTO Object>):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, "Unexpected error.");
         }
