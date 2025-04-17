@@ -1,9 +1,8 @@
-# Simple API for library staff (work in progress)
+# Simple API for library staff
 
-### Target Features:
-- CRUD operations for all entities with diffrent accesability.
+### Features:
+- CRUD operations for all entities
 - Diffrent endpoints available for three diffrent API keys.
-- Searching books by: word, availbility, relaese date, author and category.
 - Logging information in the console
 
 ### Installation:
@@ -18,11 +17,11 @@
 - Unit tests with Xunit and Moq
 
 ### Projects in the solution:
-- API - controllers
-- Application - services, interfaces
-- Domain - model, DTOs, enumerations
-- Infrastructure - connection to the database
-- Application.Tests - unit tests of the Core project
+- API - Controllers, Attributes, DI
+- Application - Services
+- Domain - Model, DTOs, Enumerations
+- Infrastructure - Repository, UOW, DBContext
+- Application.Tests - unit tests of the Application project
 
 ### Entities in the system:
 - Author
@@ -32,10 +31,8 @@
 - Copy (of a book)
 - Reader
 
-![alt text](https://github.com/SzaroBury/SimpleLibraryAPI/blob/master/erd.png?raw=true)
+![alt text](https://github.com/SzaroBury/SimpleLibraryAPI/blob/HEAD/SimpleLibraryLogicalERD.png?raw=true)
 
-### To do:
-- Check if copy of book is available
-- Check how many copies of the book are available
-- Readers can have borrowed only specific number of books in the time	
-- End Borrowing
+### Todo:
+- JWT Authentication
+- Integragion tests
