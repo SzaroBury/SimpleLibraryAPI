@@ -11,12 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Adding services to the container.
 builder.Services.AddDbContext<LibraryEFContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AppModel")));
-
-//builder.Services.AddIdentity<User, Role>(options =>
-//{
-//    options.User.RequireUniqueEmail = true;
-//}).AddEntityFrameworkStores<IdentityContext>();
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
