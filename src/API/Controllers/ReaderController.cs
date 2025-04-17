@@ -11,6 +11,7 @@ public class ReaderController : ControllerBase
 {
     private readonly IReaderService readerService;
     private readonly ILogger<ReaderController> logger;
+    
     public ReaderController(IReaderService readerService, ILogger<ReaderController> logger)
     {
         this.readerService = readerService;

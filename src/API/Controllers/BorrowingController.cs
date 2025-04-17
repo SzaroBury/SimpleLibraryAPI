@@ -1,6 +1,4 @@
 ﻿using SimpleLibrary.API.Attributes;
-using SimpleLibrary.Domain.Repositories;
-using SimpleLibrary.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Domain.DTO;

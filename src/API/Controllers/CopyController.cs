@@ -1,5 +1,4 @@
 ﻿using SimpleLibrary.API.Attributes;
-using SimpleLibrary.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Application.Services.Abstraction;
@@ -12,13 +11,14 @@ public class CopyController : ControllerBase
 {
     private readonly ICopyService copyService;
     private readonly ILogger<CopyController> logger;
+    
     public CopyController(ICopyService copyService, ILogger<CopyController> logger)
     {
         this.copyService = copyService;
         this.logger = logger;
     }
 
-    [HttpGet("search")]
+    [HttpGet]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Search(
         [FromQuery] string? search,

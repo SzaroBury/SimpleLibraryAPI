@@ -11,20 +11,20 @@ public class CategoryController : ControllerBase
 {
     private readonly ICategoryService categoryService;
     private readonly ILogger<CategoryController> logger;
+
     public CategoryController(ICategoryService categoryService, ILogger<CategoryController> logger)
     {
         this.categoryService = categoryService;
         this.logger = logger;
     }
 
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     [HttpGet]
+    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Search(
         [FromQuery] string? search,
         [FromQuery] string? parentCategory,
         [FromQuery] int? page = null,
-        [FromQuery] int? pageSize = null
-    )
+        [FromQuery] int? pageSize = null)
     {
         try
         {

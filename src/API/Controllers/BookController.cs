@@ -18,7 +18,7 @@ public class BookController : ControllerBase
         this.bookService = bookService;
     }
 
-    [HttpGet("search")]
+    [HttpGet]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Search(
         [FromQuery] string search = "",

@@ -11,13 +11,14 @@ public class AuthorController : ControllerBase
 {
     private readonly IAuthorService authorService;
     private readonly ILogger<AuthorController> logger;
+    
     public AuthorController(IAuthorService authorService, ILogger<AuthorController> logger)
     {
         this.authorService = authorService;
         this.logger = logger;
     }
 
-    [HttpGet("search")]
+    [HttpGet]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Search(
         [FromQuery] string? search = null, 
