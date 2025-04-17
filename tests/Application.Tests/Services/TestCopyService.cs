@@ -156,7 +156,7 @@ public class TestCopyService
         var ex = await Assert.ThrowsAsync<FormatException>(() =>
             copyService.CreateCopyAsync(dto));
 
-        Assert.Contains($"Invalid acquisition date format. Please use DD-MM-YYYY format.", ex.Message);
+        Assert.Contains($"is invalid acquisition date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.", ex.Message);
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class TestCopyService
         var ex = await Assert.ThrowsAsync<FormatException>(() =>
             copyService.CreateCopyAsync(dto));
 
-        Assert.Contains($"Invalid last inspection date format. Please use DD-MM-YYYY format.", ex.Message);
+        Assert.Contains($"is invalid last inspection date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.", ex.Message);
     }
     #endregion
     #region UpdateCopyAsync
@@ -183,7 +183,7 @@ public class TestCopyService
         string expectedBookId, int expectedShelfNumber, bool expectedIsLost, CopyCondition expectedCondition, int expectedCopyNumber)
     {
         var book = !string.IsNullOrEmpty(bookId) ? guids[bookId].ToString() : null;
-        var dto = new CopyPutDTO(guids["b1_c1"].ToString(), book, shelfNumber, isLost, condition, CopyNumber: copyNumber);
+        var dto = new CopyPatchDTO(guids["b1_c1"].ToString(), book, shelfNumber, isLost, condition, CopyNumber: copyNumber);
 
         var result = await copyService.UpdateCopyAsync(dto);
         Assert.Equal(guids[expectedBookId], result.BookId);
@@ -206,7 +206,7 @@ public class TestCopyService
     [Fact]
     public async Task UpdateCopyAsync_ValidAcquisitionDate_UpdatesCopy()
     {
-        var dto = new CopyPutDTO(guids["b1_c1"].ToString(), AcquisitionDate: "01-01-2020");
+        var dto = new CopyPatchDTO(guids["b1_c1"].ToString(), AcquisitionDate: "2020-01-01");
         var expectedAcquisitionDate = new DateTime(2020, 1, 1);
 
         var result = await copyService.UpdateCopyAsync(dto);
@@ -226,7 +226,7 @@ public class TestCopyService
     [Fact]
     public async Task UpdateCopyAsync_ValidLastInspectionDate_UpdatesCopy()
     {
-        var dto = new CopyPutDTO(guids["b1_c1"].ToString(), LastInspectionDate: "01-01-2025");
+        var dto = new CopyPatchDTO(guids["b1_c1"].ToString(), LastInspectionDate: "2025-01-01");
         var expectedLastInspectionDate = new DateTime(2025, 1, 1);
 
         var result = await copyService.UpdateCopyAsync(dto);
@@ -246,7 +246,7 @@ public class TestCopyService
     [Fact]
     public async Task UpdateCopyAsync_WithInvalidCopyGuid_ThrowsFormatException()
     {
-        var dto = new CopyPutDTO("invalid-guid");
+        var dto = new CopyPatchDTO("invalid-guid");
 
         var ex = await Assert.ThrowsAsync<FormatException>(() =>
             copyService.UpdateCopyAsync(dto));
@@ -258,7 +258,7 @@ public class TestCopyService
     public async Task UpdateCopyAsync_WithNonExistentCopyId_ThrowsKeyNotFoundException()
     {
         var id = Guid.NewGuid().ToString();
-        var dto = new CopyPutDTO(id);
+        var dto = new CopyPatchDTO(id);
 
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             copyService.UpdateCopyAsync(dto));
@@ -270,7 +270,7 @@ public class TestCopyService
     public async Task UpdateCopyAsync_WithInvalidBookGuid_ThrowsFormatException()
     {
         var id = guids["b1_c1"].ToString();
-        var dto = new CopyPutDTO(id, "invalid-book-guid");
+        var dto = new CopyPatchDTO(id, "invalid-book-guid");
 
         var ex = await Assert.ThrowsAsync<FormatException>(() =>
             copyService.UpdateCopyAsync(dto));
@@ -283,7 +283,7 @@ public class TestCopyService
     {
         var id = guids["b1_c1"].ToString();
         var nonExistentBook = Guid.NewGuid().ToString();
-        var dto = new CopyPutDTO(id, nonExistentBook);
+        var dto = new CopyPatchDTO(id, nonExistentBook);
 
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             copyService.UpdateCopyAsync(dto));
@@ -295,7 +295,7 @@ public class TestCopyService
     public async Task UpdateCopyAsync_WithInvalidShelfNumber_ThrowsArgumentException()
     {
         var id = guids["b1_c1"].ToString();
-        var dto = new CopyPutDTO(id, guids["b4"].ToString(), 0);
+        var dto = new CopyPatchDTO(id, guids["b4"].ToString(), 0);
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
             copyService.UpdateCopyAsync(dto));
@@ -307,7 +307,7 @@ public class TestCopyService
     public async Task UpdateCopyAsync_WithInvalidConditionValue_ThrowsFormatException()
     {
         var id = guids["b1_c1"].ToString();
-        var dto = new CopyPutDTO(id, guids["b4"].ToString(), 1, Condition: "BrandNew");
+        var dto = new CopyPatchDTO(id, guids["b4"].ToString(), 1, Condition: "BrandNew");
 
         var ex = await Assert.ThrowsAsync<FormatException>(() =>
             copyService.UpdateCopyAsync(dto));
@@ -319,30 +319,30 @@ public class TestCopyService
     public async Task UpdateCopyAsync_WithInvalidAcquisitionDate_ThrowsFormatException()
     {
         var id = guids["b1_c1"].ToString();
-        var dto = new CopyPutDTO(id, guids["b4"].ToString(), 1, AcquisitionDate: "invalid-date-format");
+        var dto = new CopyPatchDTO(id, guids["b4"].ToString(), 1, AcquisitionDate: "invalid-date-format");
 
         var ex = await Assert.ThrowsAsync<FormatException>(() =>
             copyService.UpdateCopyAsync(dto));
 
-        Assert.Contains($"Invalid acquisition date format. Please use DD-MM-YYYY format.", ex.Message);
+        Assert.Contains($"is invalid acquisition date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.", ex.Message);
     }
 
     [Fact]
     public async Task UpdateCopyAsync_WithInvalidLastInspectionDate_ThrowsFormatException()
     {
         var id = guids["b1_c1"].ToString();
-        var dto = new CopyPutDTO(id, guids["b4"].ToString(), 1, LastInspectionDate: "invalid-date-format");
+        var dto = new CopyPatchDTO(id, guids["b4"].ToString(), 1, LastInspectionDate: "invalid-date-format");
 
         var ex = await Assert.ThrowsAsync<FormatException>(() =>
             copyService.UpdateCopyAsync(dto));
 
-        Assert.Contains($"Invalid last inspection date format. Please use DD-MM-YYYY format.", ex.Message);
+        Assert.Contains($"is invalid last inspection date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.", ex.Message);
     }
 
     [Fact]
     public async Task UpdateCopyAsync_WithInvalidCopyNumber_ThrowsArgumentException()
     {
-        var dto = new CopyPutDTO(guids["b1_c1"].ToString(), CopyNumber: 0);
+        var dto = new CopyPatchDTO(guids["b1_c1"].ToString(), CopyNumber: 0);
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
             copyService.UpdateCopyAsync(dto));
@@ -353,7 +353,7 @@ public class TestCopyService
     [Fact]
     public async Task UpdateCopyAsync_WithDuplicateCopyNumber_ThrowsArgumentException()
     {
-        var dto = new CopyPutDTO(guids["b1_c1"].ToString(), CopyNumber: 2);
+        var dto = new CopyPatchDTO(guids["b1_c1"].ToString(), CopyNumber: 2);
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
             copyService.UpdateCopyAsync(dto));

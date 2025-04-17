@@ -8,7 +8,7 @@ public interface ICopyService
     Task<IEnumerable<Copy>> GetAllCopiesAsync();
     Task<Copy> GetCopyByIdAsync(string id);
     Task<Copy> CreateCopyAsync(CopyPostDTO Copy);
-    Task<Copy> UpdateCopyAsync(CopyPutDTO Copy);
+    Task<Copy> UpdateCopyAsync(CopyPatchDTO Copy);
     Task DeleteCopyAsync(string id);
     Task<IEnumerable<Copy>> SearchCopiesAsync(
         string? searchTerm = null, 

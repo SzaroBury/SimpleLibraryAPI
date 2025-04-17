@@ -20,7 +20,12 @@ public class CopyController : ControllerBase
 
     [HttpGet("search")]
     [ApiKey("ReadOnly", "Librarian", "Admin")]
-    public async Task<IActionResult> Search(string? search, string? book, bool? isAvailable, int? page, int? pageSize)
+    public async Task<IActionResult> Search(
+        [FromQuery] string? search,
+        [FromQuery] string? book,
+        [FromQuery] bool? isAvailable,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize)
     {
         try
         {
@@ -104,7 +109,7 @@ public class CopyController : ControllerBase
 
     [HttpPatch]
     [ApiKey("Librarian", "Admin")]
-    public async Task<IActionResult> Patch(CopyPutDTO copy)
+    public async Task<IActionResult> Patch(CopyPatchDTO copy)
     {
         try
         {
@@ -114,25 +119,25 @@ public class CopyController : ControllerBase
         }
         catch(FormatException e)
         {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Patch(<CopyPutDTO Object>):");
+            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Patch(<CopyPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(KeyNotFoundException e)
         {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Post(<CopyPutDTO Object>):");
+            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Post(<CopyPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch(ArgumentException e)
         {
-            logger.LogInformation($"{DateTime.Now}: ArguumentException catched during invoking Post(<CopyPutDTO Object>):");
+            logger.LogInformation($"{DateTime.Now}: ArguumentException catched during invoking Post(<CopyPatchDTO Object>):");
             logger.LogInformation($"    {e.Message}");
             return ValidationProblem(e.Message);
         }
         catch (Exception e)
         {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<CopyPutDTO Object>):");
+            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<CopyPatchDTO Object>):");
             logger.LogError($"    {e.Message}");
             return StatusCode(500, "Unexpected error.");
         }

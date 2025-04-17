@@ -2,6 +2,7 @@ using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Domain.Enumerations;
+using System.Globalization;
 
 namespace SimpleLibrary.Application.Services;
 
@@ -76,7 +77,7 @@ public class CopyService: ICopyService
 
         return newCopy;
     }
-    public async Task<Copy> UpdateCopyAsync(CopyPutDTO copy)
+    public async Task<Copy> UpdateCopyAsync(CopyPatchDTO copy)
     {
         Copy existingCopy = await GetCopyByIdAsync(copy.Id);
 
@@ -242,9 +243,10 @@ public class CopyService: ICopyService
 
     private static DateTime ValidateAndParseDateTime(string date, string propertyName)
     {
-        if(!DateTime.TryParse(date, out DateTime result))
+        string[] AcceptedFormats = [ "yyyy-MM-dd HH:mm", "yyyy-MM-dd" ];
+        if (!DateTime.TryParseExact(date, AcceptedFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
         {
-            throw new FormatException($"Invalid {propertyName} date format. Please use DD-MM-YYYY format.");
+            throw new FormatException($"'{date}' is invalid {propertyName} date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.");
         }
         return result;
     }

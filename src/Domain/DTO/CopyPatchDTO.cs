@@ -1,6 +1,6 @@
 namespace SimpleLibrary.Domain.DTO;
     
-public record CopyPutDTO
+public record CopyPatchDTO
 (
     string Id,
     string? BookId = null,
