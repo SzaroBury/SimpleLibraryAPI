@@ -1,0 +1,33 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "Strong!Password123"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  api:
+    build:
+      context: .
+      dockerfile: ./src/API/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SimpleLibraryDB;User Id=sa;Password=Strong!Password123;Encrypt=False;
+    depends_on:
+      - sqlserver
+    command: >
+      sh -c "echo 'Waiting for SQL Server...' &&
+            sleep 10 &&
+            echo 'Applying migrations...' &&
+            dotnet ef database update --no-build --project src/Infrastructure --startup-project src/API &&
+            echo 'Starting application...' &&
+            dotnet API.dll"
+
+volumes:
+  sqlserver_data:
