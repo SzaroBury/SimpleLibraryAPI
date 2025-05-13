@@ -13,10 +13,10 @@ public class Book
     public Language Language { get; set; } 
     public string Tags { get; set; } = string.Empty;
 
-    [Required] public virtual Author Author { get; set; }
+    [Required] public virtual Author Author { get; set; } = null!;
     public Guid AuthorId { get; set; }
     
-    [Required] public virtual Category Category { get; set; }
+    [Required] public virtual Category Category { get; set; } = null!;
     public Guid CategoryId { get; set; }
 
     public virtual ICollection<Copy> Copies { get; set; } = [];

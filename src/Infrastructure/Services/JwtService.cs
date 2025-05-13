@@ -41,6 +41,9 @@ public class JwtService: IJwtService
         {
             rng.GetBytes(randomBytes);
         }
-        return Convert.ToBase64String(randomBytes);
+
+        var randomPart = Convert.ToBase64String(randomBytes);
+        var uniquePart = Guid.NewGuid();
+        return $"{randomPart}.{uniquePart}";
     }
 }

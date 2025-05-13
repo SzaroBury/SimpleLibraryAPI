@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Domain.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SimpleLibrary.API.Controllers;
 
@@ -19,14 +20,12 @@ public class AuthorController : ControllerBase
     }
 
     [HttpGet]
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Search(
         [FromQuery] string? search = null, 
         [FromQuery] string? olderThan = null, 
         [FromQuery] string? youngerThan = null, 
         [FromQuery] int? page = null, 
-        [FromQuery] int? pageSize = null
-    )
+        [FromQuery] int? pageSize = null)
     {
         try
         {
@@ -55,7 +54,6 @@ public class AuthorController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Get(string id)
     {
         try
@@ -85,7 +83,7 @@ public class AuthorController : ControllerBase
     }
 
     [HttpPost]
-    [ApiKey("Librarian", "Admin")]
+    [Authorize]
     public async Task<IActionResult> Post(AuthorPostDTO author)
     {
         try
@@ -115,7 +113,7 @@ public class AuthorController : ControllerBase
     }
 
     [HttpPatch]
-    [ApiKey("Librarian", "Admin")]
+    [Authorize]
     public async Task<IActionResult> Patch(AuthorPatchDTO author)
     {
         try
@@ -145,7 +143,7 @@ public class AuthorController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [ApiKey("Admin")]
+    [Authorize]
     public async Task<IActionResult> Delete(string id)
     {
         try

@@ -54,7 +54,7 @@ namespace Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("3f88f264-dfa0-4bc6-9607-40b03521b9bc"),
+                            Id = new Guid("147580eb-4746-4c12-bd9c-e723cea8625a"),
                             Description = "",
                             FirstName = "N/A",
                             LastName = "N/A",
@@ -62,7 +62,7 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("6ace67f1-9b06-4f5c-9f68-405a605a1c0e"),
+                            Id = new Guid("688bfdcc-6daf-4b84-aeaa-91b30a9d2163"),
                             BornDate = new DateTime(1798, 12, 24, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "",
                             FirstName = "Adam",
@@ -112,9 +112,9 @@ namespace Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("f34097e4-661e-4f9c-bdfe-779aeb8d015a"),
-                            AuthorId = new Guid("3f88f264-dfa0-4bc6-9607-40b03521b9bc"),
-                            CategoryId = new Guid("e1ccab71-6e92-47d8-99bb-823b2560ecf6"),
+                            Id = new Guid("0a693ffa-46e6-495d-b56b-eab2d2381466"),
+                            AuthorId = new Guid("147580eb-4746-4c12-bd9c-e723cea8625a"),
+                            CategoryId = new Guid("c04310b5-2cad-407d-a786-3b709b285196"),
                             Description = "",
                             Language = 0,
                             ReleaseDate = new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -123,9 +123,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("2f5464b2-372c-4b66-9532-a53b6c237ed7"),
-                            AuthorId = new Guid("3f88f264-dfa0-4bc6-9607-40b03521b9bc"),
-                            CategoryId = new Guid("e1ccab71-6e92-47d8-99bb-823b2560ecf6"),
+                            Id = new Guid("9fa19838-829f-454b-bca2-acf2e5a2b8e6"),
+                            AuthorId = new Guid("147580eb-4746-4c12-bd9c-e723cea8625a"),
+                            CategoryId = new Guid("c04310b5-2cad-407d-a786-3b709b285196"),
                             Description = "",
                             Language = 2,
                             ReleaseDate = new DateTime(1800, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -134,9 +134,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("5ea7045e-1803-4c3f-bf63-c114944efef2"),
-                            AuthorId = new Guid("3f88f264-dfa0-4bc6-9607-40b03521b9bc"),
-                            CategoryId = new Guid("cde2affa-c16b-442a-8c0f-10b2d6b509c2"),
+                            Id = new Guid("dc3c8342-6c5d-4718-9a4a-c3dbafaa64d3"),
+                            AuthorId = new Guid("147580eb-4746-4c12-bd9c-e723cea8625a"),
+                            CategoryId = new Guid("ba66cfda-319c-44f3-81de-d56cb4ef7ee6"),
                             Description = "",
                             Language = 3,
                             ReleaseDate = new DateTime(2010, 5, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -145,9 +145,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("9d2e7356-11db-4d1b-a675-0a93589cd5bc"),
-                            AuthorId = new Guid("6ace67f1-9b06-4f5c-9f68-405a605a1c0e"),
-                            CategoryId = new Guid("cde2affa-c16b-442a-8c0f-10b2d6b509c2"),
+                            Id = new Guid("57763e0a-48de-4d77-ac54-aede0d55e8e6"),
+                            AuthorId = new Guid("688bfdcc-6daf-4b84-aeaa-91b30a9d2163"),
+                            CategoryId = new Guid("ba66cfda-319c-44f3-81de-d56cb4ef7ee6"),
                             Description = "",
                             Language = 1,
                             ReleaseDate = new DateTime(1823, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -156,9 +156,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("51588acb-2b57-42d1-a671-db18f4e80ffc"),
-                            AuthorId = new Guid("6ace67f1-9b06-4f5c-9f68-405a605a1c0e"),
-                            CategoryId = new Guid("cde2affa-c16b-442a-8c0f-10b2d6b509c2"),
+                            Id = new Guid("d99481cf-ca76-47e9-b0a5-47bba680cd74"),
+                            AuthorId = new Guid("688bfdcc-6daf-4b84-aeaa-91b30a9d2163"),
+                            CategoryId = new Guid("ba66cfda-319c-44f3-81de-d56cb4ef7ee6"),
                             Description = "",
                             Language = 1,
                             ReleaseDate = new DateTime(1832, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -196,38 +196,38 @@ namespace Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("3f3c6aab-ac54-460e-9f69-09fcd287817b"),
-                            CopyId = new Guid("ab49f46b-8f17-4a02-81fb-5a652d12e4aa"),
-                            ReaderId = new Guid("c958d750-b4f4-41bc-aaa2-9f81406534c0"),
+                            Id = new Guid("a55b0582-bef9-4e75-a0bd-ed71c15e0ac8"),
+                            CopyId = new Guid("a5dc216e-fa5a-4d4f-a7a7-7b9cf61bd2d2"),
+                            ReaderId = new Guid("0abe6f02-1e1e-4e23-9fa1-5185f6ef27f1"),
                             StartedDate = new DateTime(2022, 11, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
                         {
-                            Id = new Guid("beb3838f-e839-469d-9b4f-26601d946aa2"),
-                            CopyId = new Guid("5a529b05-cb46-4eb1-ac5e-658642577afc"),
-                            ReaderId = new Guid("c958d750-b4f4-41bc-aaa2-9f81406534c0"),
+                            Id = new Guid("78ab8343-ad9a-4e6f-8df3-c8cbeff698d3"),
+                            CopyId = new Guid("629571f9-af0e-4d6b-8009-9b60c815b910"),
+                            ReaderId = new Guid("0abe6f02-1e1e-4e23-9fa1-5185f6ef27f1"),
                             StartedDate = new DateTime(2022, 10, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
                         {
-                            Id = new Guid("7955e404-9090-41c5-9505-cb73884a35ec"),
-                            CopyId = new Guid("a4e0e85d-1481-4911-93b7-464bbc2d835a"),
-                            ReaderId = new Guid("4978807d-d07c-4603-8933-60f1198abbc3"),
+                            Id = new Guid("150fcb11-65c9-4228-8ba7-2e56c22e7a02"),
+                            CopyId = new Guid("b32a5443-7d4c-49c3-bc74-2950e9eb0326"),
+                            ReaderId = new Guid("12c6abd4-508f-41cc-aa6c-045f53a04dd1"),
                             StartedDate = new DateTime(2022, 10, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
                         {
-                            Id = new Guid("66937067-376a-47b3-add0-6839847a1c32"),
-                            CopyId = new Guid("0ca4253f-5cd7-4179-89cb-2a54092f3d4f"),
-                            ReaderId = new Guid("c958d750-b4f4-41bc-aaa2-9f81406534c0"),
-                            StartedDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local)
+                            Id = new Guid("00156952-b8ea-4233-9c52-62b3cc1007ed"),
+                            CopyId = new Guid("20e704d6-d4ff-4ec1-b014-0119aa660f01"),
+                            ReaderId = new Guid("0abe6f02-1e1e-4e23-9fa1-5185f6ef27f1"),
+                            StartedDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local)
                         },
                         new
                         {
-                            Id = new Guid("b4003ad5-4684-4d55-91c4-3cb2114a2feb"),
-                            CopyId = new Guid("172e3031-9d39-4447-8737-f413d7f9031a"),
-                            ReaderId = new Guid("4978807d-d07c-4603-8933-60f1198abbc3"),
-                            StartedDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local)
+                            Id = new Guid("3ede8c05-5273-4af0-af7a-143badc70641"),
+                            CopyId = new Guid("68459c51-4116-4087-bace-38e8df5b2687"),
+                            ReaderId = new Guid("12c6abd4-508f-41cc-aa6c-045f53a04dd1"),
+                            StartedDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local)
                         });
                 });
 
@@ -261,14 +261,14 @@ namespace Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("e1ccab71-6e92-47d8-99bb-823b2560ecf6"),
+                            Id = new Guid("c04310b5-2cad-407d-a786-3b709b285196"),
                             Description = "",
                             Name = "Novel",
                             Tags = ""
                         },
                         new
                         {
-                            Id = new Guid("cde2affa-c16b-442a-8c0f-10b2d6b509c2"),
+                            Id = new Guid("ba66cfda-319c-44f3-81de-d56cb4ef7ee6"),
                             Description = "",
                             Name = "Other",
                             Tags = ""
@@ -311,9 +311,9 @@ namespace Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("ab49f46b-8f17-4a02-81fb-5a652d12e4aa"),
-                            AcquisitionDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local),
-                            BookId = new Guid("f34097e4-661e-4f9c-bdfe-779aeb8d015a"),
+                            Id = new Guid("a5dc216e-fa5a-4d4f-a7a7-7b9cf61bd2d2"),
+                            AcquisitionDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local),
+                            BookId = new Guid("0a693ffa-46e6-495d-b56b-eab2d2381466"),
                             Condition = 0,
                             CopyNumber = 0,
                             IsLost = false,
@@ -321,9 +321,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("5a529b05-cb46-4eb1-ac5e-658642577afc"),
-                            AcquisitionDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local),
-                            BookId = new Guid("f34097e4-661e-4f9c-bdfe-779aeb8d015a"),
+                            Id = new Guid("629571f9-af0e-4d6b-8009-9b60c815b910"),
+                            AcquisitionDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local),
+                            BookId = new Guid("0a693ffa-46e6-495d-b56b-eab2d2381466"),
                             Condition = 0,
                             CopyNumber = 0,
                             IsLost = false,
@@ -331,9 +331,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("a4e0e85d-1481-4911-93b7-464bbc2d835a"),
-                            AcquisitionDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local),
-                            BookId = new Guid("2f5464b2-372c-4b66-9532-a53b6c237ed7"),
+                            Id = new Guid("b32a5443-7d4c-49c3-bc74-2950e9eb0326"),
+                            AcquisitionDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local),
+                            BookId = new Guid("9fa19838-829f-454b-bca2-acf2e5a2b8e6"),
                             Condition = 0,
                             CopyNumber = 0,
                             IsLost = false,
@@ -341,9 +341,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("0ca4253f-5cd7-4179-89cb-2a54092f3d4f"),
-                            AcquisitionDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local),
-                            BookId = new Guid("2f5464b2-372c-4b66-9532-a53b6c237ed7"),
+                            Id = new Guid("20e704d6-d4ff-4ec1-b014-0119aa660f01"),
+                            AcquisitionDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local),
+                            BookId = new Guid("9fa19838-829f-454b-bca2-acf2e5a2b8e6"),
                             Condition = 0,
                             CopyNumber = 0,
                             IsLost = false,
@@ -351,9 +351,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("172e3031-9d39-4447-8737-f413d7f9031a"),
-                            AcquisitionDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local),
-                            BookId = new Guid("5ea7045e-1803-4c3f-bf63-c114944efef2"),
+                            Id = new Guid("68459c51-4116-4087-bace-38e8df5b2687"),
+                            AcquisitionDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local),
+                            BookId = new Guid("dc3c8342-6c5d-4718-9a4a-c3dbafaa64d3"),
                             Condition = 0,
                             CopyNumber = 0,
                             IsLost = false,
@@ -361,9 +361,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("a1724bb1-0898-402d-a7ff-e4dbaeea272e"),
-                            AcquisitionDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local),
-                            BookId = new Guid("5ea7045e-1803-4c3f-bf63-c114944efef2"),
+                            Id = new Guid("55bb0ae4-4ab6-4777-9464-3f4e8cd50977"),
+                            AcquisitionDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local),
+                            BookId = new Guid("dc3c8342-6c5d-4718-9a4a-c3dbafaa64d3"),
                             Condition = 0,
                             CopyNumber = 0,
                             IsLost = false,
@@ -371,9 +371,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("2f021cca-85a1-4682-995c-b700f20254cb"),
-                            AcquisitionDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local),
-                            BookId = new Guid("9d2e7356-11db-4d1b-a675-0a93589cd5bc"),
+                            Id = new Guid("465c7c03-8213-4f86-b01b-c1f259d52cd8"),
+                            AcquisitionDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local),
+                            BookId = new Guid("57763e0a-48de-4d77-ac54-aede0d55e8e6"),
                             Condition = 0,
                             CopyNumber = 0,
                             IsLost = false,
@@ -381,9 +381,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("bfec77d8-fd53-42e7-a7ec-64ab04804f99"),
-                            AcquisitionDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local),
-                            BookId = new Guid("51588acb-2b57-42d1-a671-db18f4e80ffc"),
+                            Id = new Guid("91e36d60-378b-499c-86ed-8276f71ca6b3"),
+                            AcquisitionDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local),
+                            BookId = new Guid("d99481cf-ca76-47e9-b0a5-47bba680cd74"),
                             Condition = 0,
                             CopyNumber = 0,
                             IsLost = false,
@@ -391,9 +391,9 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("e617f861-15e9-45bd-a620-509f251d486e"),
-                            AcquisitionDate = new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local),
-                            BookId = new Guid("51588acb-2b57-42d1-a671-db18f4e80ffc"),
+                            Id = new Guid("b1c6ae8f-7d42-4c8e-a16c-219fd218becd"),
+                            AcquisitionDate = new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local),
+                            BookId = new Guid("d99481cf-ca76-47e9-b0a5-47bba680cd74"),
                             Condition = 0,
                             CopyNumber = 0,
                             IsLost = false,
@@ -438,7 +438,7 @@ namespace Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("c958d750-b4f4-41bc-aaa2-9f81406534c0"),
+                            Id = new Guid("0abe6f02-1e1e-4e23-9fa1-5185f6ef27f1"),
                             CardNumber = "000-111-222",
                             Email = "jan.kowalski@mail.com",
                             FirstName = "Jan",
@@ -448,7 +448,7 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("4978807d-d07c-4603-8933-60f1198abbc3"),
+                            Id = new Guid("12c6abd4-508f-41cc-aa6c-045f53a04dd1"),
                             CardNumber = "333-444-555",
                             Email = "adam.nowak@mail.com",
                             FirstName = "Adam",
@@ -477,10 +477,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("RefreshTokenExpiration")
+                    b.Property<DateTime?>("RefreshTokenExpiration")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Role")
@@ -497,23 +496,19 @@ namespace Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4ae21440-948c-407a-9ab3-75c495b04285"),
+                            Id = new Guid("56b99bd5-26a6-402e-98bf-be9c0f6b8a82"),
                             Firstname = "",
                             Lastname = "",
-                            PasswordHash = "$2a$11$S0WA.4wPVQlFIlrz7vi/r.kP1xNUGtDEoMRw367K7u/NDSF3AjEly",
-                            RefreshToken = "",
-                            RefreshTokenExpiration = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PasswordHash = "$2a$11$1B6YDOB5bkb2ceiYW7c3H.iXZckSLCic2Ycl/cetX0R2nyB02vGyq",
                             Role = 1,
                             Username = "admin"
                         },
                         new
                         {
-                            Id = new Guid("c4f0765c-ee9b-4e6f-9a5a-e1f494a5d0f1"),
+                            Id = new Guid("6bbd49b9-4e1b-4a66-84fe-3555d40deeb1"),
                             Firstname = "",
                             Lastname = "",
-                            PasswordHash = "$2a$11$p8jWjqbZOwff4Vc05EcdkuItXmlgSdGmruVWNpBPFTdaUgHohQI8q",
-                            RefreshToken = "",
-                            RefreshTokenExpiration = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PasswordHash = "$2a$11$zL4CffzqTbEmPte1O23hvOjJQfXcpoj5cO3QTHIe.Rc/oAN53/h4C",
                             Role = 0,
                             Username = "librarian"
                         });

@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Domain.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SimpleLibrary.API.Controllers;
 
 [Route("api/borrowings")]
 [ApiController]
+[Authorize]
 public class BorrowingController : ControllerBase
 {
     private readonly IBorrowingService borrowingService;
@@ -19,7 +21,6 @@ public class BorrowingController : ControllerBase
     }
 
     [HttpGet]
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Search(        
         [FromQuery] string? search,
         [FromQuery] string? olderThan,
@@ -68,7 +69,6 @@ public class BorrowingController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Get(string id)
     {
         try
@@ -98,7 +98,6 @@ public class BorrowingController : ControllerBase
     }
 
     [HttpPost]
-    [ApiKey("Librarian", "Admin")]
     public async Task<IActionResult> Post(BorrowingPostDTO borrowing)
     {
         try
@@ -134,7 +133,6 @@ public class BorrowingController : ControllerBase
     }
 
     [HttpPatch]
-    [ApiKey("Librarian", "Admin")]
     public async Task<IActionResult> Patch(BorrowingPatchDTO borrowing)
     { 
         try
@@ -176,7 +174,6 @@ public class BorrowingController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [ApiKey("Admin")]
     public async Task<IActionResult> Delete(string id)
     {
         try

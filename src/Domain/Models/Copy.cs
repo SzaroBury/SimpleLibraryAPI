@@ -13,7 +13,7 @@ public class Copy
     public DateTime AcquisitionDate { get; set; } = DateTime.Today;
     public DateTime? LastInspectionDate { get; set; }
 
-    [Required] public virtual Book Book { get; set; }
+    [Required] public virtual Book Book { get; set; } = null!;
     public Guid BookId { get; set; }
 
     public virtual ICollection<Borrowing> Borrowings { get; set; } = [];

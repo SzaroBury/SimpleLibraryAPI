@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SimpleLibrary.Api.Requests;
@@ -28,18 +29,22 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenRequest request)
+    public async Task<IActionResult> RefreshTokenAsync()
     {
         try
         {
             logger.LogInformation("RefreshToken request received.");
+
+            // Pobierz token z ciasteczka "RefreshToken", jeśli nie został przesłany w treści żądania
+            var refreshToken = Request.Cookies["RefreshToken"];
             
             // Znajdź użytkownika na podstawie RefreshToken
-            var user = uow.GetRepository<User>().GetQueryable().FirstOrDefault(u => u.RefreshToken == request.RefreshToken);
+            var user = uow.GetRepository<User>().GetQueryable().FirstOrDefault(u => u.RefreshToken == refreshToken);
             if (user == null || user.RefreshTokenExpiration < DateTime.UtcNow)
             {
-                logger.LogWarning("Invalid or expired refresh token.");
-                return Unauthorized("Invalid or expired refresh token.");
+                var message = "Invalid or expired refresh token.";
+                logger.LogWarning(message);
+                return Unauthorized(message);
             }
 
             // Wygeneruj nowe tokeny
@@ -52,6 +57,22 @@ public class AuthController : ControllerBase
             var accessToken = jwtService.GenerateAccessToken(claims);
             var newRefreshToken = jwtService.GenerateRefreshToken();
 
+            Response.Cookies.Append("AccessToken", accessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(15)
+            });
+
+            Response.Cookies.Append("RefreshToken", newRefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
+
             // Zaktualizuj refresh token w bazie danych
             var refreshTokenExpirationDays = int.Parse(config["JwtSettings:RefreshTokenExpirationDays"] ?? "0");
             user.RefreshToken = newRefreshToken;
@@ -59,7 +80,7 @@ public class AuthController : ControllerBase
             uow.GetRepository<User>().Update(user);
             await uow.SaveChangesAsync();
 
-            return Ok(new { AccessToken = accessToken, RefreshToken = newRefreshToken });
+            return Ok(new { message = "Tokens refreshed" });
         }
         catch(Exception e)
         {
@@ -104,6 +125,22 @@ public class AuthController : ControllerBase
                 var accessToken = jwtService.GenerateAccessToken(claims);
                 var refreshToken = jwtService.GenerateRefreshToken();
 
+                Response.Cookies.Append("AccessToken", accessToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(15)
+                });
+
+                Response.Cookies.Append("RefreshToken", refreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddDays(7)
+                });
+
                 // Zaktualizuj refresh token w bazie danych
                 var refreshTokenExpirationDays = int.Parse(config["JwtSettings:RefreshTokenExpirationDays"] ?? "0");
                 user.RefreshToken = refreshToken;
@@ -111,7 +148,7 @@ public class AuthController : ControllerBase
                 uow.GetRepository<User>().Update(user);
                 await uow.SaveChangesAsync();
 
-                return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
+                return Ok(new { message = "User logged in successfully." });
             }
             else
             {
@@ -200,7 +237,7 @@ public class AuthController : ControllerBase
             };
             await uow.GetRepository<User>().AddAsync(newUser);
 
-            return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
+            return Ok(new { message = "A new user added successfully." });
         }
         catch(Exception e)
         {
@@ -208,5 +245,32 @@ public class AuthController : ControllerBase
             logger.LogError($"    {e.Message}");
             return Unauthorized($"Unexpected error.");
         }
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        var refreshToken = Request.Cookies["RefreshToken"];
+        if (refreshToken == null)
+        {
+            return NotFound("User is already logged out.");
+        }
+
+        var user = await uow.GetRepository<User>().GetQueryable().FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+        if (user == null)
+        {
+            return NotFound("User not found.");
+        }
+
+        user.RefreshToken = null;
+        user.RefreshTokenExpiration = null;
+        uow.GetRepository<User>().Update(user);
+        await uow.SaveChangesAsync();
+
+        Response.Cookies.Delete("AccessToken");
+        Response.Cookies.Delete("RefreshToken");
+
+        return Ok(new { Message = "Logged out successfully" });
     }
 }

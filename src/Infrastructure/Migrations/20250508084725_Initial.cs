@@ -75,8 +75,8 @@ namespace Infrastructure.Migrations
                     Firstname = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Lastname = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RefreshTokenExpiration = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RefreshTokenExpiration = table.Column<DateTime>(type: "datetime2", nullable: true),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<int>(type: "int", nullable: false)
                 },
@@ -171,8 +171,8 @@ namespace Infrastructure.Migrations
                 columns: new[] { "Id", "BornDate", "Description", "FirstName", "LastName", "Tags" },
                 values: new object[,]
                 {
-                    { new Guid("3f88f264-dfa0-4bc6-9607-40b03521b9bc"), null, "", "N/A", "N/A", "" },
-                    { new Guid("6ace67f1-9b06-4f5c-9f68-405a605a1c0e"), new DateTime(1798, 12, 24, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Adam", "Mickiewicz", "" }
+                    { new Guid("147580eb-4746-4c12-bd9c-e723cea8625a"), null, "", "N/A", "N/A", "" },
+                    { new Guid("688bfdcc-6daf-4b84-aeaa-91b30a9d2163"), new DateTime(1798, 12, 24, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Adam", "Mickiewicz", "" }
                 });
 
             migrationBuilder.InsertData(
@@ -180,8 +180,8 @@ namespace Infrastructure.Migrations
                 columns: new[] { "Id", "Description", "Name", "ParentCategoryId", "Tags" },
                 values: new object[,]
                 {
-                    { new Guid("cde2affa-c16b-442a-8c0f-10b2d6b509c2"), "", "Other", null, "" },
-                    { new Guid("e1ccab71-6e92-47d8-99bb-823b2560ecf6"), "", "Novel", null, "" }
+                    { new Guid("ba66cfda-319c-44f3-81de-d56cb4ef7ee6"), "", "Other", null, "" },
+                    { new Guid("c04310b5-2cad-407d-a786-3b709b285196"), "", "Novel", null, "" }
                 });
 
             migrationBuilder.InsertData(
@@ -189,8 +189,8 @@ namespace Infrastructure.Migrations
                 columns: new[] { "Id", "BannedDate", "CardNumber", "Email", "FirstName", "IsBanned", "LastName", "Phone" },
                 values: new object[,]
                 {
-                    { new Guid("4978807d-d07c-4603-8933-60f1198abbc3"), null, "333-444-555", "adam.nowak@mail.com", "Adam", false, "Nowak", "+48 664 227 191" },
-                    { new Guid("c958d750-b4f4-41bc-aaa2-9f81406534c0"), null, "000-111-222", "jan.kowalski@mail.com", "Jan", false, "Kowalski", "+48 661 727 091" }
+                    { new Guid("0abe6f02-1e1e-4e23-9fa1-5185f6ef27f1"), null, "000-111-222", "jan.kowalski@mail.com", "Jan", false, "Kowalski", "+48 661 727 091" },
+                    { new Guid("12c6abd4-508f-41cc-aa6c-045f53a04dd1"), null, "333-444-555", "adam.nowak@mail.com", "Adam", false, "Nowak", "+48 664 227 191" }
                 });
 
             migrationBuilder.InsertData(
@@ -198,8 +198,8 @@ namespace Infrastructure.Migrations
                 columns: new[] { "Id", "Firstname", "Lastname", "PasswordHash", "RefreshToken", "RefreshTokenExpiration", "Role", "Username" },
                 values: new object[,]
                 {
-                    { new Guid("4ae21440-948c-407a-9ab3-75c495b04285"), "", "", "$2a$11$S0WA.4wPVQlFIlrz7vi/r.kP1xNUGtDEoMRw367K7u/NDSF3AjEly", "", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, "admin" },
-                    { new Guid("c4f0765c-ee9b-4e6f-9a5a-e1f494a5d0f1"), "", "", "$2a$11$p8jWjqbZOwff4Vc05EcdkuItXmlgSdGmruVWNpBPFTdaUgHohQI8q", "", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 0, "librarian" }
+                    { new Guid("56b99bd5-26a6-402e-98bf-be9c0f6b8a82"), "", "", "$2a$11$1B6YDOB5bkb2ceiYW7c3H.iXZckSLCic2Ycl/cetX0R2nyB02vGyq", null, null, 1, "admin" },
+                    { new Guid("6bbd49b9-4e1b-4a66-84fe-3555d40deeb1"), "", "", "$2a$11$zL4CffzqTbEmPte1O23hvOjJQfXcpoj5cO3QTHIe.Rc/oAN53/h4C", null, null, 0, "librarian" }
                 });
 
             migrationBuilder.InsertData(
@@ -207,11 +207,11 @@ namespace Infrastructure.Migrations
                 columns: new[] { "Id", "AuthorId", "CategoryId", "Description", "Language", "ReleaseDate", "Tags", "Title" },
                 values: new object[,]
                 {
-                    { new Guid("2f5464b2-372c-4b66-9532-a53b6c237ed7"), new Guid("3f88f264-dfa0-4bc6-9607-40b03521b9bc"), new Guid("e1ccab71-6e92-47d8-99bb-823b2560ecf6"), "", 2, new DateTime(1800, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Some old German book" },
-                    { new Guid("51588acb-2b57-42d1-a671-db18f4e80ffc"), new Guid("6ace67f1-9b06-4f5c-9f68-405a605a1c0e"), new Guid("cde2affa-c16b-442a-8c0f-10b2d6b509c2"), "", 1, new DateTime(1832, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Dziady część III" },
-                    { new Guid("5ea7045e-1803-4c3f-bf63-c114944efef2"), new Guid("3f88f264-dfa0-4bc6-9607-40b03521b9bc"), new Guid("cde2affa-c16b-442a-8c0f-10b2d6b509c2"), "", 3, new DateTime(2010, 5, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Some new French book" },
-                    { new Guid("9d2e7356-11db-4d1b-a675-0a93589cd5bc"), new Guid("6ace67f1-9b06-4f5c-9f68-405a605a1c0e"), new Guid("cde2affa-c16b-442a-8c0f-10b2d6b509c2"), "", 1, new DateTime(1823, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Dziady część II" },
-                    { new Guid("f34097e4-661e-4f9c-bdfe-779aeb8d015a"), new Guid("3f88f264-dfa0-4bc6-9607-40b03521b9bc"), new Guid("e1ccab71-6e92-47d8-99bb-823b2560ecf6"), "", 0, new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Some old book" }
+                    { new Guid("0a693ffa-46e6-495d-b56b-eab2d2381466"), new Guid("147580eb-4746-4c12-bd9c-e723cea8625a"), new Guid("c04310b5-2cad-407d-a786-3b709b285196"), "", 0, new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Some old book" },
+                    { new Guid("57763e0a-48de-4d77-ac54-aede0d55e8e6"), new Guid("688bfdcc-6daf-4b84-aeaa-91b30a9d2163"), new Guid("ba66cfda-319c-44f3-81de-d56cb4ef7ee6"), "", 1, new DateTime(1823, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Dziady część II" },
+                    { new Guid("9fa19838-829f-454b-bca2-acf2e5a2b8e6"), new Guid("147580eb-4746-4c12-bd9c-e723cea8625a"), new Guid("c04310b5-2cad-407d-a786-3b709b285196"), "", 2, new DateTime(1800, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Some old German book" },
+                    { new Guid("d99481cf-ca76-47e9-b0a5-47bba680cd74"), new Guid("688bfdcc-6daf-4b84-aeaa-91b30a9d2163"), new Guid("ba66cfda-319c-44f3-81de-d56cb4ef7ee6"), "", 1, new DateTime(1832, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Dziady część III" },
+                    { new Guid("dc3c8342-6c5d-4718-9a4a-c3dbafaa64d3"), new Guid("147580eb-4746-4c12-bd9c-e723cea8625a"), new Guid("ba66cfda-319c-44f3-81de-d56cb4ef7ee6"), "", 3, new DateTime(2010, 5, 7, 0, 0, 0, 0, DateTimeKind.Unspecified), "", "Some new French book" }
                 });
 
             migrationBuilder.InsertData(
@@ -219,15 +219,15 @@ namespace Infrastructure.Migrations
                 columns: new[] { "Id", "AcquisitionDate", "BookId", "Condition", "CopyNumber", "IsLost", "LastInspectionDate", "ShelfNumber" },
                 values: new object[,]
                 {
-                    { new Guid("0ca4253f-5cd7-4179-89cb-2a54092f3d4f"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local), new Guid("2f5464b2-372c-4b66-9532-a53b6c237ed7"), 0, 0, false, null, 0 },
-                    { new Guid("172e3031-9d39-4447-8737-f413d7f9031a"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local), new Guid("5ea7045e-1803-4c3f-bf63-c114944efef2"), 0, 0, false, null, 0 },
-                    { new Guid("2f021cca-85a1-4682-995c-b700f20254cb"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local), new Guid("9d2e7356-11db-4d1b-a675-0a93589cd5bc"), 0, 0, false, null, 0 },
-                    { new Guid("5a529b05-cb46-4eb1-ac5e-658642577afc"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local), new Guid("f34097e4-661e-4f9c-bdfe-779aeb8d015a"), 0, 0, false, null, 0 },
-                    { new Guid("a1724bb1-0898-402d-a7ff-e4dbaeea272e"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local), new Guid("5ea7045e-1803-4c3f-bf63-c114944efef2"), 0, 0, false, null, 0 },
-                    { new Guid("a4e0e85d-1481-4911-93b7-464bbc2d835a"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local), new Guid("2f5464b2-372c-4b66-9532-a53b6c237ed7"), 0, 0, false, null, 0 },
-                    { new Guid("ab49f46b-8f17-4a02-81fb-5a652d12e4aa"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local), new Guid("f34097e4-661e-4f9c-bdfe-779aeb8d015a"), 0, 0, false, null, 0 },
-                    { new Guid("bfec77d8-fd53-42e7-a7ec-64ab04804f99"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local), new Guid("51588acb-2b57-42d1-a671-db18f4e80ffc"), 0, 0, false, null, 0 },
-                    { new Guid("e617f861-15e9-45bd-a620-509f251d486e"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local), new Guid("51588acb-2b57-42d1-a671-db18f4e80ffc"), 0, 0, false, null, 0 }
+                    { new Guid("20e704d6-d4ff-4ec1-b014-0119aa660f01"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local), new Guid("9fa19838-829f-454b-bca2-acf2e5a2b8e6"), 0, 0, false, null, 0 },
+                    { new Guid("465c7c03-8213-4f86-b01b-c1f259d52cd8"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local), new Guid("57763e0a-48de-4d77-ac54-aede0d55e8e6"), 0, 0, false, null, 0 },
+                    { new Guid("55bb0ae4-4ab6-4777-9464-3f4e8cd50977"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local), new Guid("dc3c8342-6c5d-4718-9a4a-c3dbafaa64d3"), 0, 0, false, null, 0 },
+                    { new Guid("629571f9-af0e-4d6b-8009-9b60c815b910"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local), new Guid("0a693ffa-46e6-495d-b56b-eab2d2381466"), 0, 0, false, null, 0 },
+                    { new Guid("68459c51-4116-4087-bace-38e8df5b2687"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local), new Guid("dc3c8342-6c5d-4718-9a4a-c3dbafaa64d3"), 0, 0, false, null, 0 },
+                    { new Guid("91e36d60-378b-499c-86ed-8276f71ca6b3"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local), new Guid("d99481cf-ca76-47e9-b0a5-47bba680cd74"), 0, 0, false, null, 0 },
+                    { new Guid("a5dc216e-fa5a-4d4f-a7a7-7b9cf61bd2d2"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local), new Guid("0a693ffa-46e6-495d-b56b-eab2d2381466"), 0, 0, false, null, 0 },
+                    { new Guid("b1c6ae8f-7d42-4c8e-a16c-219fd218becd"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local), new Guid("d99481cf-ca76-47e9-b0a5-47bba680cd74"), 0, 0, false, null, 0 },
+                    { new Guid("b32a5443-7d4c-49c3-bc74-2950e9eb0326"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local), new Guid("9fa19838-829f-454b-bca2-acf2e5a2b8e6"), 0, 0, false, null, 0 }
                 });
 
             migrationBuilder.InsertData(
@@ -235,11 +235,11 @@ namespace Infrastructure.Migrations
                 columns: new[] { "Id", "ActualReturnDate", "CopyId", "ReaderId", "StartedDate" },
                 values: new object[,]
                 {
-                    { new Guid("3f3c6aab-ac54-460e-9f69-09fcd287817b"), null, new Guid("ab49f46b-8f17-4a02-81fb-5a652d12e4aa"), new Guid("c958d750-b4f4-41bc-aaa2-9f81406534c0"), new DateTime(2022, 11, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
-                    { new Guid("66937067-376a-47b3-add0-6839847a1c32"), null, new Guid("0ca4253f-5cd7-4179-89cb-2a54092f3d4f"), new Guid("c958d750-b4f4-41bc-aaa2-9f81406534c0"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local) },
-                    { new Guid("7955e404-9090-41c5-9505-cb73884a35ec"), null, new Guid("a4e0e85d-1481-4911-93b7-464bbc2d835a"), new Guid("4978807d-d07c-4603-8933-60f1198abbc3"), new DateTime(2022, 10, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
-                    { new Guid("b4003ad5-4684-4d55-91c4-3cb2114a2feb"), null, new Guid("172e3031-9d39-4447-8737-f413d7f9031a"), new Guid("4978807d-d07c-4603-8933-60f1198abbc3"), new DateTime(2025, 5, 6, 0, 0, 0, 0, DateTimeKind.Local) },
-                    { new Guid("beb3838f-e839-469d-9b4f-26601d946aa2"), null, new Guid("5a529b05-cb46-4eb1-ac5e-658642577afc"), new Guid("c958d750-b4f4-41bc-aaa2-9f81406534c0"), new DateTime(2022, 10, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) }
+                    { new Guid("00156952-b8ea-4233-9c52-62b3cc1007ed"), null, new Guid("20e704d6-d4ff-4ec1-b014-0119aa660f01"), new Guid("0abe6f02-1e1e-4e23-9fa1-5185f6ef27f1"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local) },
+                    { new Guid("150fcb11-65c9-4228-8ba7-2e56c22e7a02"), null, new Guid("b32a5443-7d4c-49c3-bc74-2950e9eb0326"), new Guid("12c6abd4-508f-41cc-aa6c-045f53a04dd1"), new DateTime(2022, 10, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { new Guid("3ede8c05-5273-4af0-af7a-143badc70641"), null, new Guid("68459c51-4116-4087-bace-38e8df5b2687"), new Guid("12c6abd4-508f-41cc-aa6c-045f53a04dd1"), new DateTime(2025, 5, 8, 0, 0, 0, 0, DateTimeKind.Local) },
+                    { new Guid("78ab8343-ad9a-4e6f-8df3-c8cbeff698d3"), null, new Guid("629571f9-af0e-4d6b-8009-9b60c815b910"), new Guid("0abe6f02-1e1e-4e23-9fa1-5185f6ef27f1"), new DateTime(2022, 10, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { new Guid("a55b0582-bef9-4e75-a0bd-ed71c15e0ac8"), null, new Guid("a5dc216e-fa5a-4d4f-a7a7-7b9cf61bd2d2"), new Guid("0abe6f02-1e1e-4e23-9fa1-5185f6ef27f1"), new DateTime(2022, 11, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) }
                 });
 
             migrationBuilder.CreateIndex(

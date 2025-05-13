@@ -13,7 +13,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./src/API/Dockerfile
+      dockerfile: ./Dockerfile
     ports:
       - "5000:8080"
     environment:
@@ -22,12 +22,7 @@ services:
     depends_on:
       - sqlserver
     command: >
-      sh -c "echo 'Waiting for SQL Server...' &&
-            sleep 10 &&
-            echo 'Applying migrations...' &&
-            dotnet ef database update --no-build --project src/Infrastructure --startup-project src/API &&
-            echo 'Starting application...' &&
-            dotnet API.dll"
+      sh -c "dotnet API.dll"
 
 volumes:
   sqlserver_data:
