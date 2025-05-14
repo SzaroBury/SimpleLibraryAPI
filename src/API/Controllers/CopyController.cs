@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Application.Services.Abstraction;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SimpleLibrary.API.Controllers;
 
@@ -19,7 +20,6 @@ public class CopyController : ControllerBase
     }
 
     [HttpGet]
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Search(
         [FromQuery] string? search,
         [FromQuery] string? book,
@@ -42,7 +42,6 @@ public class CopyController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Get(string id)
     {
         try
@@ -72,7 +71,7 @@ public class CopyController : ControllerBase
     }
 
     [HttpPost]
-    [ApiKey("Librarian", "Admin")]
+    [Authorize]
     public async Task<IActionResult> Post(CopyPostDTO copy)
     {
         try
@@ -108,7 +107,7 @@ public class CopyController : ControllerBase
     }
 
     [HttpPatch]
-    [ApiKey("Librarian", "Admin")]
+    [Authorize]
     public async Task<IActionResult> Patch(CopyPatchDTO copy)
     {
         try
@@ -144,7 +143,7 @@ public class CopyController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [ApiKey("Admin")]
+    [Authorize]
     public async Task<IActionResult> Delete(string id)
     {
         try

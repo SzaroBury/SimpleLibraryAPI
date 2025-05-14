@@ -9,9 +9,9 @@ public class Borrowing
     public DateTime ExpectedReturnDate => StartedDate.AddDays(14);  
     public DateTime? ActualReturnDate { get; set; } = null;
 
-    [Required] public required virtual Copy Copy { get; set; }
+    [Required] public virtual Copy Copy { get; set; } = null!;
     public Guid CopyId { get; set; }
     
-    [Required] public required virtual Reader Reader { get; set; }
+    [Required] public virtual Reader Reader { get; set; } = null!;
     public Guid ReaderId { get; set; }
 }

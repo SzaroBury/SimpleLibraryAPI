@@ -2,6 +2,7 @@
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Domain.DTO;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SimpleLibrary.API.Controllers;
 
@@ -19,7 +20,6 @@ public class BookController : ControllerBase
     }
 
     [HttpGet]
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Search(
         [FromQuery] string search = "",
         [FromQuery] bool? isAvailable = null,
@@ -59,7 +59,6 @@ public class BookController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Get(string id)
     {
         try
@@ -89,7 +88,7 @@ public class BookController : ControllerBase
     }
 
     [HttpPost]
-    [ApiKey("Librarian", "Admin")]
+    [Authorize]
     public async Task<IActionResult> Post(BookPostDTO book)
     {
         try
@@ -131,7 +130,7 @@ public class BookController : ControllerBase
     }
 
     [HttpPatch]
-    [ApiKey("Librarian", "Admin")]
+    [Authorize]
     public async Task<IActionResult> Patch(BookPatchDTO book)
     {
         try
@@ -173,7 +172,7 @@ public class BookController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [ApiKey("Admin")]
+    [Authorize]
     public async Task<IActionResult> Delete(string id)
     {
         try

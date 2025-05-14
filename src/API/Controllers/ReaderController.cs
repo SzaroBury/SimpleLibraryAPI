@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Domain.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SimpleLibrary.API.Controllers;
 
 [Route("api/readers")]
 [ApiController]
+[Authorize]
 public class ReaderController : ControllerBase
 {
     private readonly IReaderService readerService;
@@ -19,7 +21,6 @@ public class ReaderController : ControllerBase
     }
 
     [HttpGet]
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Search(
         [FromQuery] string? search, 
         [FromQuery] string? copy, 
@@ -66,7 +67,6 @@ public class ReaderController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [ApiKey("ReadOnly", "Librarian", "Admin")]
     public async Task<IActionResult> Get(string id)
     {
         try
@@ -96,7 +96,6 @@ public class ReaderController : ControllerBase
     }
 
     [HttpPost]
-    [ApiKey("Librarian", "Admin")]
     public async Task<IActionResult> Post(ReaderPostDTO reader)
     {
         try
@@ -132,7 +131,6 @@ public class ReaderController : ControllerBase
     }
 
     [HttpPatch]
-    [ApiKey("Librarian", "Admin")]
     public async Task<IActionResult> Patch(ReaderPatchDTO reader)
     {            
         try
@@ -162,7 +160,6 @@ public class ReaderController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [ApiKey("Admin")]
     public async Task<IActionResult> Delete(string id)
     {
         try
