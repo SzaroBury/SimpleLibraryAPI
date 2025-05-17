@@ -1,8 +1,8 @@
-﻿using SimpleLibrary.API.Attributes;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Application.Services.Abstraction;
-using SimpleLibrary.Domain.DTO;
 using Microsoft.AspNetCore.Authorization;
+using SimpleLibrary.API.Requests.Borrowings;
+using SimpleLibrary.API.Mappers;
 
 namespace SimpleLibrary.API.Controllers;
 
@@ -98,12 +98,13 @@ public class BorrowingController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post(BorrowingPostDTO borrowing)
+    public async Task<IActionResult> Post(PostBorrowingRequest borrowing)
     {
         try
         {
             logger.LogInformation("Post request received.");
-            var result = await borrowingService.CreateBorrowingAsync(borrowing);
+            var command = BorrowingMapper.ToCommand(borrowing);
+            var result = await borrowingService.CreateBorrowingAsync(command);
             return Ok(result);
         }
         catch(FormatException e)
@@ -133,12 +134,13 @@ public class BorrowingController : ControllerBase
     }
 
     [HttpPatch]
-    public async Task<IActionResult> Patch(BorrowingPatchDTO borrowing)
+    public async Task<IActionResult> Patch(PatchBorrowingRequest borrowing)
     { 
         try
         {
             logger.LogInformation("Patch request received.");
-            var result = await borrowingService.UpdateBorrowingAsync(borrowing);
+            var command = BorrowingMapper.ToCommand(borrowing);
+            var result = await borrowingService.UpdateBorrowingAsync(command);
             return Ok("Object was sucesfully updated in the datebase.");
         }
         catch(ArgumentException e)

@@ -1,6 +1,6 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Application.Services.Abstraction;
-using SimpleLibrary.Domain.DTO;
+using SimpleLibrary.Application.Commands.Authors;
 
 namespace SimpleLibrary.Application.Services;
 
@@ -27,7 +27,7 @@ public class AuthorService: IAuthorService
         return await unitOfWork.GetRepository<Author>().GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"An author with the specified ID ({id}) was not found in the system.");
     }
-    public async Task<Author> CreateAuthorAsync(AuthorPostDTO author)
+    public async Task<Author> CreateAuthorAsync(PostAuthorCommand author)
     {
         if(string.IsNullOrEmpty(author.FirstName) || string.IsNullOrEmpty(author.LastName))
         {
@@ -68,7 +68,7 @@ public class AuthorService: IAuthorService
 
         return newAuthor;
     }
-    public async Task<Author> UpdateAuthorAsync(AuthorPatchDTO author)
+    public async Task<Author> UpdateAuthorAsync(PatchAuthorCommand author)
     {
         Author existingAuthor = await GetAuthorByIdAsync(author.Id);
 

@@ -1,7 +1,7 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Application.Services.Abstraction;
-using SimpleLibrary.Domain.DTO;
 using System.Globalization;
+using SimpleLibrary.Application.Commands.Borrowings;
 
 namespace SimpleLibrary.Application.Services;
 
@@ -28,7 +28,7 @@ public class BorrowingService: IBorrowingService
         return await unitOfWork.GetRepository<Borrowing>().GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"A borrowing with the specified ID ({id}) was not found in the system.");
     }
-    public async Task<Borrowing> CreateBorrowingAsync(BorrowingPostDTO borrowing)
+    public async Task<Borrowing> CreateBorrowingAsync(PostBorrowingCommand borrowing)
     {
         DateTime startedDate = DateTime.Now;
         if(!string.IsNullOrWhiteSpace(borrowing.StartedDate))
@@ -69,7 +69,7 @@ public class BorrowingService: IBorrowingService
 
         return newBorrowing;
     }
-    public async Task<Borrowing> UpdateBorrowingAsync(BorrowingPatchDTO borrowing)
+    public async Task<Borrowing> UpdateBorrowingAsync(PatchBorrowingCommand borrowing)
     {
         Borrowing existingBorrowing = await GetBorrowingByIdAsync(borrowing.Id);
 

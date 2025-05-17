@@ -1,6 +1,6 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Application.Services.Abstraction;
-using SimpleLibrary.Domain.DTO;
+using SimpleLibrary.Application.Commands.Categories;
 
 namespace SimpleLibrary.Application.Services;
 
@@ -27,7 +27,7 @@ public class CategoryService: ICategoryService
         return await uow.GetRepository<Category>().GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"A category with the specified ID ({id}) was not found in the system.");
     }
-    public async Task<Category> CreateCategoryAsync(CategoryPostDTO category)
+    public async Task<Category> CreateCategoryAsync(PostCategoryCommand category)
     {
         ValidateName(category.Name);
 
@@ -56,7 +56,7 @@ public class CategoryService: ICategoryService
 
         return newCategory;
     }
-    public async Task<Category> UpdateCategoryAsync(CategoryPatchDTO category)
+    public async Task<Category> UpdateCategoryAsync(PatchCategoryCommand category)
     {
         Category existingCategory = await GetCategoryByIdAsync(category.Id);
 

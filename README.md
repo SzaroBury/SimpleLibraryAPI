@@ -14,9 +14,16 @@ A simple REST API for managing a library system. Designed for library staff use.
   - Record borrowings and returns of book copies  
   - Built-in validation for copy availability  
 
-- **🔐 Access Control**
-  - Three distinct API access levels based on provided API keys  
-  - Each key grants access to a specific set of endpoints and actions  
+- **🔐 Security**
+  - JSON Web Token (JWT) Authentication with Access and Refresh tokens stored 
+  - Role-based access control implemented through claims in the JWT.
+  - User roles (e.g., Admin, Librarian) are stored in JWT claims.
+  - [ ] Custom middleware validates JWT tokens and enforces role-based access control before processing requests. (planned)
+  - [ ] Access to API endpoints is restricted based on user roles. (planned)
+  - Tokens are securely stored in HttpOnly cookies, which are inaccessible to JavaScript, protecting against XSS attacks.
+  - Refresh tokens are stored separately to ensure additional security.
+  - Token expiration and refresh mechanisms are implemented to ensure session security.
+  - HTTPS is required to prevent token interception during transmission.
 
 - **📊 API Documentation and Testing**
   - Interactive Swagger UI for exploring and testing endpoints (`/swagger`)  
@@ -28,28 +35,27 @@ A simple REST API for managing a library system. Designed for library staff use.
   - Clean layered architecture using Repository, Unit of Work, and DTO patterns  
 
 ## 📅 Planned Features
-- JWT Authentication for secure access.
-- Integrating ASP.NET Identity or OAuth2
+- Role checking middleware
 - Validation Refactoring - plan to implement separate classes for custom validation rules to improve code organization and maintainability.
+- Integrating ASP.NET Identity or OAuth2
 - Caching for Performance – plan to implement Redis to cache frequently queried entities and improve response times.
 - Integration Tests to ensure the robustness of the API.
 - Expand logging with Serilog for structured logging, including integration with files, databases, or cloud providers.
 - Add ASP.NET Core Health Checks to monitor service availability and integrate with Prometheus for real-time metrics.
 
 ## 🛠️ Technologies
-
 - .NET 8.0
 - Entity Framework Core
-- MS SQL Server
+- MS SQL Server 2019
 - Swagger 7.1
 - Xunit + Moq (unit testing)
 
 ## 🏗️ Project Structure
 
-- **API**               – Controllers, attributes, dependency injection
-- **Application**       – Business logic and services
-- **Domain**            – Entities, DTOs, enums
-- **Infrastructure**    – Repositories, Unit of Work, DbContext
+- **API**               – Controllers, Attributes, Requests, Mappers, Dependency Injection
+- **Application**       – Services, Interfaces and Commands
+- **Domain**            – Entities, Enums and Interfaces
+- **Infrastructure**    – Repositories, Unit of Work, DbContext, External services and Migrations
 - **Application.Tests** – Unit tests for Application layer
 
 ## 📘 Entities
@@ -62,11 +68,7 @@ A simple REST API for managing a library system. Designed for library staff use.
 - Reader
 
 ![ERD](https://github.com/SzaroBury/SimpleLibraryAPI/blob/master/SimpleLibraryLogicalERD.png?raw=true)
-
-## 🔐 Security
-
-- Lightweight role-based access system using scoped API keys
-- [ ] JWT Authentication (planned)
+on
 
 ## ✅ Testing
 
@@ -75,10 +77,34 @@ A simple REST API for managing a library system. Designed for library staff use.
 
 ## 📦 Installation
 
-```bash
-dotnet run --project .\src\API
-API documentation available at: https://localhost:7299/swagger
-```
+### Prerequisites
+- **Git**: Ensure Git is installed on your system. [Download Git](https://git-scm.com/downloads)
+- **Docker**: Install Docker and Docker Compose. [Get Docker](https://www.docker.com/get-started)
+- **.NET 8.0 SDK (Optional)**: Required if you want to run the application locally without Docker. [Download .NET SDK](https://dotnet.microsoft.com/download)
+
+### Steps
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/SzaroBury/SimpleLibraryAPI.git
+   cd SimpleLibraryAPI
+   ```
+
+2. **Run with Docker Compose**
+   - Ensure Docker is running on your system.
+    ```bash
+    docker info
+    ```
+   - Start the application using `docker-compose`:
+     ```bash
+     docker-compose up --build
+     ```
+
+3. **Access the API**
+   - The API will be available at: [https://localhost:5000/swagger](https://localhost:5000/swagger)
+
+### Notes
+- The `docker-compose.yml` file includes configurations for the API and its dependencies (e.g., database).
+- Ensure ports used in the `docker-compose.yml` file are not blocked by other applications.
 
 ## 📐 Design Patterns Used
 - Repository Pattern – abstracting data access logic

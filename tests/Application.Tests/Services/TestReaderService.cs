@@ -1,7 +1,7 @@
 using SimpleLibrary.Domain.Models;
-using SimpleLibrary.Domain.DTO;
-using SimpleLibrary.Application.Services;
 using SimpleLibrary.Domain.Repositories;
+using SimpleLibrary.Application.Services;
+using SimpleLibrary.Application.Commands.Readers;
 
 namespace SimpleLibrary.Tests.Application.Services;
 
@@ -78,7 +78,7 @@ public class TestReaderService
         string expectedFirstName, string expectedLastName, string? expectedEmail, string? expectedPhone)
     {
         // Arrange
-        var newReader = new ReaderPostDTO(firstName, lastName, email, phone);
+        var newReader = new PostReaderCommand(firstName, lastName, email, phone);
 
         // Act
         var result = await readerService.CreateReaderAsync(newReader);
@@ -94,7 +94,7 @@ public class TestReaderService
     [Fact]
     public async Task CreateReaderAsync_EmptyFirstName_ThrowsArgumentException()
     {
-        var newReader = new ReaderPostDTO("", "Shakespeare", "william.shakespeare@mail.com", "+48123123123");
+        var newReader = new PostReaderCommand("", "Shakespeare", "william.shakespeare@mail.com", "+48123123123");
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => readerService.CreateReaderAsync(newReader));
 
@@ -104,7 +104,7 @@ public class TestReaderService
     [Fact]
     public async Task CreateReaderAsync_EmptyLastName_ThrowsArgumentException()
     {
-        var newReader = new ReaderPostDTO("William", "", "william.shakespeare@mail.com", "+48123123123");
+        var newReader = new PostReaderCommand("William", "", "william.shakespeare@mail.com", "+48123123123");
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => readerService.CreateReaderAsync(newReader));
 
@@ -114,7 +114,7 @@ public class TestReaderService
     [Fact]
     public async Task CreateReaderAsync_InvalidEmailFormat_ThrowsFormatException()
     {
-        var newReader = new ReaderPostDTO("William", "Shakespeare", "william.shakespeare.mail.com", "+48123123123");
+        var newReader = new PostReaderCommand("William", "Shakespeare", "william.shakespeare.mail.com", "+48123123123");
 
         var exception = await Assert.ThrowsAsync<FormatException>(() => readerService.CreateReaderAsync(newReader));
 
@@ -124,7 +124,7 @@ public class TestReaderService
     [Fact]
     public async Task CreateReaderAsync_InvalidPhoneFormat_ThrowsFormatException()
     {
-        var newReader = new ReaderPostDTO("William", "Shakespeare", null, "invalid-phone-number");
+        var newReader = new PostReaderCommand("William", "Shakespeare", null, "invalid-phone-number");
 
         var exception = await Assert.ThrowsAsync<FormatException>(() => readerService.CreateReaderAsync(newReader));
 
@@ -146,7 +146,7 @@ public class TestReaderService
     {
         // Arrange
         var readerId = guids["r1"].ToString();
-        var updatedReader = new ReaderPatchDTO(readerId, firstName, lastName, email, phone, isBanned);
+        var updatedReader = new PatchReaderCommand(readerId, firstName, lastName, email, phone, isBanned);
 
         // Act
         var result = await readerService.UpdateReaderAsync(updatedReader);
@@ -165,7 +165,7 @@ public class TestReaderService
     public async Task UpdateReaderAsync_InvalidIdFormat_ThrowsFormatException()
     {
         var invalidReaderId = "invalid-id-format";
-        var updatedReader = new ReaderPatchDTO(invalidReaderId, FirstName: "Updated Name");
+        var updatedReader = new PatchReaderCommand(invalidReaderId, FirstName: "Updated Name");
 
         var exception = await Assert.ThrowsAsync<FormatException>(() => readerService.UpdateReaderAsync(updatedReader));
 
@@ -176,7 +176,7 @@ public class TestReaderService
     public async Task UpdateReaderAsync_NonExistingId_ThrowsKeyNotFoundException()
     {
         var nonExistingReaderId = Guid.NewGuid().ToString(); // Losowy, nieistniejący ID
-        var updatedReader = new ReaderPatchDTO(nonExistingReaderId, FirstName: "Updated Name");
+        var updatedReader = new PatchReaderCommand(nonExistingReaderId, FirstName: "Updated Name");
 
         var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => readerService.UpdateReaderAsync(updatedReader));
 
@@ -187,7 +187,7 @@ public class TestReaderService
     public async Task UpdateReaderAsync_EmptyFirstName_ThrowsArgumentException()
     {
         var readerId = guids["r2"].ToString();
-        var updatedReader = new ReaderPatchDTO(readerId, FirstName: " ");
+        var updatedReader = new PatchReaderCommand(readerId, FirstName: " ");
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => readerService.UpdateReaderAsync(updatedReader));
 
@@ -198,7 +198,7 @@ public class TestReaderService
     public async Task UpdateReaderAsync_EmptyLastName_ThrowsArgumentException()
     {
         var readerId = guids["r2"].ToString();
-        var updatedReader = new ReaderPatchDTO(readerId, LastName: " ");
+        var updatedReader = new PatchReaderCommand(readerId, LastName: " ");
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => readerService.UpdateReaderAsync(updatedReader));
 
@@ -209,7 +209,7 @@ public class TestReaderService
     public async Task UpdateReaderAsync_InvalidEmailFormat_ThrowsFormatException()
     {
         var readerId = guids["r2"].ToString();
-        var updatedReader = new ReaderPatchDTO(readerId, Email: "invalid-email");
+        var updatedReader = new PatchReaderCommand(readerId, Email: "invalid-email");
 
         var exception = await Assert.ThrowsAsync<FormatException>(() => readerService.UpdateReaderAsync(updatedReader));
 
@@ -220,7 +220,7 @@ public class TestReaderService
     public async Task UpdateReaderAsync_InvalidPhone_ThrowsFormatException()
     {
         var readerId = guids["r2"].ToString();
-        var updatedReader = new ReaderPatchDTO(readerId, Phone: "invalid-phone");
+        var updatedReader = new PatchReaderCommand(readerId, Phone: "invalid-phone");
 
         var exception = await Assert.ThrowsAsync<FormatException>(() => readerService.UpdateReaderAsync(updatedReader));
 

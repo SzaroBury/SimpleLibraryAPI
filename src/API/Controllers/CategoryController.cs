@@ -1,8 +1,8 @@
-﻿using SimpleLibrary.API.Attributes;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Application.Services.Abstraction;
-using SimpleLibrary.Domain.DTO;
 using Microsoft.AspNetCore.Authorization;
+using SimpleLibrary.API.Requests.Categories;
+using SimpleLibrary.API.Mappers;
 
 namespace SimpleLibrary.API.Controllers;
 
@@ -95,12 +95,13 @@ public class CategoryController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> Post(CategoryPostDTO category)
+    public async Task<IActionResult> Post(PostCategoryRequest category)
     {
         try
         {
             logger.LogInformation("Post request received.");
-            var result = await categoryService.CreateCategoryAsync(category);
+            var command = CategoryMapper.ToCommand(category);
+            var result = await categoryService.CreateCategoryAsync(command);
             return Ok(result);
         }
         catch(FormatException e)
@@ -137,12 +138,13 @@ public class CategoryController : ControllerBase
 
     [HttpPatch]
     [Authorize]
-    public async Task<IActionResult> Patch(CategoryPatchDTO category)
+    public async Task<IActionResult> Patch(PatchCategoryRequest category)
     {
         try
         {
             logger.LogInformation("Patch request received.");
-            var result = await categoryService.UpdateCategoryAsync(category);
+            var command = CategoryMapper.ToCommand(category);
+            var result = await categoryService.UpdateCategoryAsync(command);
             return Ok(result);
         }
         catch(FormatException e)

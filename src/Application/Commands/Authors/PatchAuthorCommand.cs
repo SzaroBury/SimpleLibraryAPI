@@ -1,6 +1,6 @@
-namespace SimpleLibrary.Domain.DTO;
+namespace SimpleLibrary.Application.Commands.Authors;
 
-public record AuthorPatchDTO
+public record PatchAuthorCommand
 (
     string Id,
     string? FirstName = null, 

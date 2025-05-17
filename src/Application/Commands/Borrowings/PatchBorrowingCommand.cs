@@ -1,6 +1,6 @@
-namespace SimpleLibrary.Domain.DTO;
+namespace SimpleLibrary.Application.Commands.Borrowings;
     
-public record BorrowingPatchDTO
+public record PatchBorrowingCommand
 (
     string Id,
     string? CopyId = null,

@@ -1,7 +1,7 @@
 using SimpleLibrary.Domain.Models;
-using SimpleLibrary.Domain.DTO;
-using SimpleLibrary.Application.Services;
 using SimpleLibrary.Domain.Repositories;
+using SimpleLibrary.Application.Services;
+using SimpleLibrary.Application.Commands.Categories;
 
 namespace SimpleLibrary.Tests.Application.Services;
 
@@ -62,7 +62,7 @@ public class TestCategoryService
     [Fact]
     public async Task CreateCategoryAsync_ValidInput_CreatesCategory()
     {
-        var dto = new CategoryPostDTO("Science", "Science books", new List<string> { "physics", "chemistry" }, null);
+        var dto = new PostCategoryCommand("Science", "Science books", new List<string> { "physics", "chemistry" }, null);
 
         var result = await categoryService.CreateCategoryAsync(dto);
 
@@ -74,7 +74,7 @@ public class TestCategoryService
     [Fact]
     public async Task CreateCategoryAsync_InvalidTags_ThrowsFormatException()
     {
-        var dto = new CategoryPostDTO("Science", "desc", new List<string> { "tag,withcomma" }, null);
+        var dto = new PostCategoryCommand("Science", "desc", new List<string> { "tag,withcomma" }, null);
 
         var ex = await Assert.ThrowsAsync<FormatException>(() => categoryService.CreateCategoryAsync(dto));
         Assert.Equal("Invalid format of tags. Please do not use commas.", ex.Message);
@@ -85,7 +85,7 @@ public class TestCategoryService
     [Fact]
     public async Task UpdateCategoryAsync_ValidUpdate_UpdatesCategory()
     {
-        var dto = new CategoryPatchDTO(guids["c1"].ToString(), "UpdatedName", "UpdatedDescription", new List<string> { "newtag" }, null);
+        var dto = new PatchCategoryCommand(guids["c1"].ToString(), "UpdatedName", "UpdatedDescription", new List<string> { "newtag" }, null);
         var result = await categoryService.UpdateCategoryAsync(dto);
 
         Assert.Equal("UpdatedName", result.Name);
@@ -96,7 +96,7 @@ public class TestCategoryService
     [Fact]
     public async Task UpdateCategoryAsync_SetItselfAsParent_ThrowsInvalidOperationException()
     {
-        var dto = new CategoryPatchDTO(guids["c1"].ToString(), null, null, null, guids["c1"].ToString());
+        var dto = new PatchCategoryCommand(guids["c1"].ToString(), null, null, null, guids["c1"].ToString());
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => categoryService.UpdateCategoryAsync(dto));
         Assert.Equal("A category cannot be its own parent.", ex.Message);

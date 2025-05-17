@@ -1,6 +1,6 @@
-namespace SimpleLibrary.Domain.DTO;
+namespace SimpleLibrary.Application.Commands.Categories;
     
-public record CategoryPatchDTO
+public record PatchCategoryCommand
 (
     string Id,
     string? Name = null,

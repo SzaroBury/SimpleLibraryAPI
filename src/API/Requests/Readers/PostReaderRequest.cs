@@ -1,6 +1,6 @@
-namespace SimpleLibrary.Domain.DTO;
+namespace SimpleLibrary.API.Requests.Readers;
     
-public record ReaderPostDTO
+public record PostReaderRequest
 (
     string FirstName,
     string LastName,

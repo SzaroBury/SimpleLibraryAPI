@@ -1,8 +1,8 @@
-﻿using SimpleLibrary.API.Attributes;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Application.Services.Abstraction;
-using SimpleLibrary.Domain.DTO;
 using Microsoft.AspNetCore.Authorization;
+using SimpleLibrary.API.Requests.Authors;
+using SimpleLibrary.API.Mappers;
 
 namespace SimpleLibrary.API.Controllers;
 
@@ -84,12 +84,13 @@ public class AuthorController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> Post(AuthorPostDTO author)
+    public async Task<IActionResult> Post(PostAuthorRequest author)
     {
         try
         {
             logger.LogInformation("Post request received.");
-            await authorService.CreateAuthorAsync(author);
+            var command = AuthorMapper.ToCommand(author);
+            await authorService.CreateAuthorAsync(command);
             return Ok("Object was sucesfully added to the datebase.");
         }
         catch(ArgumentException e)
@@ -114,12 +115,13 @@ public class AuthorController : ControllerBase
 
     [HttpPatch]
     [Authorize]
-    public async Task<IActionResult> Patch(AuthorPatchDTO author)
+    public async Task<IActionResult> Patch(PatchAuthorRequest author)
     {
         try
         {
             logger.LogInformation("Patch request received.");
-            await authorService.UpdateAuthorAsync(author);
+            var command = AuthorMapper.ToCommand(author);
+            await authorService.UpdateAuthorAsync(command);
             return Ok("Object was sucesfully updated in the datebase.");
         }
         catch(FormatException e)

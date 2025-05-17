@@ -1,8 +1,8 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Application.Services.Abstraction;
-using SimpleLibrary.Domain.DTO;
-using System.Net.Mail;
+using SimpleLibrary.Application.Commands.Readers;
 using System.Text.RegularExpressions;
+using System.Net.Mail;
 
 namespace SimpleLibrary.Application.Services;
 
@@ -29,7 +29,7 @@ public class ReaderService: IReaderService
         return await uow.GetRepository<Reader>().GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"A reader with the specified ID ({id}) was not found in the system.");
     }
-    public async Task<Reader> CreateReaderAsync(ReaderPostDTO reader)
+    public async Task<Reader> CreateReaderAsync(PostReaderCommand reader)
     {
         if(string.IsNullOrEmpty(reader.FirstName))
         {
@@ -98,7 +98,7 @@ public class ReaderService: IReaderService
 
         return newReader;
     }
-    public async Task<Reader> UpdateReaderAsync(ReaderPatchDTO reader)
+    public async Task<Reader> UpdateReaderAsync(PatchReaderCommand reader)
     {
         Reader existingReader = await GetReaderByIdAsync(reader.Id);
 

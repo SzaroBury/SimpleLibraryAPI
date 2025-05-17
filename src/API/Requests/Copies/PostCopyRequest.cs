@@ -1,6 +1,6 @@
-namespace SimpleLibrary.Domain.DTO;
+namespace SimpleLibrary.API.Requests.Copies;
     
-public record CopyPostDTO
+public record PostCopyRequest
 (
     string BookId,
     int Shelf,

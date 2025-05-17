@@ -1,4 +1,4 @@
-using SimpleLibrary.Domain.DTO;
+using SimpleLibrary.Application.Commands.Copies;
 using SimpleLibrary.Domain.Models;
 
 namespace SimpleLibrary.Application.Services.Abstraction;
@@ -7,8 +7,8 @@ public interface ICopyService
 {
     Task<IEnumerable<Copy>> GetAllCopiesAsync();
     Task<Copy> GetCopyByIdAsync(string id);
-    Task<Copy> CreateCopyAsync(CopyPostDTO Copy);
-    Task<Copy> UpdateCopyAsync(CopyPatchDTO Copy);
+    Task<Copy> CreateCopyAsync(PostCopyCommand Copy);
+    Task<Copy> UpdateCopyAsync(PatchCopyCommand Copy);
     Task DeleteCopyAsync(string id);
     Task<IEnumerable<Copy>> SearchCopiesAsync(
         string? searchTerm = null, 

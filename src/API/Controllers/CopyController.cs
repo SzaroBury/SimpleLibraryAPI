@@ -1,8 +1,8 @@
-﻿using SimpleLibrary.API.Attributes;
-using Microsoft.AspNetCore.Mvc;
-using SimpleLibrary.Domain.DTO;
+﻿using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Application.Services.Abstraction;
 using Microsoft.AspNetCore.Authorization;
+using SimpleLibrary.API.Requests.Copies;
+using SimpleLibrary.API.Mappers;
 
 namespace SimpleLibrary.API.Controllers;
 
@@ -72,12 +72,13 @@ public class CopyController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> Post(CopyPostDTO copy)
+    public async Task<IActionResult> Post(PostCopyRequest copy)
     {
         try
         {
             logger.LogInformation("Post request received.");
-            var result = await copyService.CreateCopyAsync(copy);
+            var command = CopyMapper.ToCommand(copy);
+            var result = await copyService.CreateCopyAsync(command);
             return Ok(copy);
         }
         catch(FormatException e)
@@ -108,12 +109,13 @@ public class CopyController : ControllerBase
 
     [HttpPatch]
     [Authorize]
-    public async Task<IActionResult> Patch(CopyPatchDTO copy)
+    public async Task<IActionResult> Patch(PatchCopyRequest copy)
     {
         try
         {
             logger.LogInformation("Put request received.");
-            var result = await copyService.UpdateCopyAsync(copy);
+            var command = CopyMapper.ToCommand(copy);
+            var result = await copyService.UpdateCopyAsync(command);
             return Ok(copy);
         }
         catch(FormatException e)

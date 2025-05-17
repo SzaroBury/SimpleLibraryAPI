@@ -1,8 +1,8 @@
-﻿using SimpleLibrary.API.Attributes;
-using SimpleLibrary.Application.Services.Abstraction;
-using SimpleLibrary.Domain.DTO;
+﻿using SimpleLibrary.Application.Services.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using SimpleLibrary.API.Requests.Books;
+using SimpleLibrary.API.Mappers;
 
 namespace SimpleLibrary.API.Controllers;
 
@@ -89,12 +89,13 @@ public class BookController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> Post(BookPostDTO book)
+    public async Task<IActionResult> Post(PostBookRequest book)
     {
         try
         {
             logger.LogInformation("Post request received.");
-            await bookService.CreateBookAsync(book);
+            var command = BookMapper.ToCommand(book);
+            await bookService.CreateBookAsync(command);
             return StatusCode(200, "Object was sucesfully added to the datebase.");
         }
         catch(ArgumentException e)
@@ -131,12 +132,13 @@ public class BookController : ControllerBase
 
     [HttpPatch]
     [Authorize]
-    public async Task<IActionResult> Patch(BookPatchDTO book)
+    public async Task<IActionResult> Patch(PatchBookRequest book)
     {
         try
         {
             logger.LogInformation("Update request received.");
-            var result = await bookService.UpdateBookAsync(book);
+            var command = BookMapper.ToCommand(book);
+            var result = await bookService.UpdateBookAsync(command);
             return Ok(result);
         }
         catch(FormatException e)

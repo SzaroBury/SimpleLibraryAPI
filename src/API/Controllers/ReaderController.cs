@@ -1,8 +1,8 @@
-﻿using SimpleLibrary.API.Attributes;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SimpleLibrary.Application.Services.Abstraction;
-using SimpleLibrary.Domain.DTO;
 using Microsoft.AspNetCore.Authorization;
+using SimpleLibrary.API.Requests.Readers;
+using SimpleLibrary.API.Mappers;
 
 namespace SimpleLibrary.API.Controllers;
 
@@ -96,12 +96,13 @@ public class ReaderController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post(ReaderPostDTO reader)
+    public async Task<IActionResult> Post(PostReaderRequest reader)
     {
         try
         {
             logger.LogInformation("Post request received.");
-            var result = await readerService.CreateReaderAsync(reader);
+            var command = ReaderMapper.ToCommand(reader);
+            var result = await readerService.CreateReaderAsync(command);
             return Ok(result);
         }
         catch(ArgumentException e)
@@ -131,12 +132,13 @@ public class ReaderController : ControllerBase
     }
 
     [HttpPatch]
-    public async Task<IActionResult> Patch(ReaderPatchDTO reader)
+    public async Task<IActionResult> Patch(PatchReaderRequest reader)
     {            
         try
         {
             logger.LogInformation("Patch request received.");
-            var result = await readerService.UpdateReaderAsync(reader);
+            var command = ReaderMapper.ToCommand(reader);
+            var result = await readerService.UpdateReaderAsync(command);
             return Ok(result);
         }
         catch(FormatException e)

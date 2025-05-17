@@ -2,9 +2,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SimpleLibrary.Api.Requests;
+using SimpleLibrary.API.Requests.Authentication;
 using SimpleLibrary.API.Attributes;
-using SimpleLibrary.API.Requests;
 using SimpleLibrary.Domain.Enumerations;
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Infrastructure.Services;
@@ -91,7 +90,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login(LoginRequest request)
     {
         try
         {
@@ -165,7 +164,7 @@ public class AuthController : ControllerBase
 
     [ApiKey("Admin")]
     [HttpPost("employees")]
-    public async Task<IActionResult> AddEmployeeAsync([FromBody] AddEmployeeRequest request)
+    public async Task<IActionResult> AddEmployeeAsync(AddEmployeeRequest request)
     {
         try
         {

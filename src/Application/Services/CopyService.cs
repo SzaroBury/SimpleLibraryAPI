@@ -1,8 +1,8 @@
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Application.Services.Abstraction;
-using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Domain.Enumerations;
 using System.Globalization;
+using SimpleLibrary.Application.Commands.Copies;
 
 namespace SimpleLibrary.Application.Services;
 
@@ -29,7 +29,7 @@ public class CopyService: ICopyService
         return await unitOfWork.GetRepository<Copy>().GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"A copy with the specified ID ({id}) was not found in the system.");
     }
-    public async Task<Copy> CreateCopyAsync(CopyPostDTO copy)
+    public async Task<Copy> CreateCopyAsync(PostCopyCommand copy)
     {
         var bookGuid = ValidateGuid(copy.BookId, "book");
         var book = await unitOfWork.GetRepository<Book>().GetByIdAsync(bookGuid)
@@ -77,7 +77,7 @@ public class CopyService: ICopyService
 
         return newCopy;
     }
-    public async Task<Copy> UpdateCopyAsync(CopyPatchDTO copy)
+    public async Task<Copy> UpdateCopyAsync(PatchCopyCommand copy)
     {
         Copy existingCopy = await GetCopyByIdAsync(copy.Id);
 

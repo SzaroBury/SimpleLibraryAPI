@@ -1,8 +1,8 @@
 using SimpleLibrary.Domain.Models;
-using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Domain.Repositories;
-using SimpleLibrary.Application.Services;
 using SimpleLibrary.Domain.Enumerations;
+using SimpleLibrary.Application.Services;
+using SimpleLibrary.Application.Commands.Books;
 
 namespace SimpleLibrary.Tests.Application.Services;
 
@@ -271,7 +271,7 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_CorrectInput_CreatesBook()
     {
-        var panTadeusz = new BookPostDTO(
+        var panTadeusz = new PostBookCommand(
             "Pan Tadeusz",
             "Full title: Sir Thaddeus, or the Last Foray in Lithuania: A Nobility's Tale of the Years 1811–1812, in Twelve Books of Verse.",
             "1834-06-28",
@@ -294,7 +294,7 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_EmptyTitle_ThrowsArgumentException()
     {
-        var someUnknownBook = new BookPostDTO(
+        var someUnknownBook = new PostBookCommand(
             "",
             "Desc of some unknown book",
             "1997-07-05",
@@ -314,7 +314,7 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_InvalidDateFormat_ThrowsFormatException()
     {
-        var someBook = new BookPostDTO(
+        var someBook = new PostBookCommand(
             "Some book",
             "Desc of some book",
             "Hello World",
@@ -334,7 +334,7 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_InvalidLanguageFormat_ThrowsFormatException()
     {
-            var someBook = new BookPostDTO(
+            var someBook = new PostBookCommand(
             "Some book",
             "Desc of some book",
             "1997-07-05",
@@ -354,7 +354,7 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_InvalidFormatOfCategoryId_ThrowsFormatException()
     {
-            var someBook = new BookPostDTO(
+            var someBook = new PostBookCommand(
             "Some book",
             "Desc of some book",
             "1997-07-05",
@@ -375,7 +375,7 @@ public class TestBookService
     public async Task CreateBook_NonExistingCategory_ThrowsKeyNotFoundException()
     {
         var nonExistingCategoryId = Guid.Empty.ToString();
-        var someBook = new BookPostDTO(
+        var someBook = new PostBookCommand(
             "Some book",
             "Desc of some book",
             "1997-07-05",
@@ -395,7 +395,7 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_InvalidFormatOfAuthorId_ThrowsFormatException()
     {
-            var someBook = new BookPostDTO(
+            var someBook = new PostBookCommand(
             "Some book",
             "Desc of some book",
             "1997-07-05",
@@ -414,7 +414,7 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_NonExistingAuthor_ThrowsKeyNotFoundException()
     {
-        var someBook = new BookPostDTO(
+        var someBook = new PostBookCommand(
             "Some book",
             "Desc of some book",
             "1997-07-05",
@@ -434,7 +434,7 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_InvalidFormatOfTags_ThrowsFormatException()
     {
-        var someBook = new BookPostDTO(
+        var someBook = new PostBookCommand(
             "Some book",
             "Desc of some book",
             "1997-07-05",
@@ -454,7 +454,7 @@ public class TestBookService
     [Fact]
     public async Task CreateBook_SimiliarToExisting_ThrowsInvalidOperationException()
     {
-        var dziadyIII = new BookPostDTO ("Dziady część III", "", "1832-1-1", "Polish", ["tag", "another"], guids["a2"].ToString(), guids["c2"].ToString());
+        var dziadyIII = new PostBookCommand ("Dziady część III", "", "1832-1-1", "Polish", ["tag", "another"], guids["a2"].ToString(), guids["c2"].ToString());
 
         //Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
@@ -472,7 +472,7 @@ public class TestBookService
         var authorId = guids["a2"].ToString();
         var categoryId = guids["c2"].ToString();
 
-        var someOlderBook = new BookPatchDTO(
+        var someOlderBook = new PatchBookCommand(
             bookId,
             Title: "Some older book",
             Description: "Test description",
@@ -502,7 +502,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidFormatOfBookId_ThrowsFormatException()
     {
-        var someUnknownBook = new BookPatchDTO(
+        var someUnknownBook = new PatchBookCommand(
             Id: "test",
             Title: "Some book"
         );
@@ -516,7 +516,7 @@ public class TestBookService
     public async Task UpdateBook_NonExistingBook_ThrowsKeyNotFoundException()
     {
         var nonExistingBookId = Guid.Empty.ToString();
-        var someUnknownBook = new BookPatchDTO(
+        var someUnknownBook = new PatchBookCommand(
             Id: nonExistingBookId,
             Title: "Some book"
         );
@@ -529,7 +529,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_EmptyTitle_ThrowsArgumentException()
     {
-        var someUpdatedBook = new BookPatchDTO(
+        var someUpdatedBook = new PatchBookCommand(
             Id: guids["b1"].ToString(),
             Title: ""
         );
@@ -542,7 +542,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidDateFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPatchDTO(
+        var someUpdatedBook = new PatchBookCommand(
             Id: guids["b1"].ToString(),
             ReleaseDate: "Hello world"
         );
@@ -555,7 +555,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidLanguageFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPatchDTO(
+        var someUpdatedBook = new PatchBookCommand(
             Id: guids["b1"].ToString(),
             Language: "Simlish"
         );
@@ -568,7 +568,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidTagsFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPatchDTO(
+        var someUpdatedBook = new PatchBookCommand(
             Id: guids["b1"].ToString(),
             Tags: ["novel,", "book"]
         );
@@ -581,7 +581,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidAuthorIdFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPatchDTO(
+        var someUpdatedBook = new PatchBookCommand(
             Id: guids["b1"].ToString(),
             AuthorId: "test"
         );
@@ -595,7 +595,7 @@ public class TestBookService
     public async Task UpdateBook_NonExistingAuthor_ThrowsKeyNotFoundException()
     {
         var nonExistingAuthorId = Guid.Empty.ToString();
-        var someUpdatedBook = new BookPatchDTO(
+        var someUpdatedBook = new PatchBookCommand(
             Id: guids["b1"].ToString(),
             AuthorId: nonExistingAuthorId
         );
@@ -608,7 +608,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_InvalidCategoryIdFormat_ThrowsFormatException()
     {
-        var someUpdatedBook = new BookPatchDTO(
+        var someUpdatedBook = new PatchBookCommand(
             Id: guids["b1"].ToString(),
             CategoryId: "test"
         );
@@ -622,7 +622,7 @@ public class TestBookService
     public async Task UpdateBook_NonExistingCategory_ThrowsArgumentException()
     {
         var nonExistingCategoryId = Guid.Empty.ToString();
-        var someUpdatedBook = new BookPatchDTO(
+        var someUpdatedBook = new PatchBookCommand(
             Id: guids["b1"].ToString(),
             CategoryId: nonExistingCategoryId
         );
@@ -635,7 +635,7 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_SimilarBookExisting_ThrowsInvalidOperationException()
     {
-        var someUpdatedBook = new BookPatchDTO(
+        var someUpdatedBook = new PatchBookCommand(
             Id: guids["b4"].ToString(),
             Title: "Dziady część III"
         );

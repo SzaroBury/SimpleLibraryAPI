@@ -1,4 +1,4 @@
-using SimpleLibrary.Domain.DTO;
+using SimpleLibrary.Application.Commands.Readers;
 using SimpleLibrary.Domain.Models;
 
 namespace SimpleLibrary.Application.Services.Abstraction;
@@ -7,8 +7,8 @@ public interface IReaderService
 {
     Task<IEnumerable<Reader>> GetAllReadersAsync();
     Task<Reader> GetReaderByIdAsync(string id);
-    Task<Reader> CreateReaderAsync(ReaderPostDTO Reader);
-    Task<Reader> UpdateReaderAsync(ReaderPatchDTO Reader);
+    Task<Reader> CreateReaderAsync(PostReaderCommand Reader);
+    Task<Reader> UpdateReaderAsync(PatchReaderCommand Reader);
     Task DeleteReaderAsync(string id);
     Task<IEnumerable<Reader>> SearchReadersAsync(
         string? searchTerm = null,

@@ -1,4 +1,4 @@
-using SimpleLibrary.Domain.DTO;
+using SimpleLibrary.Application.Commands.Borrowings;
 using SimpleLibrary.Domain.Models;
 
 namespace SimpleLibrary.Application.Services.Abstraction;
@@ -7,8 +7,8 @@ public interface IBorrowingService
 {
     Task<IEnumerable<Borrowing>> GetAllBorrowingsAsync();
     Task<Borrowing> GetBorrowingByIdAsync(string id);
-    Task<Borrowing> CreateBorrowingAsync(BorrowingPostDTO borrowing);
-    Task<Borrowing> UpdateBorrowingAsync(BorrowingPatchDTO borrowing);
+    Task<Borrowing> CreateBorrowingAsync(PostBorrowingCommand borrowing);
+    Task<Borrowing> UpdateBorrowingAsync(PatchBorrowingCommand borrowing);
     Task DeleteBorrowingAsync(string id);
     Task<IEnumerable<Borrowing>> SearchBorrowingsAsync(
         string? searchTerm = null, 

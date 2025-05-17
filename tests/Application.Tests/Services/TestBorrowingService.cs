@@ -1,7 +1,7 @@
-using SimpleLibrary.Application.Services;
-using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.Repositories;
+using SimpleLibrary.Application.Services;
+using SimpleLibrary.Application.Commands.Borrowings;
 
 namespace SimpleLibrary.Tests.Application.Services;
 
@@ -75,7 +75,7 @@ public class TestBorrowingService
         var readerId = guids["r2"];
         var startedDate = DateTime.Today.AddDays(-10);
         var actualReturnDate = DateTime.Today.AddDays(-5);
-        var dto = new BorrowingPostDTO(copyId.ToString(), readerId.ToString(), startedDate.ToString("yyyy-MM-dd HH:mm"), actualReturnDate.ToString("yyyy-MM-dd HH:mm"));
+        var dto = new PostBorrowingCommand(copyId.ToString(), readerId.ToString(), startedDate.ToString("yyyy-MM-dd HH:mm"), actualReturnDate.ToString("yyyy-MM-dd HH:mm"));
 
         var result = await borrowingService.CreateBorrowingAsync(dto);
 
@@ -94,7 +94,7 @@ public class TestBorrowingService
         var copyId = guids["b1_c2"];
         var readerId = guids["r2"];
         var targetStartedDate = DateTime.Now;
-        var dto = new BorrowingPostDTO(copyId.ToString(), readerId.ToString());
+        var dto = new PostBorrowingCommand(copyId.ToString(), readerId.ToString());
 
         var result = await borrowingService.CreateBorrowingAsync(dto);
 
@@ -115,7 +115,7 @@ public class TestBorrowingService
     public async Task CreateBorrowingAsync_WithInvalidReaderGuidFormat_ThrowsFormatException()
     {
         var copyId = guids["b1_c2"];
-        var dto = new BorrowingPostDTO(copyId.ToString(), "invalid-reader-guid");
+        var dto = new PostBorrowingCommand(copyId.ToString(), "invalid-reader-guid");
 
         var ex = await Assert.ThrowsAsync<FormatException>(() =>
             borrowingService.CreateBorrowingAsync(dto));
@@ -128,7 +128,7 @@ public class TestBorrowingService
     {
         var copyId = Guid.NewGuid().ToString(); // nie istnieje w bazie mocków
         var readerId = guids["r2"];
-        var dto = new BorrowingPostDTO(copyId, readerId.ToString());
+        var dto = new PostBorrowingCommand(copyId, readerId.ToString());
 
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             borrowingService.CreateBorrowingAsync(dto));
@@ -141,7 +141,7 @@ public class TestBorrowingService
     {
         var readerId = Guid.NewGuid().ToString(); // nie istnieje
         var copyId = guids["b1_c2"];
-        var dto = new BorrowingPostDTO(copyId.ToString(), readerId);
+        var dto = new PostBorrowingCommand(copyId.ToString(), readerId);
 
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             borrowingService.CreateBorrowingAsync(dto));
@@ -154,7 +154,7 @@ public class TestBorrowingService
     {
         var copyId = guids["b2_c7"]; // ustaw kopię jako IsLost=true w DataInitializer
         var readerId = guids["r2"];
-        var dto = new BorrowingPostDTO(copyId.ToString(), readerId.ToString());
+        var dto = new PostBorrowingCommand(copyId.ToString(), readerId.ToString());
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             borrowingService.CreateBorrowingAsync(dto));
@@ -167,7 +167,7 @@ public class TestBorrowingService
     {
         var copyId = guids["b1_c1"]; // ma aktywne wypożyczenie (ActualReturnDate == null)
         var readerId = guids["r2"];
-        var dto = new BorrowingPostDTO(copyId.ToString(), readerId.ToString());
+        var dto = new PostBorrowingCommand(copyId.ToString(), readerId.ToString());
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             borrowingService.CreateBorrowingAsync(dto));
@@ -180,7 +180,7 @@ public class TestBorrowingService
     {
         var copyId = guids["b1_c2"];
         var readerId = guids["r4"]; // z IsBanned=true
-        var dto = new BorrowingPostDTO(copyId.ToString(), readerId.ToString());
+        var dto = new PostBorrowingCommand(copyId.ToString(), readerId.ToString());
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             borrowingService.CreateBorrowingAsync(dto));
@@ -193,7 +193,7 @@ public class TestBorrowingService
     {
         var copyId = guids["b1_c2"];
         var readerId = guids["r2"];
-        var dto = new BorrowingPostDTO(copyId.ToString(), readerId.ToString(), "not-a-date");
+        var dto = new PostBorrowingCommand(copyId.ToString(), readerId.ToString(), "not-a-date");
 
         var ex = await Assert.ThrowsAsync<FormatException>(() =>
             borrowingService.CreateBorrowingAsync(dto));
@@ -206,7 +206,7 @@ public class TestBorrowingService
     {
         var copyId = guids["b1_c2"];
         var readerId = guids["r2"];
-        var dto = new BorrowingPostDTO(copyId.ToString(), readerId.ToString(), DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd"), "not-a-date");
+        var dto = new PostBorrowingCommand(copyId.ToString(), readerId.ToString(), DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd"), "not-a-date");
 
         var ex = await Assert.ThrowsAsync<FormatException>(() =>
             borrowingService.CreateBorrowingAsync(dto));
@@ -220,7 +220,7 @@ public class TestBorrowingService
         var copyId = guids["b1_c2"];
         var readerId = guids["r2"];
         var futureDate = DateTime.Now.AddDays(5).ToString("yyyy-MM-dd");
-        var dto = new BorrowingPostDTO(copyId.ToString(), readerId.ToString(), futureDate);
+        var dto = new PostBorrowingCommand(copyId.ToString(), readerId.ToString(), futureDate);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             borrowingService.CreateBorrowingAsync(dto));
@@ -235,7 +235,7 @@ public class TestBorrowingService
         var readerId = guids["r2"];
         var started = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd");
         var returned = DateTime.Now.AddDays(-5).ToString("yyyy-MM-dd");
-        var dto = new BorrowingPostDTO(copyId.ToString(), readerId.ToString(), started, returned);
+        var dto = new PostBorrowingCommand(copyId.ToString(), readerId.ToString(), started, returned);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             borrowingService.CreateBorrowingAsync(dto));
@@ -249,7 +249,7 @@ public class TestBorrowingService
     {
         var borrowingId = guids["bor1"];
         var newStartedDate = DateTime.Today.AddDays(-10);
-        var dto = new BorrowingPatchDTO(borrowingId.ToString(), StartedDate: newStartedDate.ToString("yyyy-MM-dd HH:mm"));
+        var dto = new PatchBorrowingCommand(borrowingId.ToString(), StartedDate: newStartedDate.ToString("yyyy-MM-dd HH:mm"));
 
         // Act
         var result = await borrowingService.UpdateBorrowingAsync(dto);
@@ -265,7 +265,7 @@ public class TestBorrowingService
         var borrowingId = guids["bor1"];
         var newReturnDate = DateTime.Today.AddDays(-2).ToString("yyyy-MM-dd");
 
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             borrowingId.ToString(),
             ActualReturnDate: newReturnDate
         );
@@ -281,7 +281,7 @@ public class TestBorrowingService
     public async Task UpdateBorrowingAsync_WithEmptyActualReturnDate_SetsNull()
     {
         var borrowingId = guids["bor1"];
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             borrowingId.ToString(),
             ActualReturnDate: ""
         );
@@ -297,7 +297,7 @@ public class TestBorrowingService
         var borrowingId = guids["bor1"];
         var newReaderId = guids["r2"];
 
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             borrowingId.ToString(),
             ReaderId: newReaderId.ToString()
         );
@@ -313,7 +313,7 @@ public class TestBorrowingService
         var borrowingId = guids["bor1"];
         var newCopyId = guids["b1_c2"];
 
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             borrowingId.ToString(),
             CopyId: newCopyId.ToString()
         );
@@ -332,7 +332,7 @@ public class TestBorrowingService
         var startedDate = DateTime.Now.AddDays(-14).ToString("yyyy-MM-dd");
         var returnDate = DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd");
 
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             borrowingId.ToString(),
             newCopyId.ToString(),
             newReaderId.ToString(),
@@ -351,7 +351,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithEmptyStartedDate_ThrowsArgumentException()
     {
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             guids["bor1"].ToString(),
             StartedDate: ""
         );
@@ -364,7 +364,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithInvalidStartedDateFormat_ThrowsFormatException()
     {
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             guids["bor1"].ToString(),
             StartedDate: "32-13-2023" // błąd
         );
@@ -379,7 +379,7 @@ public class TestBorrowingService
     {
         var futureDate = DateTime.Now.AddDays(2).ToString("yyyy-MM-dd");
 
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             guids["bor1"].ToString(),
             StartedDate: futureDate
         );
@@ -392,7 +392,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithInvalidActualReturnDateFormat_ThrowsFormatException()
     {
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             guids["bor1"].ToString(),
             ActualReturnDate: "not-a-date"
         );
@@ -407,7 +407,7 @@ public class TestBorrowingService
     {
         var futureReturnDate = DateTime.Now.AddDays(5).ToString("yyyy-MM-dd");
 
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             guids["bor1"].ToString(),
             ActualReturnDate: futureReturnDate
         );
@@ -422,7 +422,7 @@ public class TestBorrowingService
     {
         var invalidReturnDate = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd");
 
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             guids["bor1"].ToString(),
             ActualReturnDate: invalidReturnDate
         );
@@ -435,7 +435,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithInvalidCopyIdFormat_ThrowsFormatException()
     {
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             guids["bor1"].ToString(),
             CopyId: "not-a-guid"
         );
@@ -448,7 +448,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithInvalidReaderIdFormat_ThrowsFormatException()
     {
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             guids["bor1"].ToString(),
             ReaderId: "bad-guid"
         );
@@ -461,7 +461,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithBannedReader_ThrowsInvalidOperationException()
     {
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             guids["bor1"].ToString(),
             ReaderId: guids["r4"].ToString()
         );
@@ -474,7 +474,7 @@ public class TestBorrowingService
     [Fact]
     public async Task UpdateBorrowingAsync_WithLostCopy_ThrowsInvalidOperationException()
     {
-        var dto = new BorrowingPatchDTO(
+        var dto = new PatchBorrowingCommand(
             guids["bor1"].ToString(),
             CopyId: guids["b2_c7"].ToString()
         );

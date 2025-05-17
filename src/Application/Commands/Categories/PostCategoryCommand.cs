@@ -1,6 +1,6 @@
-namespace SimpleLibrary.Domain.DTO;
+namespace SimpleLibrary.Application.Commands.Categories;
     
-public record CategoryPostDTO
+public record PostCategoryCommand
 (
     string Name,
     string Description = "",

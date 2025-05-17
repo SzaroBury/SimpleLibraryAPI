@@ -1,6 +1,6 @@
-namespace SimpleLibrary.Domain.DTO;
+namespace SimpleLibrary.API.Requests.Books;
 
-public record BookPatchDTO
+public record PatchBookRequest
 (
     string Id,
     string? Title = null, 

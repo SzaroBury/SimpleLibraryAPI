@@ -1,7 +1,7 @@
 ﻿using SimpleLibrary.Domain.Models;
 using SimpleLibrary.Domain.Enumerations;
-using SimpleLibrary.Domain.DTO;
 using SimpleLibrary.Application.Services.Abstraction;
+using SimpleLibrary.Application.Commands.Books;
 
 namespace SimpleLibrary.Application.Services;
 
@@ -30,7 +30,7 @@ public class BookService: IBookService
 
         return result;
     }
-    public async Task<Book> CreateBookAsync(BookPostDTO book)
+    public async Task<Book> CreateBookAsync(PostBookCommand book)
     {
         if(string.IsNullOrEmpty(book.Title))
         {
@@ -86,7 +86,7 @@ public class BookService: IBookService
         await unitOfWork.GetRepository<Book>().AddAsync(newBook);
         return newBook;
     }
-    public async Task<Book> UpdateBookAsync(BookPatchDTO book)
+    public async Task<Book> UpdateBookAsync(PatchBookCommand book)
     {
         Book existingBook = await GetBookByIdAsync(book.Id);
 

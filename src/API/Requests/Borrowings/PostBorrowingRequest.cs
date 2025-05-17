@@ -1,6 +1,6 @@
-namespace SimpleLibrary.Domain.DTO;
+namespace SimpleLibrary.API.Requests.Borrowings;
     
-public record BorrowingPostDTO
+public record PostBorrowingRequest
 (
     string CopyId,
     string ReaderId,

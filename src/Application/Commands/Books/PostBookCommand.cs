@@ -1,6 +1,6 @@
-namespace SimpleLibrary.Domain.DTO;
+namespace SimpleLibrary.Application.Commands.Books;
 
-public record BookPostDTO
+public record PostBookCommand
 (
     string Title, 
     string Description, 
