@@ -18,8 +18,7 @@ A simple REST API for managing a library system. Designed for library staff use.
   - JSON Web Token (JWT) Authentication with Access and Refresh tokens stored 
   - Role-based access control implemented through claims in the JWT.
   - User roles (e.g., Admin, Librarian) are stored in JWT claims.
-  - [ ] Custom middleware validates JWT tokens and enforces role-based access control before processing requests. (planned)
-  - [ ] Access to API endpoints is restricted based on user roles. (planned)
+  - Access to API endpoints is restricted based on user roles.
   - Tokens are securely stored in HttpOnly cookies, which are inaccessible to JavaScript, protecting against XSS attacks.
   - Refresh tokens are stored separately to ensure additional security.
   - Token expiration and refresh mechanisms are implemented to ensure session security.
@@ -35,8 +34,7 @@ A simple REST API for managing a library system. Designed for library staff use.
   - Clean layered architecture using Repository, Unit of Work, and DTO patterns  
 
 ## 📅 Planned Features
-- Role checking middleware
-- Validation Refactoring - plan to implement separate classes for custom validation rules to improve code organization and maintainability.
+- Validation Refactoring in the Application layer.
 - Integrating ASP.NET Identity or OAuth2
 - Caching for Performance – plan to implement Redis to cache frequently queried entities and improve response times.
 - Integration Tests to ensure the robustness of the API.
@@ -47,12 +45,14 @@ A simple REST API for managing a library system. Designed for library staff use.
 - .NET 8.0
 - Entity Framework Core
 - MS SQL Server 2019
-- Swagger 7.1
+- Swagger
 - Xunit + Moq (unit testing)
+- FluentValidations
+- Docker
 
 ## 🏗️ Project Structure
 
-- **API**               – Controllers, Attributes, Requests, Mappers, Dependency Injection
+- **API**               – Controllers, Dependency Injection, Requests, Mappers, Validators, Attributes
 - **Application**       – Services, Interfaces and Commands
 - **Domain**            – Entities, Enums and Interfaces
 - **Infrastructure**    – Repositories, Unit of Work, DbContext, External services and Migrations
@@ -68,7 +68,6 @@ A simple REST API for managing a library system. Designed for library staff use.
 - Reader
 
 ![ERD](https://github.com/SzaroBury/SimpleLibraryAPI/blob/master/SimpleLibraryLogicalERD.png?raw=true)
-on
 
 ## ✅ Testing
 
