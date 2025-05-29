@@ -30,29 +30,27 @@ public class BorrowingService: IBorrowingService
     }
     public async Task<Borrowing> CreateBorrowingAsync(PostBorrowingCommand borrowing)
     {
-        DateTime startedDate = DateTime.Now;
-        if(!string.IsNullOrWhiteSpace(borrowing.StartedDate))
+        var startedDate = borrowing.StartedDate ?? DateTime.Now;
+        if(borrowing.StartedDate.HasValue)
         {
-            startedDate = ValidateAndParseDateTime(borrowing.StartedDate, "started");
-            if(startedDate > DateTime.Now)
+            if(borrowing.StartedDate > DateTime.Now)
             {
                 throw new InvalidOperationException("The start date cannot be set to a future date.");
             }
         }
 
         DateTime? actualReturnDate = null;
-        if(!string.IsNullOrWhiteSpace(borrowing.ActualReturnDate))
+        if(borrowing.ActualReturnDate.HasValue)
         {
-            actualReturnDate = ValidateAndParseDateTime(borrowing.ActualReturnDate, "actual return"); 
-            if(actualReturnDate < startedDate)
+            actualReturnDate = borrowing.ActualReturnDate.Value;
+            if (actualReturnDate < startedDate)
             {
                 throw new InvalidOperationException($"The start date {borrowing.StartedDate} must not be set after the actual return date {borrowing.ActualReturnDate}.");
             }
         }
 
-        var copy = await ValidateCopyAsync(borrowing.CopyId);
-
-        var reader = await ValidateReaderAsync(borrowing.ReaderId);
+        var copy = await GetAndValidateCopyAsync(borrowing.CopyId);
+        var reader = await GetAndValidateReaderAsync(borrowing.ReaderId);
 
         Borrowing newBorrowing = new()
         {
@@ -60,7 +58,7 @@ public class BorrowingService: IBorrowingService
             ActualReturnDate = actualReturnDate,
             ReaderId = reader.Id,
             Reader = reader,
-            CopyId = copy.Id,
+            CopyId = borrowing.CopyId,
             Copy = copy,
         };
 
@@ -73,48 +71,38 @@ public class BorrowingService: IBorrowingService
     {
         Borrowing existingBorrowing = await GetBorrowingByIdAsync(borrowing.Id);
 
-        if(borrowing.StartedDate is not null)
+        if(borrowing.StartedDate.HasValue)
         {
-            if(string.IsNullOrWhiteSpace(borrowing.StartedDate))
-            {
-                throw new ArgumentException("The start date cannot be empty.");
-            }
-            DateTime startedDate = ValidateAndParseDateTime(borrowing.StartedDate, "started");
-            if(startedDate > DateTime.Now)
+            if(borrowing.StartedDate > DateTime.Now)
             {
                 throw new InvalidOperationException("The start date cannot be set to a future date.");
             }
-            existingBorrowing.StartedDate = startedDate;
+            existingBorrowing.StartedDate = borrowing.StartedDate.Value;
         }
 
-        if(borrowing.ActualReturnDate is not null)
+        if(borrowing.ActualReturnDate.HasValue)
         {
-            DateTime? actualReturnDate = null;
-            if(!string.IsNullOrWhiteSpace(borrowing.ActualReturnDate))
+            if(borrowing.ActualReturnDate > DateTime.Now)
             {
-                actualReturnDate = ValidateAndParseDateTime(borrowing.ActualReturnDate, "actual return"); 
-                if(actualReturnDate > DateTime.Now)
-                {
-                    throw new InvalidOperationException("The actual return date cannot be set to a future date.");
-                }
-                if(actualReturnDate < existingBorrowing.StartedDate)
-                {
-                    throw new InvalidOperationException($"The start date {borrowing.StartedDate} must not be set after the actual return date {borrowing.ActualReturnDate}.");
-                }
+                throw new InvalidOperationException("The actual return date cannot be set to a future date.");
             }
-            existingBorrowing.ActualReturnDate = actualReturnDate;
+            if(borrowing.ActualReturnDate < existingBorrowing.StartedDate)
+            {
+                throw new InvalidOperationException($"The start date {borrowing.StartedDate} must not be set after the actual return date {borrowing.ActualReturnDate}.");
+            }
         }
+        existingBorrowing.ActualReturnDate = borrowing.ActualReturnDate;
 
-        if(borrowing.CopyId is not null)
+        if(borrowing.CopyId.HasValue)
         {
-            var copy = await ValidateCopyAsync(borrowing.CopyId);
+            var copy = await GetAndValidateCopyAsync(borrowing.CopyId.Value);
             existingBorrowing.Copy = copy;
             existingBorrowing.CopyId = copy.Id;
         }
 
-        if(borrowing.ReaderId is not null)
+        if(borrowing.ReaderId.HasValue)
         {
-            var reader = await ValidateReaderAsync(borrowing.ReaderId);
+            var reader = await GetAndValidateReaderAsync(borrowing.ReaderId.Value);
             existingBorrowing.Reader = reader;
             existingBorrowing.ReaderId = reader.Id;
         }
@@ -203,10 +191,9 @@ public class BorrowingService: IBorrowingService
         return searchBorrowingsQuery.AsEnumerable();
     }
 
-    private async Task<Copy> ValidateCopyAsync(string copyId)
+    private async Task<Copy> GetAndValidateCopyAsync(Guid copyId)
     {
-        var copyGuid = ValidateGuid(copyId, "copy");
-        var copy = await unitOfWork.GetRepository<Copy>().GetByIdAsync(copyGuid)
+        var copy = await unitOfWork.GetRepository<Copy>().GetByIdAsync(copyId)
             ?? throw new KeyNotFoundException($"A copy with the specified ID ({copyId}) was not found in the system.");
         
         if (copy.IsLost)
@@ -218,10 +205,9 @@ public class BorrowingService: IBorrowingService
         return copy;
     }
 
-    private async Task<Reader> ValidateReaderAsync(string readerId)
+    private async Task<Reader> GetAndValidateReaderAsync(Guid readerId)
     {
-        var readerGuid = ValidateGuid(readerId, "reader");
-        var reader = await unitOfWork.GetRepository<Reader>().GetByIdAsync(readerGuid)
+        var reader = await unitOfWork.GetRepository<Reader>().GetByIdAsync(readerId)
             ?? throw new KeyNotFoundException($"A reader with the specified ID ({readerId}) was not found in the system.");
 
         if (reader.IsBanned)

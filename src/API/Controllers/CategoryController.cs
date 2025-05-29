@@ -21,197 +21,50 @@ public class CategoryController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> Search(
-        [FromQuery] string? search,
-        [FromQuery] string? parentCategory,
-        [FromQuery] int? page = null,
-        [FromQuery] int? pageSize = null)
+        string? search,
+        string? parentCategory,
+        int? page = null,
+        int? pageSize = null)
     {
-        try
-        {
-            logger.LogInformation("Search request received.");
-            var result = await categoryService.SearchCategoriesAsync(search, parentCategory, page ?? 1, pageSize ?? 25);
-            return Ok(result);
-        }
-        catch(FormatException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Search(search: {search}, parentCategroy: {parentCategory}, page: {page}, pageSize: {pageSize}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(KeyNotFoundException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Search(search: {search}, parentCategroy: {parentCategory}, page: {page}, pageSize: {pageSize}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(ArgumentException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: ArgumentException catched during invoking Search(search: {search}, parentCategroy: {parentCategory}, page: {page}, pageSize: {pageSize}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(InvalidOperationException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: InvalidOperationException catched during invoking Search(search: {search}, parentCategroy: {parentCategory}, page: {page}, pageSize: {pageSize}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Search(search: {search}, parentCategroy: {parentCategory}, page: {page}, pageSize: {pageSize}):");
-            logger.LogError($"    {e.Message}");
-            return StatusCode(500, "Unexpected error.");
-        }
+        logger.LogInformation("Search request received.");
+        var result = await categoryService.SearchCategoriesAsync(search, parentCategory, page ?? 1, pageSize ?? 25);
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(string id)
-    {   
-        try
-        {
-            logger.LogInformation("Get request received.");
-            var result = await categoryService.GetCategoryByIdAsync(id);
-            return Ok(result);
-        }
-        catch(FormatException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Get(id: {id}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(KeyNotFoundException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Get(id: {id}):");
-            logger.LogInformation($"    {e.Message}");
-            return NotFound(e.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Get(id: {id}):");
-            logger.LogError($"    {e.Message}");
-            return StatusCode(500, "Unexpected error.");
-        }
+    {
+        logger.LogInformation("Get request received.");
+        var result = await categoryService.GetCategoryByIdAsync(id);
+        return Ok(result);
     }
 
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> Post(PostCategoryRequest category)
     {
-        try
-        {
-            logger.LogInformation("Post request received.");
-            var command = CategoryMapper.ToCommand(category);
-            var result = await categoryService.CreateCategoryAsync(command);
-            return Ok(result);
-        }
-        catch(FormatException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Post(<CategoryPostDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(KeyNotFoundException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Post(<CategoryPostDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(ArgumentException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: ArgumentException catched during invoking Post(<CategoryPostDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(InvalidOperationException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: InvalidOperationException catched during invoking Post(<CategoryPostDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Post(<CategoryPostDTO Object>):");
-            logger.LogError($"    {e.Message}");
-            return StatusCode(500, "Unexpected error.");
-        }
+        logger.LogInformation("Post request received.");
+        var command = category.ToCommand();
+        var result = await categoryService.CreateCategoryAsync(command);
+        return Ok(result);
     }
 
     [HttpPatch]
     [Authorize]
     public async Task<IActionResult> Patch(PatchCategoryRequest category)
     {
-        try
-        {
-            logger.LogInformation("Patch request received.");
-            var command = CategoryMapper.ToCommand(category);
-            var result = await categoryService.UpdateCategoryAsync(command);
-            return Ok(result);
-        }
-        catch(FormatException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Patch(<CategoryPatchDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(KeyNotFoundException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Patch(<CategoryPatchDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(ArgumentException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: ArgumentException catched during invoking Patch(<CategoryPatchDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(InvalidOperationException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: InvalidOperationException catched during invoking Patch(<CategoryPatchDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return NotFound(e.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<CategoryPatchDTO Object>):");
-            logger.LogError($"    {e.Message}");
-            return StatusCode(500, "Unexpected error.");
-        }
+        logger.LogInformation("Patch request received.");
+        var command = category.ToCommand();
+        var result = await categoryService.UpdateCategoryAsync(command);
+        return Ok(result);
     }
 
     [HttpDelete("{id}")]
     [Authorize]
     public async Task<IActionResult> Delete(string id)
     {
-        try
-        {
-            logger.LogInformation("Delete request received.");
-            await categoryService.DeleteCategoryAsync(id);
-            return Ok("Object was sucesfully deleted from the datebase.");
-        }
-        catch(FormatException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Delete(id: {id}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(InvalidOperationException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: InvalidOperationException catched during invoking Delete(id: {id}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(KeyNotFoundException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Delete(id: {id}):");
-            logger.LogInformation($"    {e.Message}");
-            return NotFound(e.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Delete(id: {id}):");
-            logger.LogError($"    {e.Message}");
-            return StatusCode(500, "Unexpected error.");
-        }
+        logger.LogInformation("Delete request received.");
+        await categoryService.DeleteCategoryAsync(id);
+        return Ok("Object was sucesfully deleted from the datebase.");
     }
 }

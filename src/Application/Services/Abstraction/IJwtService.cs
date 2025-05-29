@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace SimpleLibrary.Infrastructure.Services;
+namespace SimpleLibrary.Application.Services.Abstraction;
 
 public interface IJwtService
 {

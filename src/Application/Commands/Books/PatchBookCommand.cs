@@ -1,13 +1,15 @@
+using SimpleLibrary.Domain.Enumerations;
+
 namespace SimpleLibrary.Application.Commands.Books;
 
 public record PatchBookCommand
 (
-    string Id,
+    Guid Id,
     string? Title = null, 
     string? Description = null,
-    string? ReleaseDate = null,
-    string? Language = null,
+    DateTime? ReleaseDate = null,
+    Language? Language = null,
     IEnumerable<string>? Tags = null,
-    string? AuthorId = null,
-    string? CategoryId = null
+    Guid? AuthorId = null,
+    Guid? CategoryId = null
 );

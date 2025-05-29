@@ -5,5 +5,5 @@ public record PostCategoryCommand
     string Name,
     string Description = "",
     IEnumerable<string>? Tags = null,
-    string? ParentCategoryId = null
+    Guid? ParentCategoryId = null
 );

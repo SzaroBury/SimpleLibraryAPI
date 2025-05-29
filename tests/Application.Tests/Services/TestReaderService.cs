@@ -145,7 +145,7 @@ public class TestReaderService
         string expectedFirstName, string expectedLastName, string expectedEmail, string expectedPhone, bool expectedIsBanned)
     {
         // Arrange
-        var readerId = guids["r1"].ToString();
+        var readerId = guids["r1"];
         var updatedReader = new PatchReaderCommand(readerId, firstName, lastName, email, phone, isBanned);
 
         // Act
@@ -162,20 +162,9 @@ public class TestReaderService
     }
 
     [Fact]
-    public async Task UpdateReaderAsync_InvalidIdFormat_ThrowsFormatException()
-    {
-        var invalidReaderId = "invalid-id-format";
-        var updatedReader = new PatchReaderCommand(invalidReaderId, FirstName: "Updated Name");
-
-        var exception = await Assert.ThrowsAsync<FormatException>(() => readerService.UpdateReaderAsync(updatedReader));
-
-        Assert.Equal("Invalid reader ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", exception.Message);
-    }
-
-    [Fact]
     public async Task UpdateReaderAsync_NonExistingId_ThrowsKeyNotFoundException()
     {
-        var nonExistingReaderId = Guid.NewGuid().ToString(); // Losowy, nieistniejący ID
+        var nonExistingReaderId = Guid.NewGuid(); // Losowy, nieistniejący ID
         var updatedReader = new PatchReaderCommand(nonExistingReaderId, FirstName: "Updated Name");
 
         var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => readerService.UpdateReaderAsync(updatedReader));
@@ -186,7 +175,7 @@ public class TestReaderService
     [Fact]
     public async Task UpdateReaderAsync_EmptyFirstName_ThrowsArgumentException()
     {
-        var readerId = guids["r2"].ToString();
+        var readerId = guids["r2"];
         var updatedReader = new PatchReaderCommand(readerId, FirstName: " ");
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => readerService.UpdateReaderAsync(updatedReader));
@@ -197,7 +186,7 @@ public class TestReaderService
     [Fact]
     public async Task UpdateReaderAsync_EmptyLastName_ThrowsArgumentException()
     {
-        var readerId = guids["r2"].ToString();
+        var readerId = guids["r2"];
         var updatedReader = new PatchReaderCommand(readerId, LastName: " ");
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => readerService.UpdateReaderAsync(updatedReader));
@@ -208,7 +197,7 @@ public class TestReaderService
     [Fact]
     public async Task UpdateReaderAsync_InvalidEmailFormat_ThrowsFormatException()
     {
-        var readerId = guids["r2"].ToString();
+        var readerId = guids["r2"];
         var updatedReader = new PatchReaderCommand(readerId, Email: "invalid-email");
 
         var exception = await Assert.ThrowsAsync<FormatException>(() => readerService.UpdateReaderAsync(updatedReader));
@@ -219,7 +208,7 @@ public class TestReaderService
     [Fact]
     public async Task UpdateReaderAsync_InvalidPhone_ThrowsFormatException()
     {
-        var readerId = guids["r2"].ToString();
+        var readerId = guids["r2"];
         var updatedReader = new PatchReaderCommand(readerId, Phone: "invalid-phone");
 
         var exception = await Assert.ThrowsAsync<FormatException>(() => readerService.UpdateReaderAsync(updatedReader));

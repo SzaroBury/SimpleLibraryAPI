@@ -81,7 +81,8 @@ public class TestAuthorService
         string expectedFirstName, string expectedLastName, string expectedDescription, string? expectedBornDate, string expectedTags)
     {
         // Arrange
-        var newAuthor = new PostAuthorCommand(firstName, lastName, description, bornDate, tags);
+        DateTime? parsedBornDate = string.IsNullOrWhiteSpace(bornDate) ? null : DateTime.Parse(bornDate);
+        var newAuthor = new PostAuthorCommand(firstName, lastName, description, parsedBornDate, tags);
 
         // Act
         var result = await authorService.CreateAuthorAsync(newAuthor);
@@ -103,39 +104,6 @@ public class TestAuthorService
 
         Assert.Equal(expectedTags, result.Tags);
     }
-
-    [Theory]
-    [InlineData("", "Shakespeare")]
-    [InlineData("William", "")]
-    [InlineData("", "")]
-    public async Task CreateAuthorAsync_EmptyFirstOrLastName_ThrowsArgumentException(string firstName, string lastName)
-    {
-        var newAuthor = new PostAuthorCommand(firstName, lastName, "English playwright", "1564-04-23", ["Dramatist"]);
-
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => authorService.CreateAuthorAsync(newAuthor));
-
-        Assert.Equal("The author's first name and last name cannot be left empty.", exception.Message);
-    }
-
-    [Fact]
-    public async Task CreateAuthorAsync_InvalidBornDate_ThrowsFormatException()
-    {
-        var newAuthor = new PostAuthorCommand("William", "Shakespeare", "English playwright", "invalid-date", ["Dramatist"]);
-
-        var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.CreateAuthorAsync(newAuthor));
-
-        Assert.Equal("Invalid date format. Please use the following format: YYYY-MM-DD", exception.Message);
-    }
-
-    [Fact]
-    public async Task CreateAuthorAsync_InvalidTags_ThrowsFormatException()
-    {
-        var newAuthor = new PostAuthorCommand("William", "Shakespeare", "English playwright", "1564-04-23", ["Dramatist,Playwright"]);
-
-        var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.CreateAuthorAsync(newAuthor));
-
-        Assert.Equal("Invalid tags format. Please do not use commas in tags.", exception.Message);
-    }
     #endregion
     #region UpdateAuthorAsync 
     [Theory]
@@ -151,8 +119,9 @@ public class TestAuthorService
         string expectedFirstName, string expectedLastName, string expectedDescription, string expectedBornDate, string expectedTags)
     {
         // Arrange
-        var authorId = guids["a2"].ToString();
-        var updatedAuthor = new PatchAuthorCommand(authorId, firstName, lastName, description, bornDate, tags);
+        var authorId = guids["a2"];
+        DateTime? parsedDateTime = string.IsNullOrWhiteSpace(bornDate) ? null : DateTime.Parse(bornDate);
+        var updatedAuthor = new PatchAuthorCommand(authorId, firstName, lastName, description, parsedDateTime, tags);
 
         // Act
         var result = await authorService.UpdateAuthorAsync(updatedAuthor);
@@ -177,75 +146,15 @@ public class TestAuthorService
     }
 
     [Fact]
-    public async Task UpdateAuthorAsync_InvalidIdFormat_ThrowsFormatException()
-    {
-        var invalidAuthorId = "invalid-id-format";
-        var updatedAuthor = new PatchAuthorCommand(invalidAuthorId, FirstName: "Updated Name");
-
-        var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
-
-        Assert.Equal("Invalid author ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", exception.Message);
-    }
-
-    [Fact]
     public async Task UpdateAuthorAsync_NonExistingId_ThrowsKeyNotFoundException()
     {
-        var nonExistingAuthorId = Guid.NewGuid().ToString(); // Losowy, nieistniejący ID
+        var nonExistingAuthorId = Guid.NewGuid(); // Losowy, nieistniejący ID
         var updatedAuthor = new PatchAuthorCommand(nonExistingAuthorId, FirstName: "Updated Name");
 
         var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
 
         Assert.Equal($"An author with the specified ID ({nonExistingAuthorId}) was not found in the system.", exception.Message);
-    }
-
-
-    [Fact]
-    public async Task UpdateAuthorAsync_EmptyFirstName_ThrowsArgumentException()
-    {
-        var authorId = guids["a2"].ToString();
-        var updatedAuthor = new PatchAuthorCommand(authorId, FirstName: " ");
-
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
-
-        Assert.Equal("The author's first name cannot be left empty.", exception.Message);
-    }
-
-
-    [Fact]
-    public async Task UpdateAuthorAsync_EmptyLastName_ThrowsArgumentException()
-    {
-        var authorId = guids["a2"].ToString();
-        var updatedAuthor = new PatchAuthorCommand(authorId, LastName: " ");
-
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
-
-        Assert.Equal("The author's last name cannot be left empty.", exception.Message);
-    }
-
-
-    [Fact]
-    public async Task UpdateAuthorAsync_InvalidBornDate_ThrowsFormatException()
-    {
-        var authorId = guids["a2"].ToString();
-        var updatedAuthor = new PatchAuthorCommand(authorId, BornDate: "invalid-date");
-
-        var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
-
-        Assert.Equal("Invalid date format. Please use the following format: YYYY-MM-DD", exception.Message);
-    }
-
-
-    [Fact]
-    public async Task UpdateAuthorAsync_InvalidTags_ThrowsFormatException()
-    {
-        var authorId = guids["a2"].ToString();
-        var updatedTags = new List<string> { "Poet,Writer" }; // Nieprawidłowe, bo zawiera przecinek
-        var updatedAuthor = new PatchAuthorCommand(authorId, Tags: updatedTags);
-
-        var exception = await Assert.ThrowsAsync<FormatException>(() => authorService.UpdateAuthorAsync(updatedAuthor));
-
-        Assert.Equal("Invalid tags format. Please do not use commas in tags.", exception.Message);
-    }    
+    }   
     #endregion
     #region DeleteAuthorAsync
     [Fact]

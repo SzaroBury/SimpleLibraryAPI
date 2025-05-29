@@ -1,13 +1,15 @@
+using SimpleLibrary.Domain.Enumerations;
+
 namespace SimpleLibrary.Application.Commands.Copies;
     
 public record PatchCopyCommand
 (
-    string Id,
-    string? BookId = null,
+    Guid Id,
+    Guid? BookId = null,
     int? Shelf = null,
     bool? IsLost = null,
-    string? Condition = null,
-    string? AcquisitionDate = null,
-    string? LastInspectionDate = null,
+    CopyCondition? Condition = null,
+    DateTime? AcquisitionDate = null,
+    DateTime? LastInspectionDate = null,
     int? CopyNumber = null
 );

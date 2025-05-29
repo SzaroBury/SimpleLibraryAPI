@@ -5,6 +5,6 @@ public record PostAuthorCommand
     string FirstName, 
     string LastName,
     string? Description, 
-    string? BornDate, 
+    DateTime? BornDate, 
     IEnumerable<string>? Tags
 );

@@ -1,10 +1,12 @@
+using SimpleLibrary.Domain.Enumerations;
+
 namespace SimpleLibrary.Application.Commands.Copies;
     
 public record PostCopyCommand
 (
-    string BookId,
+    Guid BookId,
     int Shelf,
-    string? Condition = null,
-    string? AcquisitionDate = null,
-    string? LastInspectionDate = null
+    CopyCondition? Condition = null,
+    DateTime? AcquisitionDate = null,
+    DateTime? LastInspectionDate = null
 );

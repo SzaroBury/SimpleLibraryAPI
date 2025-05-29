@@ -3,9 +3,9 @@ namespace SimpleLibrary.API.Mappers;
 using SimpleLibrary.API.Requests.Readers;
 using SimpleLibrary.Application.Commands.Readers;
 
-public static class ReaderMapper
+public static class ReaderCommandsMappingExtensions
 {
-    public static PostReaderCommand ToCommand(PostReaderRequest request)
+    public static PostReaderCommand ToCommand(this PostReaderRequest request)
     {
         return new PostReaderCommand(
             request.FirstName,
@@ -15,10 +15,10 @@ public static class ReaderMapper
         );
     }
 
-    public static PatchReaderCommand ToCommand(PatchReaderRequest request)
+    public static PatchReaderCommand ToCommand(this PatchReaderRequest request)
     {
         return new PatchReaderCommand(
-            request.Id,
+            Guid.Parse(request.Id),
             request.FirstName,
             request.LastName,
             request.Email,

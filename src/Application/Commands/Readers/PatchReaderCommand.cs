@@ -2,7 +2,7 @@ namespace SimpleLibrary.Application.Commands.Readers;
     
 public record PatchReaderCommand
 (
-    string Id,
+    Guid Id,
     string? FirstName = null,
     string? LastName = null,
     string? Email = null,

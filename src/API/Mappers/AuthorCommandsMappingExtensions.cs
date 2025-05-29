@@ -1,29 +1,30 @@
-namespace SimpleLibrary.API.Mappers;
-
 using SimpleLibrary.API.Requests.Authors;
 using SimpleLibrary.Application.Commands.Authors;
+using static SimpleLibrary.API.Mappers.ParsingExtensions;
 
-public static class AuthorMapper
+namespace SimpleLibrary.API.Mappers;
+
+public static class AuthorCommandsMappingExtensions
 {
-    public static PostAuthorCommand ToCommand(PostAuthorRequest request)
+    public static PostAuthorCommand ToCommand(this PostAuthorRequest request)
     {
         return new PostAuthorCommand(
             request.FirstName,
             request.LastName,
             request.Description,
-            request.BornDate,
+            ParseDateTimeOrNull(request.BornDate),
             request.Tags
         );
     }
 
-    public static PatchAuthorCommand ToCommand(PatchAuthorRequest request)
+    public static PatchAuthorCommand ToCommand(this PatchAuthorRequest request)
     {
         return new PatchAuthorCommand(
-            request.Id,
+            Guid.Parse(request.Id),
             request.FirstName,
             request.LastName,
             request.Description,
-            request.BornDate,
+            ParseDateTimeOrNull(request.BornDate),
             request.Tags
         );
     }

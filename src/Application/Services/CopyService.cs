@@ -31,32 +31,8 @@ public class CopyService: ICopyService
     }
     public async Task<Copy> CreateCopyAsync(PostCopyCommand copy)
     {
-        var bookGuid = ValidateGuid(copy.BookId, "book");
-        var book = await unitOfWork.GetRepository<Book>().GetByIdAsync(bookGuid)
+        var book = await unitOfWork.GetRepository<Book>().GetByIdAsync(copy.BookId)
             ?? throw new KeyNotFoundException($"A book with  id '{copy.BookId}' was not found in the system.");
-
-        if(copy.Shelf < 1)
-        {
-            throw new ArgumentException("Shelf number must be greater than zero.");
-        }
-
-        var condition = CopyCondition.New;
-        if(!string.IsNullOrWhiteSpace(copy.Condition))
-        {
-            condition = ValidateAndParseCopyCondition(copy.Condition);
-        }
-
-        var acquisitionDate = DateTime.Now;
-        if(!string.IsNullOrWhiteSpace(copy.AcquisitionDate))
-        {
-            acquisitionDate = ValidateAndParseDateTime(copy.AcquisitionDate, "acquisition");
-        }
-
-        DateTime? lastInspectionDate = null;
-        if(!string.IsNullOrWhiteSpace(copy.LastInspectionDate))
-        {
-            lastInspectionDate = ValidateAndParseDateTime(copy.LastInspectionDate, "last inspection");
-        }
 
         var copyNumbers = unitOfWork.GetRepository<Copy>().GetQueryable().Where(c => c.BookId == book.Id).Select(c => c.CopyNumber);
         var maxCopyNumber = copyNumbers.Any() ? copyNumbers.Max() : 0;
@@ -67,9 +43,9 @@ public class CopyService: ICopyService
             BookId = book.Id,
             CopyNumber = maxCopyNumber + 1,
             ShelfNumber = copy.Shelf,
-            AcquisitionDate = acquisitionDate,
-            Condition = condition,
-            LastInspectionDate = lastInspectionDate
+            AcquisitionDate = copy.AcquisitionDate ?? DateTime.Now,
+            Condition = copy.Condition ?? CopyCondition.New,
+            LastInspectionDate = copy.LastInspectionDate
         };
 
         await unitOfWork.GetRepository<Copy>().AddAsync(newCopy);
@@ -81,10 +57,9 @@ public class CopyService: ICopyService
     {
         Copy existingCopy = await GetCopyByIdAsync(copy.Id);
 
-        if(copy.BookId is not null)
+        if(copy.BookId.HasValue)
         {
-            var bookGuid = ValidateGuid(copy.BookId, "book");
-            var book = await unitOfWork.GetRepository<Book>().GetByIdAsync(bookGuid)
+            var book = await unitOfWork.GetRepository<Book>().GetByIdAsync(copy.BookId.Value)
                 ?? throw new KeyNotFoundException($"A book with the specified ID ({copy.BookId}) was not found in the system.");
             existingCopy.BookId = book.Id;
         }
@@ -105,31 +80,27 @@ public class CopyService: ICopyService
 
         if(copy.Condition is not null)
         {
-            existingCopy.Condition = ValidateAndParseCopyCondition(copy.Condition);
+            existingCopy.Condition = copy.Condition.Value;
         }
 
-        if(copy.AcquisitionDate is not null)
+        if(copy.AcquisitionDate.HasValue)
         {
-            existingCopy.AcquisitionDate = ValidateAndParseDateTime(copy.AcquisitionDate, "acquisition");
+            existingCopy.AcquisitionDate = copy.AcquisitionDate.Value;
         }
 
-        if(copy.LastInspectionDate is not null)
+        if(copy.LastInspectionDate.HasValue)
         {
-            existingCopy.LastInspectionDate = ValidateAndParseDateTime(copy.LastInspectionDate, "last inspection");
+            existingCopy.LastInspectionDate = copy.LastInspectionDate.Value;
         }
 
         if(copy.CopyNumber.HasValue)
         {
-            if(copy.CopyNumber.Value < 1)
-            {
-                throw new ArgumentException("Copy number must be greater than zero.");
-            }
-
             var isTaken = unitOfWork.GetRepository<Copy>().GetQueryable()
                 .Any(c => c.Id != existingCopy.Id 
                     && c.BookId == existingCopy.BookId 
                     && c.CopyNumber == copy.CopyNumber.Value);
-            if(isTaken)
+                    
+            if (isTaken)
             {
                 throw new ArgumentException($"The specified copy number ({copy.CopyNumber.Value}) is already taken by some else copy of the book.");
             }
@@ -247,16 +218,6 @@ public class CopyService: ICopyService
         if (!DateTime.TryParseExact(date, AcceptedFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
         {
             throw new FormatException($"'{date}' is invalid {propertyName} date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.");
-        }
-        return result;
-    }
-
-    private static CopyCondition ValidateAndParseCopyCondition(string condition)
-    {
-        if(!Enum.TryParse(condition, out CopyCondition result))
-        {
-            string copyConditions = string.Join(", ", Enum.GetNames<CopyCondition>());
-            throw new FormatException($"Invalid copy condition format. Please use: {copyConditions}.");
         }
         return result;
     }

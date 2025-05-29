@@ -1,15 +1,19 @@
 using SimpleLibrary.Domain.Repositories;
 using SimpleLibrary.Application.Services.Abstraction;
 using SimpleLibrary.Application.Services;
+using SimpleLibrary.Application.Common;
 using SimpleLibrary.Infrastructure;
 using SimpleLibrary.Infrastructure.Repositories;
 using SimpleLibrary.Infrastructure.Services;
+using SimpleLibrary.API.Middleware;
+using SimpleLibrary.API.Validators;
 
-using Microsoft.EntityFrameworkCore;
+using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 var environment = builder.Environment.EnvironmentName;
@@ -22,16 +26,26 @@ builder.Services.AddDbContext<LibraryEFContext>(options =>
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
+
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IBorrowingService, BorrowingService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICopyService, CopyService>();
 builder.Services.AddScoped<IReaderService, ReaderService>();
-builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
+builder.Services.AddScoped<IUserService, UserService>();
 
-var accessTokenSecret = builder.Configuration["JwtSettings:AccessTokenSecret"] ?? throw new Exception("AccessTokenSecret is mssing. It is required to run.");
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+builder.Services.AddValidatorsFromAssemblyContaining<AddUserRequestValidator>();
+
+var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
+var jwtSettings = jwtSettingsSection.Get<JwtSettings>();
+builder.Services.Configure<JwtSettings>(jwtSettingsSection);
+
+var accessTokenSecret = jwtSettings?.AccessTokenSecret ?? throw new Exception("AccessTokenSecret is mssing. It is required to run.");
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -45,8 +59,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(accessTokenSecret))
     };
 
@@ -95,6 +109,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapControllers();
 

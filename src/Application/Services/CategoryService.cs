@@ -38,9 +38,9 @@ public class CategoryService: ICategoryService
         }
 
         Category? parentCategory = null;
-        if(category.ParentCategoryId is not null)
+        if(category.ParentCategoryId.HasValue)
         {
-            parentCategory = await GetCategoryByIdAsync(category.ParentCategoryId);
+            parentCategory = await GetCategoryByIdAsync(category.ParentCategoryId.Value);
         }
 
         Category newCategory = new()
@@ -75,13 +75,13 @@ public class CategoryService: ICategoryService
             existingCategory.Tags = ValidateAndFormatTags(category.Tags);
         }
 
-        if(category.ParentCategoryId is not null)
+        if(category.ParentCategoryId.HasValue)
         {
             if (category.ParentCategoryId == category.Id)
             {
                 throw new InvalidOperationException("A category cannot be its own parent.");
             }
-            var parentCategory = await GetCategoryByIdAsync(category.ParentCategoryId);
+            var parentCategory = await GetCategoryByIdAsync(category.ParentCategoryId.Value);
 
             existingCategory.ParentCategoryId = parentCategory.Id;
         }
@@ -167,10 +167,6 @@ public class CategoryService: ICategoryService
 
     private static string ValidateAndFormatTags(IEnumerable<string> tags)
     {
-        if(tags.Any(tag => tag.Contains(',')))
-        {
-            throw new FormatException("Invalid format of tags. Please do not use commas.");
-        }
         string result = tags.Count() > 1 
             ? string.Join(',', tags.Select(t => t.ToLower())) 
             : tags.First() ?? "";

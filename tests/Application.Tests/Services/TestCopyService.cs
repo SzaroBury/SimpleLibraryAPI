@@ -74,7 +74,7 @@ public class TestCopyService
     [Fact]
     public async Task CreateCopyAsync_WithValidData_CreatesCopy()
     {
-        var dto = new PostCopyCommand(guids["b4"].ToString(), 1, "New");
+        var dto = new PostCopyCommand(guids["b4"], 1, CopyCondition.New);
 
         var result = await copyService.CreateCopyAsync(dto);
 
@@ -90,7 +90,7 @@ public class TestCopyService
     [Fact]
     public async Task CreateCopyAsync_CreateForthCopy_CreatesCopyWithCorrectCopyNumber()
     {
-        var dto = new PostCopyCommand(guids["b2"].ToString(), 1);
+        var dto = new PostCopyCommand(guids["b2"], 1);
 
         var result = await copyService.CreateCopyAsync(dto);
 
@@ -104,20 +104,9 @@ public class TestCopyService
     }
 
     [Fact]
-    public async Task CreateCopyAsync_WithInvalidBookGuidFormat_ThrowsFormatException()
-    {
-        var dto = new PostCopyCommand("invalid-book-guid", 1);
-
-        var ex = await Assert.ThrowsAsync<FormatException>(() =>
-            copyService.CreateCopyAsync(dto));
-
-        Assert.Contains("Invalid book ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", ex.Message);
-    }
-
-    [Fact]
     public async Task CreateCopyAsync_WithNonExistentBookId_ThrowsKeyNotFoundException()
     {
-        var bookId = Guid.NewGuid().ToString();
+        var bookId = Guid.NewGuid();
         var dto = new PostCopyCommand(bookId, 1, null, null, null);
 
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
@@ -125,65 +114,21 @@ public class TestCopyService
 
         Assert.Contains($"A book with  id '{bookId}' was not found in the system.", ex.Message);
     }
-
-    [Fact]
-    public async Task CreateCopyAsync_WithInvalidShelfNumber_ThrowsArgumentException()
-    {
-        var dto = new PostCopyCommand(guids["b4"].ToString(), 0);
-
-        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
-            copyService.CreateCopyAsync(dto));
-
-        Assert.Contains("Shelf number must be greater than zero.", ex.Message);
-    }
-
-    [Fact]
-    public async Task CreateCopyAsync_WithInvalidConditionValue_ThrowsFormatException()
-    {
-        var dto = new PostCopyCommand(guids["b4"].ToString(), 1, "BrandNew");
-
-        var ex = await Assert.ThrowsAsync<FormatException>(() =>
-            copyService.CreateCopyAsync(dto));
-
-        Assert.Contains($"Invalid copy condition format. Please use: New, Good, Bad.", ex.Message);
-    }
-
-    [Fact]
-    public async Task CreateCopyAsync_WithInvalidAcquisitionDate_ThrowsFormatException()
-    {
-        var dto = new PostCopyCommand(guids["b4"].ToString(), 1, AcquisitionDate: "invalida-date-format");
-
-        var ex = await Assert.ThrowsAsync<FormatException>(() =>
-            copyService.CreateCopyAsync(dto));
-
-        Assert.Contains($"is invalid acquisition date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.", ex.Message);
-    }
-
-    [Fact]
-    public async Task CreateCopyAsync_WithInvalidLastInspectionDate_ThrowsFormatException()
-    {
-        var dto = new PostCopyCommand(guids["b4"].ToString(), 1, LastInspectionDate: "invalida-date-format");
-
-        var ex = await Assert.ThrowsAsync<FormatException>(() =>
-            copyService.CreateCopyAsync(dto));
-
-        Assert.Contains($"is invalid last inspection date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.", ex.Message);
-    }
     #endregion
     #region UpdateCopyAsync
     [Theory]
-    [InlineData("b2", 2,    true, "Bad", 3,    "b2", 2, true,  CopyCondition.Bad, 3)]
-    [InlineData("b2", null, null, null,  null, "b2", 1, false, CopyCondition.Good, 1)]
-    [InlineData(null, 2,    null, null,  null, "b1", 2, false, CopyCondition.Good, 1)]
-    [InlineData(null, null, true, null,  null, "b1", 1, true,  CopyCondition.Good, 1)]
-    [InlineData(null, null, null, "Bad", null, "b1", 1, false, CopyCondition.Bad, 1)]
-    [InlineData(null, null, null, null,  3,    "b1", 1, false, CopyCondition.Good, 3)]
+    [InlineData("b2", 2,    true, CopyCondition.Bad, 3,    "b2", 2, true,  CopyCondition.Bad,  3)]
+    [InlineData("b2", null, null, null,              null, "b2", 1, false, CopyCondition.Good, 1)]
+    [InlineData(null, 2,    null, null,              null, "b1", 2, false, CopyCondition.Good, 1)]
+    [InlineData(null, null, true, null,              null, "b1", 1, true,  CopyCondition.Good, 1)]
+    [InlineData(null, null, null, CopyCondition.Bad, null, "b1", 1, false, CopyCondition.Bad,  1)]
+    [InlineData(null, null, null, null,              3,    "b1", 1, false, CopyCondition.Good, 3)]
     public async Task UpdateCopyAsync_UpdateSpecificProperties_UpdatesCopy(
-        string? bookId, int? shelfNumber, bool? isLost, string? condition, int? copyNumber,
+        string? bookId, int? shelfNumber, bool? isLost, CopyCondition? condition, int? copyNumber,
         string expectedBookId, int expectedShelfNumber, bool expectedIsLost, CopyCondition expectedCondition, int expectedCopyNumber)
     {
-        var book = !string.IsNullOrEmpty(bookId) ? guids[bookId].ToString() : null;
-        var dto = new PatchCopyCommand(guids["b1_c1"].ToString(), book, shelfNumber, isLost, condition, CopyNumber: copyNumber);
+        Guid? book = !string.IsNullOrEmpty(bookId) ? guids[bookId] : null;
+        var dto = new PatchCopyCommand(guids["b1_c1"], book, shelfNumber, isLost, condition, CopyNumber: copyNumber);
 
         var result = await copyService.UpdateCopyAsync(dto);
         Assert.Equal(guids[expectedBookId], result.BookId);
@@ -206,7 +151,7 @@ public class TestCopyService
     [Fact]
     public async Task UpdateCopyAsync_ValidAcquisitionDate_UpdatesCopy()
     {
-        var dto = new PatchCopyCommand(guids["b1_c1"].ToString(), AcquisitionDate: "2020-01-01");
+        var dto = new PatchCopyCommand(guids["b1_c1"], AcquisitionDate: new DateTime(2020, 1, 1));
         var expectedAcquisitionDate = new DateTime(2020, 1, 1);
 
         var result = await copyService.UpdateCopyAsync(dto);
@@ -226,7 +171,7 @@ public class TestCopyService
     [Fact]
     public async Task UpdateCopyAsync_ValidLastInspectionDate_UpdatesCopy()
     {
-        var dto = new PatchCopyCommand(guids["b1_c1"].ToString(), LastInspectionDate: "2025-01-01");
+        var dto = new PatchCopyCommand(guids["b1_c1"], LastInspectionDate: new DateTime(2025, 1, 1));
         var expectedLastInspectionDate = new DateTime(2025, 1, 1);
 
         var result = await copyService.UpdateCopyAsync(dto);
@@ -244,20 +189,9 @@ public class TestCopyService
     }
 
     [Fact]
-    public async Task UpdateCopyAsync_WithInvalidCopyGuid_ThrowsFormatException()
-    {
-        var dto = new PatchCopyCommand("invalid-guid");
-
-        var ex = await Assert.ThrowsAsync<FormatException>(() =>
-            copyService.UpdateCopyAsync(dto));
-
-        Assert.Contains("Invalid copy ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", ex.Message);
-    }
-
-    [Fact]
     public async Task UpdateCopyAsync_WithNonExistentCopyId_ThrowsKeyNotFoundException()
     {
-        var id = Guid.NewGuid().ToString();
+        var id = Guid.NewGuid();
         var dto = new PatchCopyCommand(id);
 
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
@@ -267,22 +201,10 @@ public class TestCopyService
     }
 
     [Fact]
-    public async Task UpdateCopyAsync_WithInvalidBookGuid_ThrowsFormatException()
-    {
-        var id = guids["b1_c1"].ToString();
-        var dto = new PatchCopyCommand(id, "invalid-book-guid");
-
-        var ex = await Assert.ThrowsAsync<FormatException>(() =>
-            copyService.UpdateCopyAsync(dto));
-
-        Assert.Contains("Invalid book ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", ex.Message);
-    }
-
-    [Fact]
     public async Task UpdateCopyAsync_WithNonExistentBookId_ThrowsKeyNotFoundException()
     {
-        var id = guids["b1_c1"].ToString();
-        var nonExistentBook = Guid.NewGuid().ToString();
+        var id = guids["b1_c1"];
+        var nonExistentBook = Guid.NewGuid();
         var dto = new PatchCopyCommand(id, nonExistentBook);
 
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
@@ -294,8 +216,8 @@ public class TestCopyService
     [Fact]
     public async Task UpdateCopyAsync_WithInvalidShelfNumber_ThrowsArgumentException()
     {
-        var id = guids["b1_c1"].ToString();
-        var dto = new PatchCopyCommand(id, guids["b4"].ToString(), 0);
+        var id = guids["b1_c1"];
+        var dto = new PatchCopyCommand(id, guids["b4"], 0);
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
             copyService.UpdateCopyAsync(dto));
@@ -304,56 +226,9 @@ public class TestCopyService
     }
 
     [Fact]
-    public async Task UpdateCopyAsync_WithInvalidConditionValue_ThrowsFormatException()
-    {
-        var id = guids["b1_c1"].ToString();
-        var dto = new PatchCopyCommand(id, guids["b4"].ToString(), 1, Condition: "BrandNew");
-
-        var ex = await Assert.ThrowsAsync<FormatException>(() =>
-            copyService.UpdateCopyAsync(dto));
-
-        Assert.Contains($"Invalid copy condition format. Please use: New, Good, Bad.", ex.Message);
-    }
-
-    [Fact]
-    public async Task UpdateCopyAsync_WithInvalidAcquisitionDate_ThrowsFormatException()
-    {
-        var id = guids["b1_c1"].ToString();
-        var dto = new PatchCopyCommand(id, guids["b4"].ToString(), 1, AcquisitionDate: "invalid-date-format");
-
-        var ex = await Assert.ThrowsAsync<FormatException>(() =>
-            copyService.UpdateCopyAsync(dto));
-
-        Assert.Contains($"is invalid acquisition date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.", ex.Message);
-    }
-
-    [Fact]
-    public async Task UpdateCopyAsync_WithInvalidLastInspectionDate_ThrowsFormatException()
-    {
-        var id = guids["b1_c1"].ToString();
-        var dto = new PatchCopyCommand(id, guids["b4"].ToString(), 1, LastInspectionDate: "invalid-date-format");
-
-        var ex = await Assert.ThrowsAsync<FormatException>(() =>
-            copyService.UpdateCopyAsync(dto));
-
-        Assert.Contains($"is invalid last inspection date format. Please use one of the formats: 'dd-MM-yyyy' or 'dd-MM-yyyy HH:mm'.", ex.Message);
-    }
-
-    [Fact]
-    public async Task UpdateCopyAsync_WithInvalidCopyNumber_ThrowsArgumentException()
-    {
-        var dto = new PatchCopyCommand(guids["b1_c1"].ToString(), CopyNumber: 0);
-
-        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
-            copyService.UpdateCopyAsync(dto));
-
-        Assert.Contains("Copy number must be greater than zero.", ex.Message);
-    }
-
-    [Fact]
     public async Task UpdateCopyAsync_WithDuplicateCopyNumber_ThrowsArgumentException()
     {
-        var dto = new PatchCopyCommand(guids["b1_c1"].ToString(), CopyNumber: 2);
+        var dto = new PatchCopyCommand(guids["b1_c1"], CopyNumber: 2);
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
             copyService.UpdateCopyAsync(dto));

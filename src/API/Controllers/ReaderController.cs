@@ -22,171 +22,51 @@ public class ReaderController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> Search(
-        [FromQuery] string? search, 
-        [FromQuery] string? copy, 
-        [FromQuery] bool? banned,
-        [FromQuery] int? page,
-        [FromQuery] int? pageSize)
+        string? search, 
+        string? copy, 
+        bool? banned,
+        int? page,
+        int? pageSize)
     {
-        try
-        {
-            logger.LogInformation("Search request received.");
-            var result = await readerService.SearchReadersAsync(search, copy, banned, page ?? 1, pageSize ?? 25);
-            return Ok(result);
-        }
-        catch(ArgumentException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: ArgumentException catched during invoking Search(search: {search}, copy: {copy}, banned: {banned}, page: {page}, pageSize: {pageSize}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(FormatException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Search(search: {search}, copy: {copy}, banned: {banned}, page: {page}, pageSize: {pageSize}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(KeyNotFoundException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Search(search: {search}, copy: {copy}, banned: {banned}, page: {page}, pageSize: {pageSize}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(InvalidOperationException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: InvalidOperationException catched during invoking Search(search: {search}, copy: {copy}, banned: {banned}, page: {page}, pageSize: {pageSize}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Search(search: {search}, copy: {copy}, banned: {banned}, page: {page}, pageSize: {pageSize}):");
-            logger.LogError($"    {e.Message}");
-            return StatusCode(500, "Unexpected error.");
-        }
+        logger.LogInformation("Search request received.");
+        var result = await readerService.SearchReadersAsync(search, copy, banned, page ?? 1, pageSize ?? 25);
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(string id)
     {
-        try
-        {
-            logger.LogInformation("Get request received.");
-            var result = await readerService.GetReaderByIdAsync(id);
-            return Ok(result);
-        }
-        catch(FormatException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Get(id: {id}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(KeyNotFoundException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Get(id: {id}):");
-            logger.LogInformation($"    {e.Message}");
-            return NotFound(e.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Get(id: {id}):");
-            logger.LogError($"    {e.Message}");
-            return StatusCode(500, "Unexpected error.");
-        }
+        logger.LogInformation("Get request received.");
+        var result = await readerService.GetReaderByIdAsync(id);
+        return Ok(result);
     }
 
     [HttpPost]
+    [Authorize(Roles = "Librarian")]
     public async Task<IActionResult> Post(PostReaderRequest reader)
     {
-        try
-        {
-            logger.LogInformation("Post request received.");
-            var command = ReaderMapper.ToCommand(reader);
-            var result = await readerService.CreateReaderAsync(command);
-            return Ok(result);
-        }
-        catch(ArgumentException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: ArgumentException catched during invoking Post(<ReaderPostDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(FormatException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Post(<ReaderPostDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(InvalidOperationException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: InvalidOperationException catched during invoking Post(<ReaderPostDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Post(<ReaderPostDTO Object>):");
-            logger.LogError($"    {e.Message}");
-            return StatusCode(500, "Unexpected error.");
-        }
+        logger.LogInformation("Post request received.");
+        var command = reader.ToCommand();
+        var result = await readerService.CreateReaderAsync(command);
+        return Ok(result);
     }
 
     [HttpPatch]
+    [Authorize(Roles = "Librarian")]
     public async Task<IActionResult> Patch(PatchReaderRequest reader)
-    {            
-        try
-        {
-            logger.LogInformation("Patch request received.");
-            var command = ReaderMapper.ToCommand(reader);
-            var result = await readerService.UpdateReaderAsync(command);
-            return Ok(result);
-        }
-        catch(FormatException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Patch(<ReaderPatchDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(KeyNotFoundException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Patch(<ReaderPatchDTO Object>):");
-            logger.LogInformation($"    {e.Message}");
-            return NotFound(e.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Patch(<ReaderPatchDTO Object>):");
-            logger.LogError($"    {e.Message}");
-            return StatusCode(500, "Unexpected error.");
-        }
+    {
+        logger.LogInformation("Patch request received.");
+        var command = reader.ToCommand();
+        var result = await readerService.UpdateReaderAsync(command);
+        return Ok(result);
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(string id)
     {
-        try
-        {
-            logger.LogInformation("Delete request received.");
-            await readerService.DeleteReaderAsync(id);
-            return Ok("Object was sucesfully deleted from the datebase.");
-        }
-        catch(FormatException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: FormatException catched during invoking Delete(id: {id}):");
-            logger.LogInformation($"    {e.Message}");
-            return ValidationProblem(e.Message);
-        }
-        catch(KeyNotFoundException e)
-        {
-            logger.LogInformation($"{DateTime.Now}: KeyNotFoundException catched during invoking Delete(id: {id}):");
-            logger.LogInformation($"    {e.Message}");
-            return NotFound(e.Message);
-        }
-        catch (Exception e)
-        {
-            logger.LogError($"{DateTime.Now}: Unexpected error during invoking Delete(id: {id}):");
-            logger.LogError($"    {e.Message}");
-            return StatusCode(500, "Unexpected error.");
-        }
+        logger.LogInformation("Delete request received.");
+        await readerService.DeleteReaderAsync(id);
+        return Ok("Object was sucesfully deleted from the datebase.");
     }
 }

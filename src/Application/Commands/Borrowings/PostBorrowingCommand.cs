@@ -2,8 +2,8 @@ namespace SimpleLibrary.Application.Commands.Borrowings;
     
 public record PostBorrowingCommand
 (
-    string CopyId,
-    string ReaderId,
-    string? StartedDate = null,
-    string? ActualReturnDate = null
+    Guid CopyId,
+    Guid ReaderId,
+    DateTime? StartedDate = null,
+    DateTime? ActualReturnDate = null
 );

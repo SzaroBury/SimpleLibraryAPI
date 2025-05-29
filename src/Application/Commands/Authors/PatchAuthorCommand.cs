@@ -2,10 +2,10 @@ namespace SimpleLibrary.Application.Commands.Authors;
 
 public record PatchAuthorCommand
 (
-    string Id,
+    Guid Id,
     string? FirstName = null, 
     string? LastName = null,
     string? Description = null, 
-    string? BornDate = null, 
+    DateTime? BornDate = null, 
     IEnumerable<string>? Tags = null
 );

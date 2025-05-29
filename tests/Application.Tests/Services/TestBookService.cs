@@ -274,11 +274,11 @@ public class TestBookService
         var panTadeusz = new PostBookCommand(
             "Pan Tadeusz",
             "Full title: Sir Thaddeus, or the Last Foray in Lithuania: A Nobility's Tale of the Years 1811–1812, in Twelve Books of Verse.",
-            "1834-06-28",
-            "Polish",
+            new DateTime(1834, 6, 28),
+            Language.Polish,
             ["poem", "epic", "national", "compulsory reading", "unesco"],
-            guids["a2"].ToString(),
-            guids["c2"].ToString()
+            guids["a2"],
+            guids["c2"]
         );
 
         //Act
@@ -290,98 +290,18 @@ public class TestBookService
         Assert.IsType<Guid>(result.Id);
         mockBookRepository.Verify(repo => repo.AddAsync(result));
     }
-
-    [Fact]
-    public async Task CreateBook_EmptyTitle_ThrowsArgumentException()
-    {
-        var someUnknownBook = new PostBookCommand(
-            "",
-            "Desc of some unknown book",
-            "1997-07-05",
-            "Polish",
-            ["novel"],
-            guids["a2"].ToString(),
-            guids["c2"].ToString()
-        );
-
-        //Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => 
-            bookService.CreateBookAsync(someUnknownBook)
-        );
-        Assert.Equal("Title cannot be empty.", exception.Message);
-    }
-
-    [Fact]
-    public async Task CreateBook_InvalidDateFormat_ThrowsFormatException()
-    {
-        var someBook = new PostBookCommand(
-            "Some book",
-            "Desc of some book",
-            "Hello World",
-            "Polish",
-            ["novel"],
-            guids["a2"].ToString(),
-            guids["c2"].ToString()
-        );
-
-        //Act & Assert
-        var exception = await Assert.ThrowsAsync<FormatException>(() => 
-            bookService.CreateBookAsync(someBook)
-        );
-        Assert.Equal("Invalid date format. Please use the following format: YYYY-MM-DD", exception.Message);
-    }
-
-    [Fact]
-    public async Task CreateBook_InvalidLanguageFormat_ThrowsFormatException()
-    {
-            var someBook = new PostBookCommand(
-            "Some book",
-            "Desc of some book",
-            "1997-07-05",
-            "Hello world",
-            ["novel"],
-            guids["a2"].ToString(),
-            guids["c2"].ToString()
-        );
-
-        //Act & Assert
-        var exception = await Assert.ThrowsAsync<FormatException>(() => 
-            bookService.CreateBookAsync(someBook)
-        );
-        Assert.Equal("Invalid language format. Pick one of the following values: English, Polish, German, French, Spanish, Other.", exception.Message);
-    }
-    
-    [Fact]
-    public async Task CreateBook_InvalidFormatOfCategoryId_ThrowsFormatException()
-    {
-            var someBook = new PostBookCommand(
-            "Some book",
-            "Desc of some book",
-            "1997-07-05",
-            "Polish",
-            ["novel"],
-            guids["a2"].ToString(),
-            "test"
-        );
-
-        //Act & Assert
-        var exception = await Assert.ThrowsAsync<FormatException>(() => 
-            bookService.CreateBookAsync(someBook)
-        );
-        Assert.Equal("Invalid category ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", exception.Message);
-    }
     
     [Fact]
     public async Task CreateBook_NonExistingCategory_ThrowsKeyNotFoundException()
     {
-        var nonExistingCategoryId = Guid.Empty.ToString();
+        var nonExistingCategoryId = Guid.Empty;
         var someBook = new PostBookCommand(
             "Some book",
             "Desc of some book",
-            "1997-07-05",
-            "Polish",
+            new DateTime(1997, 7, 5),
+            Language.Polish,
             ["novel"],
-            guids["a2"].ToString(),
+            guids["a2"],
             nonExistingCategoryId
         );
 
@@ -393,35 +313,16 @@ public class TestBookService
     }
 
     [Fact]
-    public async Task CreateBook_InvalidFormatOfAuthorId_ThrowsFormatException()
-    {
-            var someBook = new PostBookCommand(
-            "Some book",
-            "Desc of some book",
-            "1997-07-05",
-            "Polish",
-            ["novel"],
-            "test",
-            guids["c2"].ToString()
-        );
-
-        //Act & Assert
-        var exception = await Assert.ThrowsAsync<FormatException>(() => 
-            bookService.CreateBookAsync(someBook)
-        );
-        Assert.Equal("Invalid author ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", exception.Message);
-    }
-    [Fact]
     public async Task CreateBook_NonExistingAuthor_ThrowsKeyNotFoundException()
     {
         var someBook = new PostBookCommand(
             "Some book",
             "Desc of some book",
-            "1997-07-05",
-            "Polish",
+            new DateTime(1997, 7, 5),
+            Language.Polish,
             ["novel"],
-            guids["c1"].ToString(),
-            guids["c2"].ToString()
+            guids["c1"],
+            guids["c2"]
         );
 
         //Act & Assert
@@ -432,29 +333,17 @@ public class TestBookService
     }
 
     [Fact]
-    public async Task CreateBook_InvalidFormatOfTags_ThrowsFormatException()
-    {
-        var someBook = new PostBookCommand(
-            "Some book",
-            "Desc of some book",
-            "1997-07-05",
-            "Polish",
-            ["novel,"],
-            guids["a1"].ToString(),
-            guids["c2"].ToString()
-        );
-
-        //Act & Assert
-        var exception = await Assert.ThrowsAsync<FormatException>(() => 
-            bookService.CreateBookAsync(someBook)
-        );
-        Assert.Equal("Invalid format of tags. Please do not use commas.", exception.Message);
-    }
-
-    [Fact]
     public async Task CreateBook_SimiliarToExisting_ThrowsInvalidOperationException()
     {
-        var dziadyIII = new PostBookCommand ("Dziady część III", "", "1832-1-1", "Polish", ["tag", "another"], guids["a2"].ToString(), guids["c2"].ToString());
+        var dziadyIII = new PostBookCommand(
+            "Dziady część III", 
+            "", 
+            new DateTime(1832, 1, 1), 
+            Language.Polish, 
+            ["tag", "another"], 
+            guids["a2"], 
+            guids["c2"]
+        );
 
         //Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
@@ -468,16 +357,16 @@ public class TestBookService
     [Fact]
     public async Task UpdateBook_CorrectInput_UpdatesBook()
     {
-        var bookId = guids["b1"].ToString();
-        var authorId = guids["a2"].ToString();
-        var categoryId = guids["c2"].ToString();
+        var bookId = guids["b1"];
+        var authorId = guids["a2"];
+        var categoryId = guids["c2"];
 
         var someOlderBook = new PatchBookCommand(
             bookId,
             Title: "Some older book",
             Description: "Test description",
-            ReleaseDate: "1991-02-02",
-            Language: "Polish",
+            ReleaseDate: new DateTime(1991, 2, 2),
+            Language.Polish, 
             Tags: ["test", "book"],
             authorId, 
             categoryId
@@ -489,33 +378,20 @@ public class TestBookService
         //Assert
         Assert.NotNull(result);
         Assert.IsType<Book>(result);
-        Assert.Equal(bookId, result.Id.ToString());
+        Assert.Equal(bookId, result.Id);
         Assert.Equal("Some older book", result.Title);
         Assert.Equal("Test description", result.Description);
         Assert.Equal(new DateTime(1991, 02, 02), result.ReleaseDate);
         Assert.Equal(Language.Polish, result.Language);
         Assert.Equal("test,book", result.Tags);
-        Assert.Equal(authorId, result.AuthorId.ToString());
-        Assert.Equal(categoryId, result.CategoryId.ToString());
-    }
-    
-    [Fact]
-    public async Task UpdateBook_InvalidFormatOfBookId_ThrowsFormatException()
-    {
-        var someUnknownBook = new PatchBookCommand(
-            Id: "test",
-            Title: "Some book"
-        );
-
-        //Act & Assert
-        var exception = await Assert.ThrowsAsync<FormatException>(() => bookService.UpdateBookAsync(someUnknownBook));
-        Assert.Equal("Invalid book ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", exception.Message);
+        Assert.Equal(authorId, result.AuthorId);
+        Assert.Equal(categoryId, result.CategoryId);
     }
 
     [Fact]
     public async Task UpdateBook_NonExistingBook_ThrowsKeyNotFoundException()
     {
-        var nonExistingBookId = Guid.Empty.ToString();
+        var nonExistingBookId = Guid.Empty;
         var someUnknownBook = new PatchBookCommand(
             Id: nonExistingBookId,
             Title: "Some book"
@@ -530,7 +406,7 @@ public class TestBookService
     public async Task UpdateBook_EmptyTitle_ThrowsArgumentException()
     {
         var someUpdatedBook = new PatchBookCommand(
-            Id: guids["b1"].ToString(),
+            Id: guids["b1"],
             Title: ""
         );
 
@@ -540,36 +416,10 @@ public class TestBookService
     }
 
     [Fact]
-    public async Task UpdateBook_InvalidDateFormat_ThrowsFormatException()
-    {
-        var someUpdatedBook = new PatchBookCommand(
-            Id: guids["b1"].ToString(),
-            ReleaseDate: "Hello world"
-        );
-
-        //Act & Assert
-        var ex = await Assert.ThrowsAsync<FormatException>(() => bookService.UpdateBookAsync(someUpdatedBook));
-        Assert.Contains("Invalid date format.", ex.Message);
-    }
-
-    [Fact]
-    public async Task UpdateBook_InvalidLanguageFormat_ThrowsFormatException()
-    {
-        var someUpdatedBook = new PatchBookCommand(
-            Id: guids["b1"].ToString(),
-            Language: "Simlish"
-        );
-
-        //Act & Assert
-        var ex = await Assert.ThrowsAsync<FormatException>(() => bookService.UpdateBookAsync(someUpdatedBook));
-        Assert.Contains("Invalid language format.", ex.Message);
-    }
-
-    [Fact]
     public async Task UpdateBook_InvalidTagsFormat_ThrowsFormatException()
     {
         var someUpdatedBook = new PatchBookCommand(
-            Id: guids["b1"].ToString(),
+            Id: guids["b1"],
             Tags: ["novel,", "book"]
         );
 
@@ -579,24 +429,11 @@ public class TestBookService
     }
 
     [Fact]
-    public async Task UpdateBook_InvalidAuthorIdFormat_ThrowsFormatException()
-    {
-        var someUpdatedBook = new PatchBookCommand(
-            Id: guids["b1"].ToString(),
-            AuthorId: "test"
-        );
-
-        //Act & Assert
-        var ex = await Assert.ThrowsAsync<FormatException>(() => bookService.UpdateBookAsync(someUpdatedBook));
-        Assert.Equal("Invalid author ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", ex.Message);
-    }
-
-    [Fact]
     public async Task UpdateBook_NonExistingAuthor_ThrowsKeyNotFoundException()
     {
-        var nonExistingAuthorId = Guid.Empty.ToString();
+        var nonExistingAuthorId = Guid.Empty;
         var someUpdatedBook = new PatchBookCommand(
-            Id: guids["b1"].ToString(),
+            Id: guids["b1"],
             AuthorId: nonExistingAuthorId
         );
 
@@ -606,37 +443,24 @@ public class TestBookService
     }
 
     [Fact]
-    public async Task UpdateBook_InvalidCategoryIdFormat_ThrowsFormatException()
+    public async Task UpdateBook_NonExistingCategory_ThrowsKeyNotFoundException()
     {
+        var nonExistingCategoryId = Guid.Empty;
         var someUpdatedBook = new PatchBookCommand(
-            Id: guids["b1"].ToString(),
-            CategoryId: "test"
-        );
-
-        //Act & Assert
-        var ex = await Assert.ThrowsAsync<FormatException>(() => bookService.UpdateBookAsync(someUpdatedBook));
-        Assert.Equal("Invalid category ID format. Please send the ID in the following format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX, where each X is a hexadecimal digit (0-9 or A-F). Example: 123e4567-e89b-12d3-a456-426614174000.", ex.Message);
-    }
-
-    [Fact]
-    public async Task UpdateBook_NonExistingCategory_ThrowsArgumentException()
-    {
-        var nonExistingCategoryId = Guid.Empty.ToString();
-        var someUpdatedBook = new PatchBookCommand(
-            Id: guids["b1"].ToString(),
+            Id: guids["b1"],
             CategoryId: nonExistingCategoryId
         );
 
         //Act & Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(() => bookService.UpdateBookAsync(someUpdatedBook));
-        Assert.Contains("Category with the given id is not present in the system.", ex.Message);
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => bookService.UpdateBookAsync(someUpdatedBook));
+        Assert.Contains($"A category with the specified ID ({nonExistingCategoryId}) was not found in the system.", ex.Message);
     }
 
     [Fact]
     public async Task UpdateBook_SimilarBookExisting_ThrowsInvalidOperationException()
     {
         var someUpdatedBook = new PatchBookCommand(
-            Id: guids["b4"].ToString(),
+            Id: guids["b4"],
             Title: "Dziady część III"
         );
 

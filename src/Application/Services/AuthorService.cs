@@ -29,30 +29,12 @@ public class AuthorService: IAuthorService
     }
     public async Task<Author> CreateAuthorAsync(PostAuthorCommand author)
     {
-        if(string.IsNullOrEmpty(author.FirstName) || string.IsNullOrEmpty(author.LastName))
-        {
-            throw new ArgumentException("The author's first name and last name cannot be left empty.");
-        }
-        DateTime? authorsBornDate = null;
-        if(!string.IsNullOrEmpty(author.BornDate))
-        {
-            if(!DateTime.TryParse(author.BornDate, out DateTime notNullAuthorsBornDate))
-            {
-                throw new FormatException("Invalid date format. Please use the following format: YYYY-MM-DD");
-            }
-            authorsBornDate = notNullAuthorsBornDate;
-        }
         string tagsInString = "";
         if(author.Tags is not null)
         {
-            if(author.Tags.Any(tag => tag.Contains(',')))
-            {
-                throw new FormatException("Invalid tags format. Please do not use commas in tags.");
-            }
-
-        tagsInString = author.Tags.ToList().Count > 1 
-            ? string.Join(',', author.Tags) 
-            : author.Tags.First() ?? "";
+            tagsInString = author.Tags.ToList().Count > 1 
+                ? string.Join(',', author.Tags) 
+                : author.Tags.First() ?? "";
         }
 
         Author newAuthor = new() 
@@ -60,7 +42,7 @@ public class AuthorService: IAuthorService
             FirstName = author.FirstName,
             LastName = author.LastName,
             Description = author.Description ?? "",
-            BornDate = authorsBornDate,
+            BornDate = author.BornDate,
             Tags = tagsInString
         };
         await unitOfWork.GetRepository<Author>().AddAsync(newAuthor);
@@ -74,18 +56,10 @@ public class AuthorService: IAuthorService
 
         if(author.FirstName is not null)
         {
-            if(string.IsNullOrWhiteSpace(author.FirstName))
-            {
-                throw new ArgumentException("The author's first name cannot be left empty.");
-            }
             existingAuthor.FirstName = author.FirstName;
         }
         if(author.LastName is not null)
         {
-            if(string.IsNullOrWhiteSpace(author.LastName))
-            {
-                throw new ArgumentException("The author's last name cannot be left empty.");
-            }
             existingAuthor.LastName = author.LastName;
         }
         if(author.Description is not null)
@@ -95,24 +69,11 @@ public class AuthorService: IAuthorService
 
         if(author.BornDate is not null)
         {
-            DateTime? authorsBornDate = null;
-            if(!string.IsNullOrWhiteSpace(author.BornDate))
-            {
-                if(!DateTime.TryParse(author.BornDate, out DateTime notNullAuthorsBornDate))
-                {
-                    throw new FormatException("Invalid date format. Please use the following format: YYYY-MM-DD");
-                }
-                authorsBornDate = notNullAuthorsBornDate;
-            }
-            existingAuthor.BornDate = authorsBornDate;
+            existingAuthor.BornDate = author.BornDate;
         }
         
         if(author.Tags is not null)
         {
-            if(author.Tags.Any(tag => tag.Contains(',')))
-            {
-                throw new FormatException("Invalid tags format. Please do not use commas in tags.");
-            }
             var tagsInString = author.Tags.ToList().Count > 1 
                 ? string.Join(',', author.Tags) 
                 : author.Tags.First() ?? "";

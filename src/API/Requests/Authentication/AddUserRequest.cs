@@ -1,6 +1,6 @@
 namespace SimpleLibrary.API.Requests.Authentication;
 
-public record AddEmployeeRequest
+public record AddUserRequest
 (
     string Firstname,
     string Lastname,

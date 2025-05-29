@@ -32,31 +32,12 @@ public class BookService: IBookService
     }
     public async Task<Book> CreateBookAsync(PostBookCommand book)
     {
-        if(string.IsNullOrEmpty(book.Title))
-        {
-            throw new ArgumentException("Title cannot be empty.");
-        }
-        if(!DateTime.TryParse(book.ReleaseDate, out DateTime releaseDate))
-        {
-            throw new FormatException("Invalid date format. Please use the following format: YYYY-MM-DD");
-        }
-        if(!Enum.TryParse(book.Language, true, out Language language))
-        {
-            throw new FormatException("Invalid language format. Pick one of the following values: English, Polish, German, French, Spanish, Other.");
-        }
-
-        var categoryGuid = ValidateGuid(book.CategoryId, "category");
-        var category = await unitOfWork.GetRepository<Category>().GetByIdAsync(categoryGuid)
+        var category = await unitOfWork.GetRepository<Category>().GetByIdAsync(book.CategoryId)
             ?? throw new KeyNotFoundException($"A category with the specified ID ({book.CategoryId}) was not found in the system.");
 
-        var authorGuid = ValidateGuid(book.AuthorId, "author");
-        var author = await unitOfWork.GetRepository<Author>().GetByIdAsync(authorGuid)
+        var author = await unitOfWork.GetRepository<Author>().GetByIdAsync(book.AuthorId)
             ?? throw new KeyNotFoundException($"An author with the specified ID ({book.AuthorId}) was not found in the system.");
 
-        if(book.Tags.Any(tag => tag.Contains(',')))
-        {
-            throw new FormatException("Invalid format of tags. Please do not use commas.");
-        }
         var tagsInString = book.Tags.ToList().Count > 1 
             ? string.Join(',', book.Tags.Select(t => t.ToLower())) 
             : book.Tags.First() ?? "";
@@ -74,12 +55,12 @@ public class BookService: IBookService
         {
             Title = book.Title,
             Description = book.Description,
-            ReleaseDate = releaseDate,
-            Language = language,
+            ReleaseDate = book.ReleaseDate,
+            Language = book.Language,
             Author = author,
             AuthorId = author.Id,
             Category = category,
-            CategoryId = categoryGuid,
+            CategoryId = book.CategoryId,
             Tags = tagsInString,
         };
 
@@ -90,7 +71,7 @@ public class BookService: IBookService
     {
         Book existingBook = await GetBookByIdAsync(book.Id);
 
-        if(book.Title is not null && existingBook.Title != book.Title)
+        if(book.Title is not null)
         {
             if(string.IsNullOrEmpty(book.Title))
             {
@@ -99,27 +80,19 @@ public class BookService: IBookService
             existingBook.Title = book.Title;
         }
 
-        if(book.Description is not null && existingBook.Description != book.Description)
+        if(book.Description is not null)
         {
             existingBook.Description = book.Description;
         }
 
-        if(book.ReleaseDate is not null)
+        if(book.ReleaseDate.HasValue)
         {
-            if(!DateTime.TryParse(book.ReleaseDate, out var releaseDate))
-            {
-                throw new FormatException("Invalid date format. Please use the following format: YYYY-MM-DD");
-            }
-            existingBook.ReleaseDate = releaseDate;
+            existingBook.ReleaseDate = book.ReleaseDate.Value;
         }
 
-        if(book.Language is not null)
+        if(book.Language.HasValue)
         {
-            if(!Enum.TryParse<Language>(book.Language, true, out var language))
-            {
-                throw new FormatException("Invalid language format. Pick one of the following values: English, Polish, German, French, Spanish, Other.");
-            }
-            existingBook.Language = language;
+            existingBook.Language = book.Language.Value;
         }
 
         if(book.Tags is not null)
@@ -134,25 +107,22 @@ public class BookService: IBookService
             existingBook.Tags = tagsInString;
         }
 
-        if(book.AuthorId is not null)
+        if(book.AuthorId.HasValue)
         {
-            var authorGuid = ValidateGuid(book.AuthorId, "author");
-            var author = await unitOfWork.GetRepository<Author>().GetByIdAsync(authorGuid)
+            var author = await unitOfWork.GetRepository<Author>().GetByIdAsync(book.AuthorId.Value)
                 ?? throw new KeyNotFoundException($"An author with the specified ID ({book.AuthorId}) was not found in the system.");
                 
             existingBook.Author = author;
             existingBook.AuthorId = author.Id;
         }
 
-        if(book.CategoryId is not null)
+        if(book.CategoryId.HasValue)
         {
-            var categoryGuid = ValidateGuid(book.CategoryId, "category");
-
-            var category = await unitOfWork.GetRepository<Category>().GetByIdAsync(categoryGuid)
-                ?? throw new ArgumentException("Category with the given id is not present in the system.");
+            var category = await unitOfWork.GetRepository<Category>().GetByIdAsync(book.CategoryId.Value)
+                ?? throw new KeyNotFoundException($"A category with the specified ID ({book.CategoryId}) was not found in the system.");
                 
             existingBook.Category = category;
-            existingBook.CategoryId = categoryGuid;
+            existingBook.CategoryId = category.Id;
         }
 
         bool isThereSimilarBook = unitOfWork.GetRepository<Book>().GetQueryable()

@@ -1,31 +1,34 @@
-using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
-using Microsoft.Extensions.Configuration;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+
+using SimpleLibrary.Application.Common;
+using SimpleLibrary.Application.Services.Abstraction;
 
 namespace SimpleLibrary.Infrastructure.Services;
 
 public class JwtService: IJwtService
 {
-    private readonly IConfiguration config;
+    private readonly JwtSettings jwtSettings;
 
-    public JwtService(IConfiguration configuration)
+    public JwtService(IOptions<JwtSettings> jwtSettings)
     {
-        config = configuration;
+        this.jwtSettings = jwtSettings.Value;
     }
 
     public string GenerateAccessToken(IEnumerable<Claim> claims)
     {
-        var accessTokenSecret = config["JwtSettings:AccessTokenSecret"] ?? throw new Exception("JwtSettings:AccessTokenSecret can not be empty");
+        var accessTokenSecret = jwtSettings.AccessTokenSecret ?? throw new Exception("JwtSettings:AccessTokenSecret can not be empty");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(accessTokenSecret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var accessTokenExpirationMinutes = double.Parse(config["JwtSettings:AccessTokenExpirationMinutes"] ?? "0");
+        var accessTokenExpirationMinutes = jwtSettings.AccessTokenExpirationMinutes;
 
         var token = new JwtSecurityToken(
-            issuer: config["JwtSettings:Issuer"],
-            audience: config["JwtSettings:Audience"],
+            issuer: jwtSettings.Issuer,
+            audience: jwtSettings.Audience,
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(accessTokenExpirationMinutes),
             signingCredentials: creds
